@@ -15,8 +15,8 @@ def part: rtrimstr("\n");
 | ($all | group_by(.slug) | map(.[0] + {count: length}) | sort_by(-.count, .slug)) as $tags
 | def nav($active):
     if ($tags | length) == 0 then ""
-    else ([{tag: "All", href: "/explore/", count: "", active: (if $active == null then " active" else "" end)}]
-          + ($tags | map({tag, href: tag_href, count: (.count | tostring),
+    else ([{tag: "All", href: "/explore/", count: "", color: "tag-all", active: (if $active == null then " active" else "" end)}]
+          + ($tags | map({tag, color, href: tag_href, count: (.count | tostring),
                           active: (if .slug == $active then " active" else "" end)}))
           | map(. as $x | $filter | part | fill($x)) | join("")) as $f
       | $filters | part | fill({filters: $f})

@@ -65,9 +65,11 @@ if [[ $(count explore/tag/available-to-pick-up/index.html) == 2 && $(count explo
 else
     fail "cards on the tag pages"
 fi
-if grep -q '<a class="filter active" href="/explore/">All' "$tmp/site/explore/index.html" \
-    && grep -q '<a class="filter active" href="/explore/tag/repurposed/">Repurposed<span class="count">1' "$tmp/site/explore/tag/repurposed/index.html"; then
-    ok "filters on Explore and the tag pages, the shown one active"
+repurposed=$(jq -rn -L "$here/../lib" 'include "common"; "repurposed" | tag_color')
+if grep -q '<a class="filter tag-all active" href="/explore/">All' "$tmp/site/explore/index.html" \
+    && grep -q "<a class=\"filter $repurposed active\" href=\"/explore/tag/repurposed/\">Repurposed<span class=\"count\">1" "$tmp/site/explore/tag/repurposed/index.html" \
+    && grep -q "<span class=\"label $repurposed\">Repurposed</span>" "$tmp/site/completed-proposals/index.html"; then
+    ok "filters on Explore and the tag pages, the shown one active; a tag has one colour everywhere"
 else
     fail "filters"
 fi
