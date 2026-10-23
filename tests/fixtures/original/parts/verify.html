@@ -1,0 +1,25 @@
+<p>Every donation address on this site is one of the CCS wallet&rsquo;s subaddresses, taken from a
+list made once, offline, from a view-only copy of the wallet, and signed with a key made
+only for that. The secret key was destroyed right after signing, so no other list can ever
+carry that signature. The site is checked against the list each time it is made: an address
+that is not in it is never shown.</p>
+<p>You can check it yourself, with nothing from this site but the files below:</p>
+<ol>
+<li>
+<p>Download <a href="../subaddresses.txt">the list</a>, <a href="../subaddresses.txt.asc">its signature</a> and
+<a href="../subaddresses.txt.key.asc">the public key</a>.</p>
+</li>
+<li>
+<p>Check the key&rsquo;s fingerprint against the one the CCS maintainers publish elsewhere (in the
+<a href="https://repo.getmonero.org/monero-project/ccs-front">front end&rsquo;s repository</a> and in its README), then:</p>
+<pre tabindex="0"><code>gpg --import subaddresses.txt.key.asc
+gpg --verify subaddresses.txt.asc subaddresses.txt
+</code></pre></li>
+<li>
+<p>Look for the address you are about to pay to:</p>
+<pre tabindex="0"><code>grep -c &#34; THE_ADDRESS$&#34; subaddresses.txt
+</code></pre><p><code>1</code> means it is the wallet&rsquo;s. <code>0</code> means do not send: tell the CCS maintainers.</p>
+</li>
+</ol>
+<p>The key&rsquo;s fingerprint: <code>{{fingerprint}}</code></p>
+
