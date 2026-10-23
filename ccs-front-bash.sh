@@ -48,7 +48,12 @@ proposal_pages() {
 }
 
 main() {
-    local original=${1:?ORIGINAL} data=${2:?DATA} proposals=${3:?PROPOSALS} site=${4:?SITE} stage page
+    local original data proposals site stage page
+    # absolute paths, then work from /: started by runuser from root's home, the current
+    # directory may not be readable (find needs it)
+    original=$(readlink -f "${1:?ORIGINAL}") data=$(readlink -f "${2:?DATA}")
+    proposals=$(readlink -f "${3:?PROPOSALS}") site=$(readlink -f "${4:?SITE}")
+    cd /
     [[ -f $original/index.html && -d $original/parts ]] || die "$original is not a built ccs-front-hugo site"
     [[ -f $data/proposals.json && -f $data/completed-proposals.json ]] || die "no ccs-bash JSON in $data"
     [[ -d $proposals ]] || die "no proposals checkout at $proposals"
