@@ -5,28 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Work in Progress · Monero CCS</title>
-<link rel="stylesheet" href="../assets/style.ce46c34325264d5d61b61adcc448020554b7b13f028e3fd3a7202a2c1773a7a2.css" integrity="sha256-zkbDQyUmTV1hthrcxEgCBVS3sT8Cjj/TpyAqLBdzp6I=">
+<link rel="stylesheet" href="../assets/style.677e50709841dd852dbf8a3fb9fb642a8cfaf30b2f732f9fa51ea833858691cf.css" integrity="sha256-Z35QcJhB3YUtv4o/uftkKoz68wsvcy&#43;fpR6oM4WGkc8=">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 </head>
 <body class="page-wip">
+<input type="checkbox" id="nav-toggle" class="nav-toggle">
 <header class="site-header">
   <a class="brand" href="../"><svg aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#logo"></use></svg>Community Crowdfunding System</a>
-  <input type="checkbox" id="nav-toggle" class="nav-toggle">
   <label for="nav-toggle" class="nav-button" aria-label="Menu"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#menu"></use></svg>
 </label>
-  <nav class="site-nav" aria-label="Site">
-    <a href="../explore/">Explore</a>
-    <a href="../what-is-ccs/">What is the CCS</a>
-    <a href="../how-to-ccs/">Submit a proposal</a>
-    <a href="../donate/">Donate</a>
-    <a href="https://beta.getmonero.org/">getmonero.org</a>
+  <nav class="site-nav" aria-label="Site"><a href="../funding-required/">Proposals</a>
+<a href="../what-is-ccs/">What is the CCS</a>
+<a href="../how-to-ccs/">Submit a proposal</a>
+<a href="../donate/">Donate</a>
+<a href="https://beta.getmonero.org/">getmonero.org</a>
+
   </nav>
 </header>
-<main>
-<div class="explorer">
-  <aside class="side">
-  <a class="back" href="../"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#back"></use></svg>
-Home</a>
+<div class="layout with-side">
+  <aside class="side drawer" aria-label="Proposals">
   <nav class="stage-menu" aria-label="Stages">
     <a class="idea tab-ideas" href="../ideas/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
 Ideas<span class="count"><!-- ccs:count idea -->
@@ -45,9 +42,29 @@ Completed<span class="count"><!-- ccs:count cp -->
 3
 <!-- /ccs:count cp --></span></a>
   </nav>
+  <!-- ccs:filters -->
+<div class="tags-block">
+  <hr>
+  <p class="tags-title">Tags</p>
+  <nav class="filters" aria-label="Filter by tag"><a class="filter tag-0" href="/explore/tag/available-to-pick-up/">Available to pick up<span class="count">2</span></a>
+<a class="filter tag-7" href="/explore/tag/abandoned/">Abandoned<span class="count">1</span></a>
+<a class="filter tag-1" href="/explore/tag/b-x-b-y/">&lt;b&gt;x&lt;/b&gt; &amp; &#39;y&#39;<span class="count">1</span></a>
+<a class="filter tag-1" href="/explore/tag/repurposed/">Repurposed<span class="count">1</span></a>
+
+  </nav>
+</div>
+<!-- /ccs:filters -->
+  <nav class="drawer-links" aria-label="Site"><a href="../funding-required/">Proposals</a>
+<a href="../what-is-ccs/">What is the CCS</a>
+<a href="../how-to-ccs/">Submit a proposal</a>
+<a href="../donate/">Donate</a>
+<a href="https://beta.getmonero.org/">getmonero.org</a>
+
+  </nav>
 </aside>
 
-  <section class="list" aria-label="Work in Progress">
+  <main>
+<section class="list" aria-label="Work in Progress">
     <h1 class="list-title">Work in Progress</h1>
     <!-- ccs:list wip -->
 <a class="card wip" href="/proposals/b-wip.html">
@@ -70,10 +87,11 @@ August 10, 2021</li>
   <div class="segments"><span class="done"></span><span></span><span></span></div>
 </a>
 <!-- /ccs:list wip -->
-  </section>
-</div>
+</section>
 
-</main>
+  </main>
+</div>
+<label for="nav-toggle" class="backdrop" aria-hidden="true"></label>
 <footer class="site-footer">
   <section class="general-fund">
     <h2>Donate to the Monero Project</h2>
