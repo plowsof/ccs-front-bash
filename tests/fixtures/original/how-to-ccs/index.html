@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>How to submit a CCS proposal. · Monero CCS</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body class="page-other">
+<header class="site-header">
+  <a class="brand" href="../"><svg aria-hidden="true"><use href="../assets/icons.svg#logo"></use></svg>Community Crowdfunding System</a>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <label for="nav-toggle" class="nav-button" aria-label="Menu"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#menu"></use></svg>
+</label>
+  <nav class="site-nav" aria-label="Site">
+    <a href="../explore/">Explore</a>
+    <a href="../what-is-ccs/">What is the CCS</a>
+    <a href="../how-to-ccs/">Submit a proposal</a>
+    <a href="../donate/">Donate</a>
+    <a href="https://beta.getmonero.org/">getmonero.org</a>
+  </nav>
+</header>
+<main>
+
+<article class="proposal"><div class="body">
+  <h1>How to submit a CCS proposal.</h1>
+  <h4 id="note-read-the-what-is-the-ccs-and-what-are-its-rules-and-expectations-page-before-continuing">Note: Read the <a href="../what-is-ccs">What is the CCS and What Are Its Rules and Expectations</a> page before continuing!</h4>
+<p>The CCS utilizes git, and Monero&rsquo;s Gitlab instance for proposal tracking. A quickstart guide is provided at the top for those already well-versed in git, and step-by-step instructions (with pictures) are provided afterward for those who need help getting through the process. An example proposal is provided at the bottom of this document for referential purposes.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#quickstart-guide">Quickstart Guide</a></li>
+<li><a href="#step-by-step-instructions">Step-by-step Instructions</a></li>
+<li><a href="#example-proposal-front-matter">Example Proposal</a></li>
+<li><a href="#editing-or-amending-a-proposal">Editing or Amending a Proposal</a></li>
+</ul>
+<h2 id="quickstart-guide">Quickstart Guide</h2>
+<ol>
+<li>Register for an account on <a href="https://repo.getmonero.org">Monero&rsquo;s Gitlab instance.</a> and fork the <a href="https://repo.getmonero.org/monero-project/ccs-proposals">CCS Proposals repository</a></li>
+<li>Make a new branch, named similarly to your proposal</li>
+<li>Add a new <code>.md</code> document, and title it similarly to the title of your proposal with your name or handle in the file name.</li>
+<li>Use the template provided below for the front matter, and place it at the top of your proposal. You are responsible for adding the appropriate amount of milestones, with an equal number of payouts below the milestones. FORMATTING MUST BE PRESERVED, OR THE PROPOSAL WILL NOT WORK! Do NOT fill in the <code>done:</code> variable under <code>milestones:</code>, and do NOT fill in anything under <code>payouts:</code> besides making sure the number matches the number of milestones.</li>
+</ol>
+<pre tabindex="0"><code>---
+layout: fr
+title:
+author:
+date:
+amount:
+milestones:
+  - name:
+    funds:
+    done:
+    status: unfinished
+  - name:
+    funds:
+    done:
+    status: unfinished
+payouts:
+  - date:
+    amount:
+  - date:
+    amount:
+---
+</code></pre><ol start="5">
+<li>Underneath the front matter, write the rest of your proposal. Be sure to include what the proposal is about, who will be completing it, why it is important for the community, the milestones and projected timeline, and an expiration date for your proposal.</li>
+<li>Save, commit, and make a Merge Request to the repo. Your MR title must be descriptive and relevant to your proposal. The MR description should be copy/pasted from the proposal contents for easy viewing (front matter excluded).</li>
+<li>You&rsquo;re done. Go start letting people know about your proposal.</li>
+</ol>
+<h2 id="step-by-step-instructions">Step-by-step Instructions</h2>
+<h3 id="1-gitlab">1. Gitlab</h3>
+<p><strong>You will only have to do this step once! If you make future proposals, you can skip to Step 2.</strong></p>
+<p>First things first, you&rsquo;re going to need an account on <a href="https://repo.getmonero.org">Monero&rsquo;s Gitlab instance.</a> Following the provided link will bring to the sign up page. Register for an account (use a strong password), and then navigate to the <a href="https://repo.getmonero.org/monero-project/ccs-proposals">CCS Proposals repo</a>. Click the &ldquo;Fork&rdquo; button and select your name on the subsequent screen. <img src="../img/how-to/fork.png" alt="Click this fork button"></p>
+<p>You should see a blue success bar, along with your new repository. <img src="../img/how-to/fork-success.png" alt="Fork success"></p>
+<h3 id="2-branches">2. Branches</h3>
+<p>If you&rsquo;re not familiar with git, then this next step might not make a lot of sense to you, but it is common and recommended practice for users of git and Gitlab. Basically, just do this, even if you don&rsquo;t understand it. It makes the maintainer&rsquo;s lives a lot simpler.</p>
+<p>Click on Branches. <img src="../img/how-to/branches.PNG" alt="Click on Branches"> and then click on New Branch. <img src="../img/how-to/new-branch.PNG" alt="Click on NEw Branch."> Fill in the &ldquo;Branch Name&rdquo; on the next screen by naming it something similar to your proposal. No spaces are allowed though. Leave the other field as is (it should say &ldquo;Master&rdquo;) and click Create Branch. You should be taken back to your repository, but now on the new branch, as evidenced by seeing the name of your new branch on the screen. A screenshot is provided below to show where you would see it. <img src="../img/how-to/new-branch-success.PNG" alt="Hooray! You&rsquo;re on your new branch."></p>
+<h3 id="3-make-the-proposal-file">3. Make the proposal file</h3>
+<p>From here, you&rsquo;re going to click on the + button near the top center of your screen, and click &ldquo;New File&rdquo; on the subsequent dropdown. <img src="../img/how-to/new-file.PNG" alt="Plus button"> On this new screen, fill in the File Name field with a descriptive title that includes your name, or online handle, is relevant to your proposal, and ends in <code>.md</code>. As an example, if Diego &ldquo;rehrar&rdquo; Salazar was to make a proposal asking for funding so I can make videos for Monero, I might title the file <code>rehrar-make-videos-for-monero.md</code>.</p>
+<h3 id="4-front-matter">4. Front matter</h3>
+<p>Before you begin writing your proposal, however, you must copy the following template and paste it onto the top of your file:</p>
+<pre tabindex="0"><code>---
+layout: fr
+title:
+author:
+date:
+amount:
+milestones:
+  - name:
+    funds:
+    done:
+    status: unfinished
+  - name:
+    funds:
+    done:
+    status: unfinished
+payouts:
+  - date:
+    amount:
+  - date:
+    amount:
+---
+</code></pre><p>Fill this template out as follows:</p>
+<p><code>layout:</code> Do NOT touch this field.</p>
+<p><code>title:</code> Fill this in with a descriptive title of what your proposal wants to accomplish. Copy this field into a notepad program, as the EXACT title will be used in Step 6.</p>
+<p><code>author:</code> Put your name or handle here.</p>
+<p><code>date:</code> Put the date you are proposing and submitting this to the community in the following format: <code>January 31, 2019</code>.</p>
+<p><code>amount:</code> Put the amount of Monero you are requesting for complete this.</p>
+<p><code>milestones:</code> Do not put anything after Milestones directly, but rather the fields that follow it. Copy and paste from one dash (<code>-</code>) to the other, depending on how many milestones your proposal will take. So if you have four milestones, you should see put the following:</p>
+<pre tabindex="0"><code>milestones:
+  - name:
+    funds:
+    done:
+    status: unfinished
+  - name:
+    funds:
+    done:
+    status: unfinished
+  - name:
+    funds:
+    done:
+    status: unfinished
+  - name:
+    funds:
+    done:
+    status: unfinished
+</code></pre><p>EXACT FORMATTING MUST BE PRESERVED WITH THE SPACING. Otherwise the proposal will not work. It&rsquo;s the way Jekyll (on which this is built) functions. The dashes must be two spaces from the left margin.</p>
+<p>Fill in the <code>name:</code> field with the name of the Milestone (for example: Complete Video 1), and the <code>funds:</code> field with the amount of Monero you expect to receive for completing the milestones. Do not touch the <code>done:</code> or <code>status:</code> fields. Repeat until all the <code>name:</code> and <code>funds:</code> fields are filled in. If this confuses you, please scroll to the end of the page for an example of all of this correctly filled out.</p>
+<p><code>payouts:</code> Copy and paste the same amount of variables under payouts that you have under milestones. If you have three milestones, you should have three sets <code>date:</code> and <code>amount:</code> variables underneath <code>payouts:</code>. Do not fill in these fields.</p>
+<h3 id="5-writing-your-proposal">5. Writing your proposal</h3>
+<p>NOW you can put your proposal beneath the front matter (underneath the last three dashes). When writing the proposal remember to include:</p>
+<ul>
+<li>What the proposal is about.</li>
+<li>Who will complete the proposal?</li>
+<li>Why it is important for Monero and the community.</li>
+<li>Your milestones and projected timeline</li>
+<li>An expiration date for the proposal. If it&rsquo;s not funded or finished by a certain time, the funds can be released to other proposals or the General Fund.. This keeps things moving along in a timely fashion.</li>
+</ul>
+<p>It is recommended that after your proposal is written, you copy and paste it (minus the front matter from step 4) and paste it into a notepad. This will be used in step 6.</p>
+<p>After all of this is done, click the green Commit Changes button at the bottom.</p>
+<h3 id="6-make-a-merge-request">6. Make a Merge Request</h3>
+<p>After you click Commit Changes, you will be taken to your newly created file in the new branch of your repository. You will see a bar at the top that lets you know the creation of your file has been successful. You will also see a notification that your new branch can make a Merge Request.</p>
+<p>Click on the blue button in the upper right to start this process. <img src="../img/how-to/mr.PNG" alt="File creation success and merge request button"></p>
+<p>You will see a screen with a few things to fill out. In the Title field, put the same title that you used in the front matter of your proposal. In the Description text box, paste in the proposal EXACTLY AS IT APPEARS IN YOUR .md file, minus the front matter. If you followed Step 5, you should have it in a notepad program of some sort. <img src="../img/how-to/submit-mr.PNG" alt="Fill in title and description fields"></p>
+<p>After this is done, scroll down, and click the green Submit Merge Request button at the bottom left of the page. You should be taken to the Merge Request page for your proposal.</p>
+<h3 id="7-youre-done-now-go-drum-up-some-support">7. You&rsquo;re done. Now go drum up some support.</h3>
+<p>Good job on getting all the way here. When you finish, the community will be discussing your proposal on the merge request itself. If you want to weigh in on the discussion, feel free. It will be up to you to get people to support your proposal, both for it to be moved to the Funding Required stage, and also while its awaiting donations. Best of luck, and thank you so much for contributing to Monero. We, the community, really appreciate it.</p>
+<h2 id="example-proposal-front-matter">Example Proposal Front Matter</h2>
+<pre tabindex="0"><code>---
+layout: fr
+title: Make a Monero Spaceship
+author: somekid
+date: January 31, 2019
+amount: 10000
+milestones:
+  - name: Milestone 1 - Purchase the parts
+    funds: 30% (3000 XMR)
+    done:
+    status: unfinished
+  - name: Milestone 2 - Assemble the spaceship
+    funds: 50% (5000 XMR)
+    done:
+    status: unfinished
+  - name: Milestone 3 - Throw a big party
+    funds: 20% (2000 XMR)
+    done:
+    status: unfinished
+payouts:
+  - date:
+    amount:
+  - date:
+    amount:
+  - date:
+    amount:
+---
+</code></pre><p>The proposal will be written here.</p>
+<h2 id="editing-or-amending-a-proposal">Editing or Amending a Proposal</h2>
+<p>Often times, through community critique and feedback, it is necessary to edit a proposal after the Merge Request has already been submitted. This can be done in the following way.</p>
+<h3 id="navigate-to-your-ccs-proposals-repository">Navigate to your CCS Proposals repository</h3>
+<p>From the homepage of repo.getmonero.org, once you&rsquo;re logged in, you should see a list of your repositories. Find your copy of <code>CSS Proposals</code> and click on it.</p>
+<h3 id="branches-and-files">Branches and files</h3>
+<p>Locate the dropdown with all of your active branches, click it, and select the branch on which your proposal was made. <img src="../img/how-to/edit-find-branch.PNG" alt="Branches dropdown"></p>
+<p>Once you are on the page with the correct branch, as evidenced by the name of the branch showing (see the last screenshot in step 2 of the step-by-step instruction to see where) find and select the file of your proposal (this is why descriptive branch and file names are important).</p>
+<h3 id="editing-the-file">Editing the file</h3>
+<p>Once you are on the page of your file, on the upper right corner should be an Edit button. <img src="../img/how-to/edit-edit-button.PNG" alt="Edit button"> Select this and you should be taken to the editing screen. Amend the proposal as needed (remember to edit the front matter too if any of those variables are changing), and press the green Commit Changes button at the bottom.</p>
+<p><strong>Warning! Not only the changes but THE FACT that you made changes will be visible to EVERYONE! You CANNOT stealth edit your proposal. This is good for transparency. See the screenshot below.</strong> <img src="../img/how-to/edit-editing-seen.PNG" alt="Edits seen"></p>
+
+</div></article>
+
+</main>
+<footer class="site-footer">
+  <section class="general-fund">
+    <h2>Donate to the Monero Project</h2>
+    <p>By donating to the following Monero address (the General Fund), you are supporting the Monero
+    Project. To donate to a specific proposal, see <a href="../funding-required/">Funding Required</a>.</p>
+    <a class="qr" href="monero:888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H"><img src="../assets/general-fund-qr.svg" alt="QR code of the General Fund address"></a>
+    <p class="address">888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H</p>
+  </section>
+  <nav class="footer-links" aria-label="Repositories">
+  <a href="https://repo.getmonero.org/monero-project/ccs-front">Frontend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+</a>
+  <a href="https://github.com/plowsof/ccs-bash">Backend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+</a>
+  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+</a>
+  </nav>
+</footer>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<a class="card fr" href="{{url}}">
+  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#hand-coins"></use></svg>
+Funding Required</span>
+  <h3>{{name}}</h3>
+  <ul class="meta">
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#user"></use></svg>
+{{author}}</li>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#calendar"></use></svg>
+{{date}}{{funding_note}}</li>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#users"></use></svg>
+{{contributors}} contributors</li>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#coins"></use></svg>
+{{amount}} XMR</li>
+</ul>
+
+  <p class="progress-label">Raised {{raised}} of {{amount}} XMR{{pending_note}}</p>
+  <progress max="100" value="{{percentage}}">{{percentage}}%</progress>
+</a>
+

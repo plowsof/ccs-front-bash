@@ -1,0 +1,14 @@
+<p class="progress-label">Raised <strong>{{raised}}</strong> of {{amount}} XMR{{pending_note}}</p>
+<progress max="100" value="{{percentage}}">{{percentage}}%</progress>
+<details class="contribute">
+  <summary class="button primary">Contribute</summary>
+  <ol>
+    <li>Choose how much XMR to contribute to this proposal.</li>
+    <li>Scan the QR code, or tap it to open your Monero wallet:
+      <a class="qr" href="monero:{{address}}">{{qr}}</a></li>
+    <li>or copy the address:
+      <div class="address">{{address}}</div></li>
+    <li>Send. Thank you!</li>
+  </ol>
+</details>
+

@@ -1,0 +1,17 @@
+name: check
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    # 22.04 has jq 1.6, 24.04 has jq 1.7: both must give the same pages.
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, pinned by commit
+      - name: shellcheck
+        run: shellcheck -x ccs-front-bash.sh lib/*.sh tests/*.sh
+      - name: tests
+        run: tests/run.sh
