@@ -83,9 +83,9 @@ fi
 
 # Everything below must stop the run and leave the last site as it was.
 echo previous > "$tmp/site/marker-of-the-old-site"
-must_stop() {   # must_stop WHAT ORIGINAL DATA
+must_stop() {   # must_stop WHAT ORIGINAL DATA [SUBADDRESSES]
     local what=$1
-    if "$run" "$2" "$3" "$props" "$tmp/site" 2> "$tmp/log.stop"; then
+    if "$run" "$2" "$3" "$props" "$tmp/site" ${4:+"$4"} 2> "$tmp/log.stop"; then
         fail "$what: the run went on"
     elif [[ ! -e $tmp/site/marker-of-the-old-site || -e $tmp/site.new ]]; then
         fail "$what: the old site was touched"
@@ -114,6 +114,27 @@ must_stop "a tag ccs-bash didn't escape" "$here/fixtures/original" "$tmp/unescap
 cp -r "$here/fixtures/original" "$tmp/slot"
 sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"
 must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
+
+# a pinned subaddress list: every donation address must be in it, and it goes out with the site
+mkdir -p "$tmp/sub"
+jq -r '.[1].proposals[] | ."donate-address" // empty' "$here/fixtures/data/proposals.json" | awk '{ print NR, $0 }' > "$tmp/sub/list.txt"
+echo signature > "$tmp/sub/list.txt.asc"
+cp -r "$here/fixtures/original" "$tmp/pinned"
+sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1 > "$tmp/pinned/parts/subaddresses.sha256"
+if "$run" "$tmp/pinned" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
+    && cmp -s "$tmp/sub/list.txt" "$tmp/site4/subaddresses.txt" && [[ -f $tmp/site4/subaddresses.txt.asc ]]; then
+    ok "every donation address in the pinned list: the list and its signature are published"
+else
+    fail "a pinned list"
+fi
+if [[ ! -e $tmp/site/subaddresses.txt ]]; then ok "no pin, no list published"; else fail "a list published without a pin"; fi
+cp "$tmp/pinned/parts/subaddresses.sha256" "$tmp/sub/pin"
+sed -i '2d' "$tmp/sub/list.txt"
+sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1 > "$tmp/pinned/parts/subaddresses.sha256"
+must_stop "an address not in the (pinned) list" "$tmp/pinned" "$here/fixtures/data" "$tmp/sub/list.txt"
+cp "$tmp/sub/pin" "$tmp/pinned/parts/subaddresses.sha256"
+must_stop "a list that isn't the pinned one" "$tmp/pinned" "$here/fixtures/data" "$tmp/sub/list.txt"
+must_stop "a pin but no list" "$tmp/pinned" "$here/fixtures/data"
 
 # one pass: a value that looks like a slot or a marker is text, never filled again
 mkdir -p "$tmp/literal"
