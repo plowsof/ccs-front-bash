@@ -15,7 +15,7 @@ fail() { echo "FAIL $*"; status=1; }
 props=$here/fixtures/proposals
 "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site" 2> "$tmp/log" || { cat "$tmp/log"; fail "the run"; exit 1; }
 
-pages=(explore/index.html ideas/index.html funding-required/index.html work-in-progress/index.html completed-proposals/index.html
+pages=(index.html ideas/index.html funding-required/index.html work-in-progress/index.html completed-proposals/index.html
     proposals/near-funded.html proposals/b-wip.html "proposals/c done, (old).html" "proposals/o'quote.html"
     explore/tag/available-to-pick-up/index.html)
 if [[ ${UPDATE:-} ]]; then
@@ -25,26 +25,29 @@ for p in "${pages[@]}"; do
     if diff -u "$here/expected/$p" "$tmp/site/$p" > "$tmp/diff"; then ok "$p"; else cat "$tmp/diff"; fail "$p"; fi
 done
 
-# every proposal in the JSON gets a card on its stage's page; Explore has none, only the stages'
-# counts (as every stage menu does) and the tags
+# every proposal in the JSON gets a card on its stage's page; the home page has none, only the
+# stages' counts
 count() { grep -c 'class="card ' "$tmp/site/$1" || true; }
 want() { jq "$2" "$here/fixtures/data/$1"; }
 fr=$(want proposals.json '.[1].proposals | length') wip=$(want proposals.json '.[2].proposals | length')
 idea=$(want proposals.json '.[0].proposals | length') cp=$(want completed-proposals.json '.[0].proposals | length')
 if [[ $(count funding-required/index.html) == "$fr" && $(count work-in-progress/index.html) == "$wip" \
     && $(count ideas/index.html) == "$idea" && $(count completed-proposals/index.html) == "$cp" \
-    && $(count explore/index.html) == 0 ]]; then
-    ok "a card per proposal ($fr fr, $wip wip, $idea ideas, $cp completed), none on Explore"
+    && $(count index.html) == 0 ]]; then
+    ok "a card per proposal ($fr fr, $wip wip, $idea ideas, $cp completed), none on the home page"
 else
     fail "card counts"
 fi
-counts() { grep -A1 '<!-- ccs:count ' "$tmp/site/$1" | grep -o '^[0-9]*$' | tr '\n' ' '; }
-if [[ $(counts explore/index.html) == "$idea $fr $wip $cp " && $(counts funding-required/index.html) == "$idea $fr $wip $cp " \
-    && $(counts explore/tag/repurposed/index.html) == "$idea $fr $wip $cp " ]]; then
-    ok "each stage's count, on Explore, a stage page and a tag page"
+# the stage menu's counts on every kind of page (a proposal page too), the home page's cards'
+counts() { grep -A1 "<!-- ccs:${2:-count} " "$tmp/site/$1" | grep -o '^[0-9]*$' | tr '\n' ' '; }
+n4="$idea $fr $wip $cp "
+if [[ $(counts index.html) == "$n4" && $(counts index.html number) == "$n4" && $(counts funding-required/index.html) == "$n4" \
+    && $(counts explore/tag/repurposed/index.html) == "$n4" && $(counts proposals/b-wip.html) == "$n4" ]]; then
+    ok "each stage's count, in the menu of every kind of page and on the home page's cards"
 else
-    fail "stage counts: $(counts explore/index.html)"
+    fail "stage counts: home '$(counts index.html)' '$(counts index.html number)', proposal '$(counts proposals/b-wip.html)'"
 fi
+if [[ ! -e $tmp/site/explore/index.html ]]; then ok "no Explore page"; else fail "an Explore page"; fi
 if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok "parts/ and the example pages left out"; else fail "parts/ or an example page published"; fi
 if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok "projects.json goes with the site"; else fail "projects.json"; fi
 pages_want=$((fr + wip + cp))
@@ -78,10 +81,11 @@ else
     fail "cards on the tag pages"
 fi
 repurposed=$(jq -rn -L "$here/../lib" 'include "common"; "repurposed" | tag_color')
-if grep -q '<a class="filter tag-all active" href="/explore/">All' "$tmp/site/explore/index.html" \
+if grep -q "<a class=\"filter $repurposed\" href=\"/explore/tag/repurposed/\">Repurposed" "$tmp/site/funding-required/index.html" \
+    && grep -q "<a class=\"filter $repurposed\" href=\"/explore/tag/repurposed/\">Repurposed" "$tmp/site/proposals/b-wip.html" \
     && grep -q "<a class=\"filter $repurposed active\" href=\"/explore/tag/repurposed/\">Repurposed<span class=\"count\">1" "$tmp/site/explore/tag/repurposed/index.html" \
     && grep -q "<span class=\"label $repurposed\">Repurposed</span>" "$tmp/site/completed-proposals/index.html"; then
-    ok "filters on Explore and the tag pages, the shown one active; a tag has one colour everywhere"
+    ok "the tags in every page's sidebar, the shown one active on its page; a tag has one colour everywhere"
 else
     fail "filters"
 fi
@@ -96,7 +100,7 @@ mkdir -p "$tmp/notags"
 jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/proposals.json" > "$tmp/notags/proposals.json"
 jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/completed-proposals.json" > "$tmp/notags/completed-proposals.json"
 "$run" "$here/fixtures/original" "$tmp/notags" "$props" "$tmp/site3" 2> /dev/null
-if [[ ! -e $tmp/site3/explore/tag ]] && ! grep -q 'class="filters"' "$tmp/site3/explore/index.html"; then
+if [[ ! -e $tmp/site3/explore/tag ]] && ! grep -q 'class="filters"' "$tmp/site3/funding-required/index.html"; then
     ok "no tags: no filters, no tag pages"
 else
     fail "filters or tag pages without tags"

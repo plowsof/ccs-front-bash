@@ -3,7 +3,8 @@
 # original's parts. Prints each page after a line "\u0001<file name>" (see ccs-front-bash.sh).
 # Inputs: --slurpfile proposals, completed (ccs-bash's JSON), md (markdown.awk's lines);
 # --rawfile fr, wip, cp (parts/proposal-*.html), donate, funded, mdone,
-# mtodo, payout, nom, nop, segdone, segtodo, labellink (the other parts).
+# mtodo, payout, nom, nop, segdone, segtodo, labellink (the other parts); cidea, cfr, cwip, ccp,
+# filters (the sidebar's counts and tags, as on every other page).
 include "common";
 
 def part: rtrimstr("\n");
@@ -42,4 +43,7 @@ def region($name; $html):
 | region(if $stage == "fr" then "donate" else "funded" end; (if $stage == "fr" then $donate else $funded end) | part | fill($v))
 | region("milestones"; if $milestones == "" then $nom | part else $milestones end)
 | region("payouts"; if $payouts == "" then $nop | part else $payouts end)
+| region("count idea"; $cidea | part) | region("count fr"; $cfr | part)
+| region("count wip"; $cwip | part) | region("count cp"; $ccp | part)
+| region("filters"; $filters | part)
 | "\u0001\($file)\n" + gsub("\u0001"; "")
