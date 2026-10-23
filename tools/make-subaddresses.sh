@@ -15,7 +15,7 @@ read -rsp "private view key: " vk; echo
 
 dir=$(mktemp -d); chmod 700 "$dir"
 port=$((20000 + RANDOM % 20000))
-"$rpcbin" $net --offline --wallet-dir "$dir" --rpc-bind-ip 127.0.0.1 --rpc-bind-port "$port" \
+"$rpcbin" ${net:+"$net"} --offline --wallet-dir "$dir" --rpc-bind-ip 127.0.0.1 --rpc-bind-port "$port" \
     --disable-rpc-login --non-interactive --log-file "$dir/rpc.log" > /dev/null 2>&1 &
 pid=$!
 trap 'kill "$pid" 2> /dev/null; wait "$pid" 2> /dev/null; rm -rf "$dir"' EXIT
