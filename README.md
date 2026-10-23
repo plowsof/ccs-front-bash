@@ -1,0 +1,47 @@
+<p align="center">
+  <img src="logo.svg" width="180" alt="An orange clam seen from the side, eyes peeking out of its open shell, inside a gear">
+</p>
+
+# ccs-front-bash
+
+**A blazingly fast, memory-safe CCS frontend. Written in shell.**
+
+- **Blazingly fast:** no build step at runtime, only string replacement.
+- **Memory safe:** it has no memory. Every page starts again from the untouched original.
+- **Fearless concurrency:** a fresh directory every run, then `rsync --delay-updates`.
+- **Zero-cost abstractions:** there are no abstractions.
+- **A strong type system:** everything is a string, the HTML too. That's how it stays escaped.
+- **A friendly compiler:** `shellcheck`.
+- **Cargo:** `apt install jq qrencode`.
+
+Not a crustacean. A mollusc.
+
+The front half of [ccs-bash](https://github.com/plowsof/ccs-bash): it turns ccs-bash's JSON and
+the proposals' Markdown into the finished CCS website, on the backend, with bash, awk and jq.
+No Jekyll, Node or any framework runs on a live machine; the public web server only receives
+the finished files ([the design](https://github.com/plowsof/ccs-bash/blob/master/docs/design.md)).
+
+**Status: not written yet.** This is the plan.
+
+## What it does
+
+1. **Copy the original:** the site [ccs-front-hugo](https://github.com/plowsof/ccs-front-hugo)
+   builds once, offline, with markers where content goes. It is never modified.
+2. **Proposal pages,** re-rendered only when a `.md` file changes: the proposal's Markdown
+   into HTML (a strict subset in awk, everything escaped first), filled into
+   `parts/proposal-<stage>.html`.
+3. **Every run:** the Ideas, Funding Required, Work in Progress and Completed lists, and each
+   proposal's donation box, with the address and its QR code (`qrencode -t SVG`) made in the
+   same step, from ccs-bash's JSON.
+4. **Swap and push:** a missing, unmatched or repeated marker stops the run and nothing is
+   pushed; otherwise the new `site/` replaces the last one and goes to the web server.
+
+The contract between the two (markers, parts, `{{slots}}`) is in
+[ccs-front-hugo's README](https://github.com/plowsof/ccs-front-hugo#what-ccs-front-bash-fills-in).
+
+## Rules
+
+- Values are HTML-escaped exactly once; links must be `https:` (or local).
+- Markers are replaced in one pass: text put into a page is never searched for markers again.
+- The output keeps the original's rules: no `<script>`, no `style=`, nothing from other sites.
+- It needs no network: run it without any (it reads files, writes `site/`).
