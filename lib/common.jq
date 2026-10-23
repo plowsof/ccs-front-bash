@@ -37,13 +37,17 @@ def unescape: gsub("&#39;"; "'") | gsub("&apos;"; "'") | gsub("&quot;"; "\"") | 
 # /explore/tag/<slug>/, so "Abandoned" and "abandoned!" are one filter. Letters (any script)
 # and digits, dashes between; a tag with none gets no filter. The first spelling is kept.
 def slug: unescape | ascii_downcase | gsub("[^\\p{L}\\p{N}]+"; "-") | sub("^-+"; "") | sub("-+$"; "");
+# A tag's colour, one of the original's 8 classes (tag-0 to tag-7), from its slug: the same tag
+# has the same colour everywhere, every run, with nothing to configure.
+def tag_color: "tag-\(reduce explode[] as $c (0; (. * 31 + $c) % 1000003) % 8)";
 def tag_list:
-  [(.tags // [])[] | select(type == "string") | escaped | {tag: ., slug: slug} | select(.slug != "")]
+  [(.tags // [])[] | select(type == "string") | escaped | {tag: ., slug: slug} | select(.slug != "")
+   | . + {color: (.slug | tag_color)}]
   | reduce .[] as $t ([]; if any(.[]; .slug == $t.slug) then . else . + [$t] end);
 def tag_href: "/explore/tag/\(.slug | @uri)/";
 # a card's labels (the card is one link: plain labels) and a proposal page's tag links
-def labels($part): [tag_list[] | . as $t | $part | rtrimstr("\n") | fill({tag: $t.tag})] | join("");
-def tag_links($part): [tag_list[] | . as $t | $part | rtrimstr("\n") | fill({tag: $t.tag, href: ($t | tag_href)})] | join("");
+def labels($part): [tag_list[] | . as $t | $part | rtrimstr("\n") | fill({tag: $t.tag, color: $t.color})] | join("");
+def tag_links($part): [tag_list[] | . as $t | $part | rtrimstr("\n") | fill({tag: $t.tag, color: $t.color, href: ($t | tag_href)})] | join("");
 
 # The milestone bar of a card: one segment part per milestone.
 def segments($done; $todo):
