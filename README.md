@@ -12,7 +12,7 @@
 - **Zero-cost abstractions:** there are no abstractions.
 - **A strong type system:** everything is a string, the HTML too. That's how it stays escaped.
 - **A friendly compiler:** `shellcheck`.
-- **Cargo:** `apt install jq qrencode`.
+- **Cargo:** `apt install jq`.
 
 Not a crustacean. A mollusc.
 
@@ -47,8 +47,8 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
    into HTML (a strict subset in awk, everything escaped first), filled into
    `parts/proposal-<stage>.html`.
 3. **Every run:** the Ideas, Funding Required, Work in Progress and Completed lists, and each
-   proposal's donation box, with the address and its QR code (`qrencode -t SVG`) made in the
-   same step, from ccs-bash's JSON.
+   proposal's donation box, with the address and its QR code (a PNG, made fresh by ccs-bash
+   in the same run as the address), from ccs-bash's JSON.
 4. **Swap and push:** a missing, unmatched or repeated marker stops the run and nothing is
    pushed; otherwise the new `site/` replaces the last one and goes to the web server.
 
