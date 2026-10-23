@@ -8,7 +8,7 @@ It reads three things and writes one:
 | the original | `/opt/ccs-front-hugo/public` | ccs-front-hugo's built site, from the offline build machine |
 | the data | `/var/lib/ccs/out` | ccs-bash's `OUTPUT_DIR` |
 | the proposals | `/var/lib/ccs/proposals` | the checkout ccs-bash reads |
-| the site | `/var/lib/ccs/www/site` | written each run, swapped in when complete |
+| the site | `/var/lib/ccs/www/site` | written each run, swapped in when complete (with ccs-bash's `projects.json`, for `/projects`) |
 
 Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), `qrencode`, coreutils, `tar`
 and `find`: on Debian, `apt install jq qrencode` on top of what ccs-bash needs.

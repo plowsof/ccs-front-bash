@@ -1,0 +1,98 @@
+[
+    {
+        "address": "80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "author": "alice",
+        "contributions": 4,
+        "date": "June 25, 2021",
+        "percentage_funded": 0,
+        "raised_amount": "1.2500",
+        "state": "FUNDING-REQUIRED",
+        "target_amount": "1500.0000",
+        "title": "Fund &lt;b&gt;this&lt;/b&gt; &amp; that",
+        "filename": "a-fund.md"
+    },
+    {
+        "address": "80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002",
+        "author": "bob",
+        "contributions": 1,
+        "date": "August 10, 2021",
+        "percentage_funded": 0,
+        "raised_amount": "0.1234",
+        "state": "WORK-IN-PROGRESS",
+        "target_amount": "85.0000",
+        "title": "Work in progress",
+        "filename": "b-wip.md"
+    },
+    {
+        "address": null,
+        "author": "carol",
+        "contributions": 0,
+        "date": "March 1, 2020",
+        "percentage_funded": 0,
+        "raised_amount": "0.0000",
+        "state": "COMPLETED",
+        "target_amount": "240.1202",
+        "title": "Finished thing",
+        "filename": "c done, (old).md"
+    },
+    {
+        "address": "80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+        "author": "judy",
+        "contributions": 1,
+        "date": "October 5, 2026",
+        "percentage_funded": 99,
+        "raised_amount": "99.9999",
+        "state": "FUNDING-REQUIRED",
+        "target_amount": "100.0000",
+        "title": "Nearly funded",
+        "filename": "near-funded.md"
+    },
+    {
+        "address": "80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004",
+        "author": "ivan",
+        "contributions": 0,
+        "date": "January 2, 2025",
+        "percentage_funded": 0,
+        "raised_amount": "0.0000",
+        "state": "FUNDING-REQUIRED",
+        "target_amount": "20.0000",
+        "title": "Name starts with a space",
+        "filename": " leading-space.md"
+    },
+    {
+        "address": null,
+        "author": "lee",
+        "contributions": 0,
+        "date": "May 2, 2023",
+        "percentage_funded": 0,
+        "raised_amount": "0.0000",
+        "state": "COMPLETED",
+        "target_amount": "3.0000",
+        "title": "Ends with dots",
+        "filename": "dots-end.md"
+    },
+    {
+        "address": "80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+        "author": "dave",
+        "contributions": 0,
+        "date": "October 1, 2026",
+        "percentage_funded": 0,
+        "raised_amount": "0.0000",
+        "state": "FUNDING-REQUIRED",
+        "target_amount": "100.0000",
+        "title": "Brand new",
+        "filename": "new-fund.md"
+    },
+    {
+        "address": null,
+        "author": "kim",
+        "contributions": 0,
+        "date": "March 1, 2022",
+        "percentage_funded": 0,
+        "raised_amount": "0.0000",
+        "state": "COMPLETED",
+        "target_amount": "5.0000",
+        "title": "Name with a quote",
+        "filename": "o'quote.md"
+    }
+]

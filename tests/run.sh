@@ -37,6 +37,7 @@ else
     fail "card counts"
 fi
 if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok "parts/ and the example pages left out"; else fail "parts/ or an example page published"; fi
+if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok "projects.json goes with the site"; else fail "projects.json"; fi
 pages_want=$((fr + wip + cp))
 if [[ $(find "$tmp/site/proposals" -name '*.html' | wc -l) == "$pages_want" ]]; then ok "a page per proposal in fr, wip, cp ($pages_want)"; else fail "proposal page count"; fi
 if grep -q '<a class="qr" href="monero:8[0-9]*"><svg' "$tmp/site/proposals/near-funded.html" \
