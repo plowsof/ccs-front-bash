@@ -1,0 +1,4 @@
+# sha256 size url... -- the one source tarball built here: busybox, with only the applets in
+# busybox-applets. fetch.sh tries the urls in order and keeps a file only if its sha256 matches.
+# The sum is the one StageX pins for the same tarball (core/busybox).
+34f9ea6ff8636f2c9241153b9114eefa9e65674a45318ae1ef95bb5f31c53bb2 2695723 https://busybox.net/downloads/busybox-1.38.0.tar.bz2 https://www.busybox.net/downloads/busybox-1.38.0.tar.bz2

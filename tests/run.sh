@@ -90,7 +90,7 @@ must_stop() {   # must_stop WHAT ORIGINAL DATA [SUBADDRESSES]
     elif [[ ! -e $tmp/site/marker-of-the-old-site || -e $tmp/site.new ]]; then
         fail "$what: the old site was touched"
     else
-        ok "$what: stops ($(grep -o 'error: .*' "$tmp/log.stop" | cut -c8-70 || head -c 60 "$tmp/log.stop"))"
+        ok "$what: stops ($(grep -o 'error: .*' "$tmp/log.stop" | cut -c8-70 || cut -c1-60 "$tmp/log.stop" | head -n 1))"
     fi
 }
 broken() {   # broken NAME SED: a copy of the original with ideas/index.html changed by SED
