@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>What is the CCS, and what are its rules and expectations? · Monero CCS</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body class="page-other">
+<header class="site-header">
+  <a class="brand" href="../"><svg aria-hidden="true"><use href="../assets/icons.svg#logo"></use></svg>Community Crowdfunding System</a>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <label for="nav-toggle" class="nav-button" aria-label="Menu"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#menu"></use></svg>
+</label>
+  <nav class="site-nav" aria-label="Site">
+    <a href="../explore/">Explore</a>
+    <a href="../what-is-ccs/">What is the CCS</a>
+    <a href="../how-to-ccs/">Submit a proposal</a>
+    <a href="../donate/">Donate</a>
+    <a href="https://beta.getmonero.org/">getmonero.org</a>
+  </nav>
+</header>
+<main>
+
+<article class="proposal"><div class="body">
+  <h1>What is the CCS, and what are its rules and expectations?</h1>
+  <h2 id="introduction">Introduction</h2>
+<p>In the cryptocurrency sphere there are many ways that projects try to fund their efforts. In recent years a veteran of the space may have heard terms such as ICO, Founder&rsquo;s/Dev Fee, Decentralized Treasury, and more.</p>
+<p>The Monero Project, which is itself a decentralized project without formalized leadership or governance structures, is unable or unwilling to partake in any of the above funding methods, and has looked for a more decentralized method of both raising and dispersing funds that doesn&rsquo;t compromise the ideals of the community. The result is the Community Crowdfunding System (CCS) formerly known as the Forum Funding System (FFS).</p>
+<p>There are many different types of proposals, all with their own goals in mind. In the past, we have seen things from coding new software, developing third party resources, travel reimbursement for conference presenters, and hiring skilled individuals for full-time or part-time work.</p>
+<p>The CCS is a way for the community to propose ideas and request money, while utilizing the services of the Core Team as an escrow.</p>
+<h2 id="ccs-proposal-standard-flow">CCS Proposal Standard Flow</h2>
+<p>The standard CCS workflow is as follows:</p>
+<ol>
+<li>An individual or team (henceforth &lsquo;proposer&rsquo;) has an idea to improve the Monero ecosystem that requires funds.</li>
+<li>The proposer creates a CCS proposal, understanding the rules and expectations presented in the following section, and makes a Merge Request (MR) to the CCS Proposals repository on Monero&rsquo;s Gitlab instance. All steps to submit this Merge Request can be found <a href="../how-to-ccs/">here</a>.</li>
+<li>The community discusses the pros and cons of the proposal, and offers feedback and critique.</li>
+<li>The proposer changes the proposal (if necessary), utilizing the feedback and critique of the community.</li>
+<li>Repeat steps 3 and 4 as needed.</li>
+<li>After the Core Team has determined that the community has reached loose consensus, the MR is merged, and funding begins.</li>
+<li>Once fully funded (not guaranteed), the proposal is moved to Work in Progress, where the team begins on the work, if they haven&rsquo;t already.</li>
+<li>Milestones are completed, and funds are dispersed upon their completion.</li>
+<li>After all milestones are completed, the proposal is moved into Completed Proposals, where all info is retained for posterity.</li>
+</ol>
+<h2 id="ccs-rules-and-expectations">CCS Rules and Expectations</h2>
+<p>The CCS is intentionally left as informal as possible. This allows for flexibility of the system, and keeps things from being red taped into oblivion. However, there are some things you should understand, things that will be expected of you, as either a proposer or a donor, and a recommended way of structuring a proposal for maximum likelihood that your project will be funded.</p>
+<h3 id="for-donors">For Donors</h3>
+<ol>
+<li>The CCS is escrowed by the Core Team. When you make a donation, you are releasing funds to them to disperse when they deem the community agrees that a milestone is complete. They do not do the work to verify donors, and the final decision for all disputes falls with them, although they do their best to follow community sentiment.</li>
+<li>In the event that a proposal is overfunded, unable to be completed, or otherwise put in a state where donated money will not be dispersed to the intended recipient, the default is that the remaining XMR will be put in the Monero General Fund. There are some exceptions, but they are rare, and these decisions rest with the Core Team.</li>
+<li>Refunds are extraordinarily rare. Donate accordingly.</li>
+<li>If the proposer disappears, no problem, someone else can pick up from their last milestone.</li>
+<li>Milestone and payout structures vary per proposal based on the proposers wishes (meaning some will require more trust of the proposer if the fund release schedule is immediate or accelerated), it is up to the donor to do their due diligience in whether or not they support the proposal in its entirety.</li>
+</ol>
+<h3 id="for-proposers">For Proposers</h3>
+<ol>
+<li>There is no guarantee that your project will get past the Ideas stage, and if it does, there is no guarantee that it will be funded.</li>
+<li>You have to drum up support for your proposal during the first two stages. Do not expect others (especially the Core Team or other trusted members of the community) to do it for you. Others may share and support if they are excited about your project, but ultimately it is nobody&rsquo;s responsibility but your own.</li>
+<li>It is expected that you provide updates on the progress of your proposal to the community. For every milestone completed there should be a written report put into the Gitlab comments of your proposal announcing its completion and the work done, but depending on the timeline of your project, it may be wise to update the community more frequently, such as at the biweekly community or dev meetings.</li>
+<li>All work must be licensed permissively at all stages of the proposal. There is no time where your work can be licensed under a restrictive license (even as you&rsquo;re working on it). Your proposal will be terminated if this is not remedied.</li>
+<li>You may NOT under any circumstances include a donation address directly in your proposal. This circumvents the CCS, and can lead to scams.</li>
+<li>Your work on the project can begin before the proposal is fully funded, and milestones may (at times) be paid out before the proposal is fully funded.</li>
+</ol>
+<h3 id="for-translation-proposals">For Translation Proposals</h3>
+<p>Translation proposals are currently <strong>disallowed</strong>, pending system redesign. You can still submit translations as a volunteer and are encouraged to do so.</p>
+<p>Please create an account on <a href="https://translate.getmonero.org/">translate.getmonero.org</a> and follow the instructions described <a href="https://github.com/monero-ecosystem/monero-translations/blob/master/README.md">here</a>. A Weblate guide is also <a href="https://github.com/monero-ecosystem/monero-translations/blob/master/weblate.md">provided</a>.</p>
+<p>If you need any assistance, please contact the Localization Workgroup at <code>#monero-translations</code> on <a href="irc://irc.libera.chat/#monero-translations">Libera.Chat</a> or <a href="https://matrix.to/#/#monero-translations:monero.social">Matrix</a>.</p>
+<h3 id="how-to-submit-a-proposal">How to submit a proposal</h3>
+<p><a href="../how-to-ccs/">Please read this page for step-by-step instructions on how to submit a proposal.</a></p>
+
+</div></article>
+
+</main>
+<footer class="site-footer">
+  <section class="general-fund">
+    <h2>Donate to the Monero Project</h2>
+    <p>By donating to the following Monero address (the General Fund), you are supporting the Monero
+    Project. To donate to a specific proposal, see <a href="../funding-required/">Funding Required</a>.</p>
+    <a class="qr" href="monero:888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H"><img src="../assets/general-fund-qr.svg" alt="QR code of the General Fund address"></a>
+    <p class="address">888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H</p>
+  </section>
+  <nav class="footer-links" aria-label="Repositories">
+  <a href="https://repo.getmonero.org/monero-project/ccs-front">Frontend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+</a>
+  <a href="https://github.com/plowsof/ccs-bash">Backend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+</a>
+  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+</a>
+  </nav>
+</footer>
+</body>
+</html>

@@ -21,7 +21,12 @@ the proposals' Markdown into the finished CCS website, on the backend, with bash
 No Jekyll, Node or any framework runs on a live machine; the public web server only receives
 the finished files ([the design](https://github.com/plowsof/ccs-bash/blob/master/docs/design.md)).
 
-**Status: not written yet.** This is the plan.
+**Status:** step 3 below (the lists) works; proposal pages are next.
+
+```
+ccs-front-bash.sh ORIGINAL DATA SITE   # ccs-front-hugo's public/, ccs-bash's OUTPUT_DIR, the new site
+tests/run.sh                            # UPDATE=1 rewrites tests/expected
+```
 
 ## What it does
 
