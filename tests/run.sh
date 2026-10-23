@@ -73,6 +73,13 @@ if grep -q '<a class="filter tag-all active" href="/explore/">All' "$tmp/site/ex
 else
     fail "filters"
 fi
+# a tag page is three folders down: every link to the assets (the cards' icons too) goes three up
+if grep -q 'href="../../../assets/icons.svg#user' "$tmp/site/explore/tag/repurposed/index.html" \
+    && ! grep -q '"\.\./assets/\|"\.\./\.\./assets/' "$tmp/site/explore/tag/repurposed/index.html"; then
+    ok "a tag page's cards link their icons from three folders down"
+else
+    fail "icons on a tag page's cards"
+fi
 mkdir -p "$tmp/notags"
 jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/proposals.json" > "$tmp/notags/proposals.json"
 jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/completed-proposals.json" > "$tmp/notags/completed-proposals.json"
