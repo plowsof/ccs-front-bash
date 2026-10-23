@@ -31,7 +31,10 @@ proposal_pages() {
         --rawfile mdone "$p/milestone-done.html" --rawfile mtodo "$p/milestone-todo.html" \
         --rawfile payout "$p/payout.html" --rawfile nom "$p/no-milestones.html" --rawfile nop "$p/no-payouts.html" \
         --rawfile segdone "$p/segment-done.html" --rawfile segtodo "$p/segment-todo.html" \
-        --rawfile labellink "$p/label-link.html" -f "$LIB/pages.jq" > "$work/pages"
+        --rawfile labellink "$p/label-link.html" \
+        --rawfile cidea "$work/regions/count_idea.html" --rawfile cfr "$work/regions/count_fr.html" \
+        --rawfile cwip "$work/regions/count_wip.html" --rawfile ccp "$work/regions/count_cp.html" \
+        --rawfile filters "$work/regions/filters.html" -f "$LIB/pages.jq" > "$work/pages"
     # split: a line "\001<name>" starts the next page (pages.jq removes \001 from page text)
     awk -v dir="$out/proposals" '/^\001/ { if (f) close(f); f = dir "/" substr($0, 2) ".html"; next } { print > f }' "$work/pages"
 }
@@ -101,6 +104,14 @@ main() {
             --rawfile segdone "$original/parts/segment-done.html" --rawfile segtodo "$original/parts/segment-todo.html" \
             --rawfile labelpart "$original/parts/label.html" -f "$LIB/regions.jq" > "$work/regions/list_$stage.html"
     done
+    # how many proposals each stage has: "count" in the stage menu (every page), "number" on the
+    # home page's stage cards
+    while read -r stage n; do
+        printf '%s\n' "$n" > "$work/regions/count_$stage.html"
+        printf '%s\n' "$n" > "$work/regions/number_$stage.html"
+    done < <(jq -r --slurpfile c "$data/completed-proposals.json" \
+        '"idea \(.[0].proposals | length)", "fr \(.[1].proposals | length)", "wip \(.[2].proposals | length)", "cp \($c[0][0].proposals | length)"' \
+        "$data/proposals.json")
 
     check_addresses "$original" "$data" "$subaddresses"
     mapfile -t tags < <(tag_regions "$original" "$data")
@@ -115,6 +126,7 @@ main() {
     done < <(find "$new" -name '*.html' -print0)
     # a page per tag: the original's tag page, at the same depth (its relative links still work)
     for tag in "${tags[@]}"; do
+        cp "$work/regions"/count_*.html "$work/tags/$tag/"
         mkdir -p "$new/explore/tag/$tag"
         fill_page "$original/explore/tag/example/index.html" "$work/tags/$tag" > "$new/explore/tag/$tag/index.html"
     done

@@ -5,101 +5,119 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Ideas · Monero CCS</title>
-<link rel="stylesheet" href="../assets/style.3995766f8085f84cafd208da9b545b61152218c762856607f5f6f88ba8316303.css" integrity="sha256-OZV2b4CF&#43;Eyv0gjam1RbYRUiGMdihWYH9fb4i6gxYwM=">
+<link rel="stylesheet" href="../assets/style.677e50709841dd852dbf8a3fb9fb642a8cfaf30b2f732f9fa51ea833858691cf.css" integrity="sha256-Z35QcJhB3YUtv4o/uftkKoz68wsvcy&#43;fpR6oM4WGkc8=">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 </head>
 <body class="page-ideas">
+<input type="checkbox" id="nav-toggle" class="nav-toggle">
 <header class="site-header">
-  <a class="brand" href="../"><svg aria-hidden="true"><use href="../assets/icons.svg#logo"></use></svg>Community Crowdfunding System</a>
-  <input type="checkbox" id="nav-toggle" class="nav-toggle">
-  <label for="nav-toggle" class="nav-button" aria-label="Menu"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#menu"></use></svg>
+  <a class="brand" href="../"><svg aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#logo"></use></svg>Community Crowdfunding System</a>
+  <label for="nav-toggle" class="nav-button" aria-label="Menu"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#menu"></use></svg>
 </label>
-  <nav class="site-nav" aria-label="Site">
-    <a href="../explore/">Explore</a>
-    <a href="../what-is-ccs/">What is the CCS</a>
-    <a href="../how-to-ccs/">Submit a proposal</a>
-    <a href="../donate/">Donate</a>
-    <a href="https://beta.getmonero.org/">getmonero.org</a>
+  <nav class="site-nav" aria-label="Site"><a href="../funding-required/">Proposals</a>
+<a href="../what-is-ccs/">What is the CCS</a>
+<a href="../how-to-ccs/">Submit a proposal</a>
+<a href="../donate/">Donate</a>
+<a href="https://beta.getmonero.org/">getmonero.org</a>
+
   </nav>
 </header>
-<main>
-<div class="explorer">
-  <aside class="side">
-  <a class="back" href="../"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#back"></use></svg>
-Home</a>
+<div class="layout with-side">
+  <aside class="side drawer" aria-label="Proposals">
   <nav class="stage-menu" aria-label="Stages">
-    <a class="idea tab-ideas" href="../ideas/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#bulb"></use></svg>
-Ideas</a>
-    <a class="fr tab-fr" href="../funding-required/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#hand-coins"></use></svg>
-Funding Required</a>
-    <a class="wip tab-wip" href="../work-in-progress/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#gear"></use></svg>
-Work in Progress</a>
-    <a class="cp tab-cp" href="../completed-proposals/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#box"></use></svg>
-Completed</a>
+    <a class="idea tab-ideas" href="../ideas/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
+Ideas<span class="count"><!-- ccs:count idea -->3<!-- /ccs:count idea --></span></a>
+    <a class="fr tab-fr" href="../funding-required/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#hand-coins"></use></svg>
+Funding Required<span class="count"><!-- ccs:count fr -->3<!-- /ccs:count fr --></span></a>
+    <a class="wip tab-wip" href="../work-in-progress/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#gear"></use></svg>
+Work in Progress<span class="count"><!-- ccs:count wip -->2<!-- /ccs:count wip --></span></a>
+    <a class="cp tab-cp" href="../completed-proposals/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#box"></use></svg>
+Completed<span class="count"><!-- ccs:count cp -->2<!-- /ccs:count cp --></span></a>
   </nav>
+  <!-- ccs:filters -->
+  <div class="tags-block">
+  <hr>
+  <p class="tags-title">Tags</p>
+  <nav class="filters" aria-label="Filter by tag"><a class="filter tag-0" href="../explore/tag/example/">Available to pick up<span class="count">2</span></a>
+<a class="filter tag-1" href="../explore/tag/example/">Abandoned<span class="count">1</span></a>
+<a class="filter tag-2" href="../explore/tag/example/">Repurposed<span class="count">1</span></a>
+
+  </nav>
+</div>
+
+  <!-- /ccs:filters -->
   <hr>
   <a class="button primary block" href="../how-to-ccs/">Submit Idea</a>
+  <nav class="drawer-links" aria-label="Site"><a href="../funding-required/">Proposals</a>
+<a href="../what-is-ccs/">What is the CCS</a>
+<a href="../how-to-ccs/">Submit a proposal</a>
+<a href="../donate/">Donate</a>
+<a href="https://beta.getmonero.org/">getmonero.org</a>
+
+  </nav>
 </aside>
 
-  <section class="list" aria-label="Ideas">
+  <main>
+<section class="list" aria-label="Ideas">
     <h1 class="list-title">Ideas</h1>
     <!-- ccs:list idea -->
     <a class="card idea" href="https://repo.getmonero.org/monero-project/ccs-proposals/-/merge_requests/1">
-  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#bulb"></use></svg>
+  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
 Idea</span>
   <h3>39C3 Support</h3>
   <ul class="meta">
-  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#user"></use></svg>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#user"></use></svg>
 rehrar</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#calendar"></use></svg>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#calendar"></use></svg>
 November 5, 2025</li>
 </ul>
 
   <p class="labels"></p>
-  <p class="votes"><span title="Upvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#thumbs-up"></use></svg>
-12</span><span title="Downvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#thumbs-down"></use></svg>
+  <p class="votes"><span title="Upvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#thumbs-up"></use></svg>
+12</span><span title="Downvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#thumbs-down"></use></svg>
 1</span></p>
 </a>
 
     <a class="card idea" href="https://repo.getmonero.org/monero-project/ccs-proposals/-/merge_requests/11">
-  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#bulb"></use></svg>
+  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
 Idea</span>
   <h3>Example: Monero meetups in three cities</h3>
   <ul class="meta">
-  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#user"></use></svg>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#user"></use></svg>
 example</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#calendar"></use></svg>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#calendar"></use></svg>
 October 30, 2025</li>
 </ul>
 
   <p class="labels"></p>
-  <p class="votes"><span title="Upvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#thumbs-up"></use></svg>
-4</span><span title="Downvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#thumbs-down"></use></svg>
+  <p class="votes"><span title="Upvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#thumbs-up"></use></svg>
+4</span><span title="Downvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#thumbs-down"></use></svg>
 3</span></p>
 </a>
 
     <a class="card idea" href="https://repo.getmonero.org/monero-project/ccs-proposals/-/merge_requests/12">
-  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#bulb"></use></svg>
+  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
 Idea</span>
   <h3>Example: translating the GUI wallet</h3>
   <ul class="meta">
-  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#user"></use></svg>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#user"></use></svg>
 example</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#calendar"></use></svg>
+  <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#calendar"></use></svg>
 October 12, 2025</li>
 </ul>
 
   <p class="labels"></p>
-  <p class="votes"><span title="Upvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#thumbs-up"></use></svg>
-0</span><span title="Downvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#thumbs-down"></use></svg>
+  <p class="votes"><span title="Upvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#thumbs-up"></use></svg>
+0</span><span title="Downvotes"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#thumbs-down"></use></svg>
 0</span></p>
 </a>
 
     <!-- /ccs:list idea -->
-  </section>
-</div>
+</section>
 
-</main>
+  </main>
+</div>
+<label for="nav-toggle" class="backdrop" aria-hidden="true"></label>
 <footer class="site-footer">
   <section class="general-fund">
     <h2>Donate to the Monero Project</h2>
@@ -109,11 +127,11 @@ October 12, 2025</li>
     <p class="address">888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H</p>
   </section>
   <nav class="footer-links" aria-label="Repositories">
-  <a href="https://repo.getmonero.org/monero-project/ccs-front">Frontend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+  <a href="https://repo.getmonero.org/monero-project/ccs-front">Frontend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
 </a>
-  <a href="https://github.com/plowsof/ccs-bash">Backend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-bash">Backend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
 </a>
-  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#external"></use></svg>
+  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
 </a>
   </nav>
 </footer>
