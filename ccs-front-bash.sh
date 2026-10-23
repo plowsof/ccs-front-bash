@@ -80,6 +80,8 @@ main() {
         mv "$page.tmp" "$page"
     done < <(find "$new" -name '*.html' -print0)
     proposal_pages "$original" "$data" "$proposals" "$new"
+    # the /projects API goes with the site, so one push carries everything public
+    if [[ -f $data/projects.json ]]; then cp "$data/projects.json" "$new/projects.json"; fi
 
     rm -rf "$site.old"
     if [[ -e $site ]]; then mv "$site" "$site.old"; fi
