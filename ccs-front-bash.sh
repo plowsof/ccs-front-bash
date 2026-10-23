@@ -25,7 +25,7 @@ main() {
         jq -nr --arg stage "$stage" \
             --slurpfile proposals "$data/proposals.json" --slurpfile completed "$data/completed-proposals.json" \
             --rawfile card "$original/parts/card-$stage.html" --rawfile empty "$original/parts/empty.html" \
-            --rawfile done "$original/parts/segment-done.html" --rawfile todo "$original/parts/segment-todo.html" \
+            --rawfile segdone "$original/parts/segment-done.html" --rawfile segtodo "$original/parts/segment-todo.html" \
             -f "$LIB/regions.jq" > "$work/regions/list_$stage.html"
     done
 

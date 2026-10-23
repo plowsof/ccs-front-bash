@@ -1,6 +1,6 @@
 # Renders one region from ccs-bash's JSON and the original's parts: the list of one stage.
 # Inputs: --arg stage (idea, fr, wip, cp); --slurpfile proposals, completed (ccs-bash's files);
-# --rawfile card, empty, done, todo (parts/card-<stage>.html, empty.html, segment-*.html).
+# --rawfile card, empty, segdone, segtodo (parts/card-<stage>.html, empty.html, segment-*.html).
 
 # Amounts are ccs-bash's (exact to 4 decimals, cut off), shown without trailing zeros.
 def trim0: tostring | if test("\\.") then sub("0+$"; "") | sub("\\.$"; "") else . end;
@@ -31,7 +31,7 @@ def values:
 # Fill a part's {{slots}} from $v in one pass; a slot with no value stops the run.
 def fill($v): gsub("\\{\\{(?<k>[a-z_]+)\\}\\}"; $v[.k] // error("no value for {{\(.k)}}"));
 
-def segments: (. as $v | [range(0; $v.milestones | tonumber) | if . < ($v.done | tonumber) then $done else $todo end] | map(rtrimstr("\n")) | join(""));
+def segments: (. as $v | [range(0; $v.milestones | tonumber) | if . < ($v.done | tonumber) then $segdone else $segtodo end] | map(rtrimstr("\n")) | join(""));
 
 def stage_list:
   {idea: $proposals[0][0], fr: $proposals[0][1], wip: $proposals[0][2], cp: $completed[0][0]}[$stage].proposals;

@@ -33,7 +33,7 @@ if [[ $(count funding-required/index.html) == "$fr" && $(count work-in-progress/
 else
     fail "card counts"
 fi
-[[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals ]] && ok "parts/ and proposals/ left out" || fail "parts/ or proposals/ published"
+if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals ]]; then ok "parts/ and proposals/ left out"; else fail "parts/ or proposals/ published"; fi
 
 # ccs-bash's escaping is kept, once: no double escaping, nothing unescaped
 if grep -q 'Fund &lt;b&gt;this&lt;/b&gt; &amp;amp; that\|Fund &amp;lt;' "$tmp/site/funding-required/index.html"; then
