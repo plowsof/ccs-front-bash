@@ -9,7 +9,9 @@ export GNUPGHOME
 GNUPGHOME=$(mktemp -d); chmod 700 "$GNUPGHOME"
 trap 'gpgconf --kill all 2> /dev/null || true; rm -rf "$GNUPGHOME"' EXIT
 uid="CCS donation subaddresses ($(date -u +%F), throwaway key)"
-gpg -q --batch --passphrase '' --quick-gen-key "$uid" ed25519 sign never
+# gpg chats about its trust database while making a key: shown only if making it fails
+gpg -q --batch --passphrase '' --quick-gen-key "$uid" ed25519 sign never 2> "$GNUPGHOME/log" \
+    || { cat "$GNUPGHOME/log" >&2; exit 1; }
 fpr=$(gpg --batch --with-colons --list-keys | awk -F: '$1 == "fpr" { print $10; exit }')
 gpg -q --batch --armor --detach-sign --output "$list.asc" "$list"
 gpg -q --batch --armor --export "$fpr" > "$list.key.asc"

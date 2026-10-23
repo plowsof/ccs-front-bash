@@ -17,6 +17,8 @@ jobs:
         run: shellcheck -x ccs-front-bash.sh lib/*.sh tests/*.sh container/*.sh tools/*.sh
       - name: tests
         run: tests/run.sh
+      - name: the signing tool (signed subaddress list)
+        run: tests/tools.sh
   image:
     # The pinned image: StageX images by digest + busybox built from a sha256-checked source,
     # built with --network none, then the tests run inside it (busybox awk), also without network.
