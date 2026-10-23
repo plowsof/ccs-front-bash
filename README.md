@@ -22,8 +22,9 @@ No Jekyll, Node or any framework runs on a live machine; the public web server o
 the finished files ([the design](https://github.com/plowsof/ccs-bash/blob/master/docs/design.md)).
 
 **Status:** makes the whole site: the lists and every proposal page, with its donation box,
-QR code, milestones and payouts. About 1.5 seconds for 316 proposals. Not yet: called from
-ccs-bash-update, pushing to the web server.
+QR code, milestones and payouts. About 1.5 seconds for 316 proposals. Runs the testnet CCS
+(ccs-front-hugo + ccs-bash on one machine) since 2026-10-23. Not yet tried: the push to a
+separate web server.
 
 ```
 ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE
