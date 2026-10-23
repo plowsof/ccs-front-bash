@@ -1,8 +1,8 @@
 # Every proposal page, in one run: the original's parts/proposal-<stage>.html, its {{slots}}
 # filled, then its regions (donation box or funding, milestones, payouts) filled with the
 # original's parts. Prints each page after a line "\u0001<file name>" (see ccs-front-bash.sh).
-# Inputs: --slurpfile proposals, completed (ccs-bash's JSON), md (markdown.awk's lines),
-# qrs (qr.awk's lines); --rawfile fr, wip, cp (parts/proposal-*.html), donate, funded, mdone,
+# Inputs: --slurpfile proposals, completed (ccs-bash's JSON), md (markdown.awk's lines);
+# --rawfile fr, wip, cp (parts/proposal-*.html), donate, funded, mdone,
 # mtodo, payout, nom, nop, segdone, segtodo (the other parts).
 include "common";
 
@@ -19,7 +19,6 @@ def region($name; $html):
   | $x[0] + $a + "\n" + $html + "\n" + $b + $y[1];
 
 ($md | map({key: .file, value: .}) | from_entries) as $byfile
-| ($qrs | map({key: .address, value: .svg}) | from_entries) as $qr
 | {fr: $fr, wip: $wip, cp: $cp} as $tpl
 | paged($proposals; $completed) | .[0] as $stage | .[1] as $p
 | ($p | page_file) as $file
@@ -30,8 +29,13 @@ def region($name; $html):
 | ($m.payouts | map(map(@html) | {date: .[0], amount: .[1]})
    | map(. as $x | $payout | part | fill($x)) | join("\n")) as $payouts
 | ($p | values) as $v0
-| (if $stage == "fr" then ($qr[$v0.address] // error("\($file): no QR code for its address")) else "" end) as $svg
-| ($v0 + {segments: ($v0 | segments($segdone; $segtodo)), body: $m.body, qr: $svg, milestones_list: "", payouts_list: ""}) as $v
+# a funding page's address and QR code: ccs-bash makes both from the state each run, the QR
+# code as a PNG data URI (donate-qr-code). Anything else stops the run.
+| (if $stage != "fr" then ""
+   elif ($v0.address | test("^[0-9A-Za-z]{95}$") | not) then error("\($file): no donation address")
+   elif ($p."donate-qr-code" // "" | test("^data:image/png;base64,[A-Za-z0-9+/]+=*$") | not) then error("\($file): no PNG QR code")
+   else $p."donate-qr-code" end) as $qr
+| ($v0 + {segments: ($v0 | segments($segdone; $segtodo)), body: $m.body, qr: $qr, milestones_list: "", payouts_list: ""}) as $v
 | $tpl[$stage]
 | fill($v)
 | region(if $stage == "fr" then "donate" else "funded" end; (if $stage == "fr" then $donate else $funded end) | part | fill($v))
