@@ -1,7 +1,7 @@
 # The tag filters and the tag pages' regions, in one run. Prints each file after a line
-# "\u0001<path>" (see ccs-front-bash.sh): "filters" (Explore's: All active), and for each tag
+# "\u0001<path>" (see ccs-front-bash.sh): "filters" (the sidebar's, every page but a tag page), and for each tag
 # "<slug>/list_fr", "<slug>/list_wip", "<slug>/list_cp", "<slug>/filters", "<slug>/title".
-# No tags at all: Explore's filters are empty and there are no tag pages.
+# No tags at all: the filters are empty and there are no tag pages.
 # Inputs: --slurpfile proposals, completed (ccs-bash's JSON); --rawfile cardfr, cardwip, cardcp,
 # segdone, segtodo, labelpart, filters, filter (parts).
 include "common";
@@ -9,7 +9,7 @@ include "common";
 def part: rtrimstr("\n");
 
 {fr: $proposals[0][1].proposals, wip: $proposals[0][2].proposals, cp: $completed[0][0].proposals} as $lists
-| # The card parts' own links (icons) are relative to parts/, one folder down like Explore; the
+| # The card parts' own links (icons) are relative to parts/, one folder down like the stage pages; the
 # tag pages are three down (explore/tag/<slug>/). Only the part's markup is changed, before
 # any value is filled in.
 {fr: $cardfr, wip: $cardwip, cp: $cardcp} | map_values(gsub("=\"\\.\\./"; "=\"../../../")) as $card
@@ -18,8 +18,7 @@ def part: rtrimstr("\n");
 | ($all | group_by(.slug) | map(.[0] + {count: length}) | sort_by(-.count, .slug)) as $tags
 | def nav($active):
     if ($tags | length) == 0 then ""
-    else ([{tag: "All", href: "/explore/", count: "", color: "tag-all", active: (if $active == null then " active" else "" end)}]
-          + ($tags | map({tag, color, href: tag_href, count: (.count | tostring),
+    else (($tags | map({tag, color, href: tag_href, count: (.count | tostring),
                           active: (if .slug == $active then " active" else "" end)}))
           | map(. as $x | $filter | part | fill($x)) | join("")) as $f
       | $filters | part | fill({filters: $f})
