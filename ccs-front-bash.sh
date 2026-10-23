@@ -102,14 +102,11 @@ main() {
             --rawfile labelpart "$original/parts/label.html" -f "$LIB/regions.jq" > "$work/regions/list_$stage.html"
     done
     # how many proposals each stage has (the stage menu, Explore's stage cards)
-    jq -r --slurpfile c "$data/completed-proposals.json" '"\(.[0].proposals | length) \(.[1].proposals | length) \(.[2].proposals | length) \($c[0][0].proposals | length)"' \
-        "$data/proposals.json" | {
-        read -r n_idea n_fr n_wip n_cp
-        for stage in idea fr wip cp; do
-            n=n_$stage
-            printf '%s\n' "${!n}" > "$work/regions/count_$stage.html"
-        done
-    }
+    while read -r stage n; do
+        printf '%s\n' "$n" > "$work/regions/count_$stage.html"
+    done < <(jq -r --slurpfile c "$data/completed-proposals.json" \
+        '"idea \(.[0].proposals | length)", "fr \(.[1].proposals | length)", "wip \(.[2].proposals | length)", "cp \($c[0][0].proposals | length)"' \
+        "$data/proposals.json")
 
     check_addresses "$original" "$data" "$subaddresses"
     mapfile -t tags < <(tag_regions "$original" "$data")
