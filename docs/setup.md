@@ -41,6 +41,10 @@ runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
     /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site
 ```
 
+Or run it from the pinned image (StageX parts only, no network, the same image ID from the same
+commit anywhere): see [the pinned image](image.md) for the `docker run` line, and use it in
+place of the `runuser` lines here and in step 3.
+
 It writes `site.new` next to `site`, and only swaps it in once every page is made. Anything
 off (a marker, a value ccs-bash didn't escape, a proposal file missing) stops the run, logs why,
 and leaves the last good site as it was.

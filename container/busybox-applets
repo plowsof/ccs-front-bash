@@ -1,0 +1,27 @@
+# The busybox applets in the image: what ccs-front-bash runs, plus cmp, diff, head, install
+# and wc for the tests, so they run against exactly what ships. Nothing else is compiled into
+# busybox (no shell, no network tools).
+awk
+cat
+cmp
+cp
+cut
+date
+diff
+dirname
+env
+find
+grep
+head
+install
+mkdir
+mktemp
+mv
+readlink
+rm
+sed
+sha256sum
+tar
+tr
+wc
+xargs

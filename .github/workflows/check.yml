@@ -14,6 +14,18 @@ jobs:
       - name: mawk and gawk for the Markdown renderer
         run: sudo apt-get update -q && sudo apt-get install -y -q mawk gawk
       - name: shellcheck
-        run: shellcheck -x ccs-front-bash.sh lib/*.sh tests/*.sh
+        run: shellcheck -x ccs-front-bash.sh lib/*.sh tests/*.sh container/*.sh tools/*.sh
       - name: tests
         run: tests/run.sh
+  image:
+    # The pinned image: StageX images by digest + busybox built from a sha256-checked source,
+    # built with --network none, then the tests run inside it (busybox awk), also without network.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, pinned by commit
+      - name: build (download, then install offline)
+        run: container/build.sh ccs-front-bash
+      - name: tests inside the image, no network
+        run: docker run --rm --network none --read-only --tmpfs /tmp -v "$PWD:/src:ro" --entrypoint bash ccs-front-bash /src/tests/run.sh
+      - name: pinned image hash (two clean builds, and one after another commit, same hash)
+        run: container/check-pinned.sh
