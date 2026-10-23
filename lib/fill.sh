@@ -9,7 +9,7 @@ die() { log "error: $*"; exit 1; }
 # never searched for markers again. A region with no file, no end marker, a marker inside it,
 # or a name used twice in the page stops the run.
 fill_page() {
-    local page=$1 regions=$2 rest out= name end frag seen=' '
+    local page=$1 regions=$2 rest out='' name end frag seen=' '
     rest=$(cat "$page"; printf x)
     rest=${rest%x}
     while [[ $rest == *'<!-- ccs:'* ]]; do
