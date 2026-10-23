@@ -151,7 +151,9 @@ list stops every run (and an original without a pin ignores the list).
 
 Each run then checks the list against the pinned sha256 and every donation address against the
 list (about 0.2s), and publishes the list and its signature as `/subaddresses.txt(.asc)` next to
-the site's `/verify/` page, with the steps for anyone to check an address. When the wallet nears the end of the list (index 100,000), make a longer one the same
+the site's `/verify/` page, with the steps for anyone to check an address. With two machines, copy the
+list to the web server too, for its gate (ccs-bash's docs/two-machines.md, "The gate"): it then
+refuses any push with an address that isn't on it. When the wallet nears the end of the list (index 100,000), make a longer one the same
 way.
 
 ## Going back
