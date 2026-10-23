@@ -147,17 +147,17 @@ function inline(s,    out, a, b, t, u, lab, m) {
     s = out s
     # images become links: no requests to other sites from a proposal page
     out = ""
-    while (match(s, /!\[[^]]*\]\([^) ]+\)/)) {
-        m = substr(s, RSTART, RLENGTH); t = substr(m, 3, index(m, "](") - 3); u = substr(m, index(m, "](") + 2); sub(/\)$/, "", u)
+    while (match(s, /!\[[^]]*\]\([^) ]+( [^)]*)?\)/)) {
+        m = substr(s, RSTART, RLENGTH); t = substr(m, 3, index(m, "](") - 3); u = substr(m, index(m, "](") + 2); sub(/\)$/, "", u); sub(/ .*/, "", u)
         out = out substr(s, 1, RSTART - 1) link("image" (t == "" ? "" : ": " t), u)
         s = substr(s, RSTART + RLENGTH)
     }
     s = out s
     # [text](url), [text][label], [text][]
     out = ""
-    while (match(s, /\[[^]]+\](\([^) ]+\)|\[[^]]*\])/)) {
+    while (match(s, /\[[^]]+\](\([^) ]+( [^)]*)?\)|\[[^]]*\])/)) {
         m = substr(s, RSTART, RLENGTH); t = substr(m, 2, index(m, "]") - 2); u = substr(m, index(m, "]") + 1)
-        if (u ~ /^\(/) { u = substr(u, 2, length(u) - 2) }
+        if (u ~ /^\(/) { u = substr(u, 2, length(u) - 2); sub(/ .*/, "", u) }   # a "title" after the URL is dropped
         else { lab = tolower(substr(u, 2, length(u) - 2)); if (lab == "") lab = tolower(t); u = (lab in refs) ? esc(refs[lab]) : "" }
         out = out substr(s, 1, RSTART - 1) (u == "" ? m : link(t, u))
         s = substr(s, RSTART + RLENGTH)
