@@ -23,7 +23,11 @@ if gpg --batch --verify "$tmp/list.txt.asc" "$tmp/list.txt" 2>&1 | grep -q "usin
 else
     fail "signature"
 fi
-if [[ $sum == "$(sha256sum < "$tmp/list.txt" | cut -d' ' -f1)" ]]; then ok "it prints the list's sha256"; else fail "sha256 '$sum'"; fi
+if [[ $sum == "$(sha256sum < "$tmp/list.txt" | cut -d' ' -f1)" && $(cat "$tmp/list.txt.pin") == "sha256 $sum"$'\n'"key $fpr" ]]; then
+    ok "it prints the list's sha256, and writes it and the fingerprint to LIST.pin"
+else
+    fail "sha256 '$sum' or LIST.pin"
+fi
 sed -i '2s/^1 8/1 9/' "$tmp/list.txt"
 if ! gpg --batch --verify "$tmp/list.txt.asc" "$tmp/list.txt" 2> /dev/null; then ok "a changed list fails"; else fail "a changed list verified"; fi
 if [[ -z $(gpg --batch --list-secret-keys 2> /dev/null) && $(ls -A "${TMPDIR:-/tmp}" | wc -l) -le $before ]]; then

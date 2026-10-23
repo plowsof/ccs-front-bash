@@ -37,6 +37,7 @@ def region($name; $html):
    elif ($p."donate-qr-code" // "" | test("^data:image/png;base64,[A-Za-z0-9+/]+=*$") | not) then error("\($file): no PNG QR code")
    else $p."donate-qr-code" end) as $qr
 | ($v0 + {segments: ($v0 | segments($segdone; $segtodo)), body: $m.body, qr: $qr, milestones_list: "", payouts_list: "",
+          verify_link: ($verifylink | rtrimstr("\n")),
           tag_links: ($p | tag_links($labellink))}) as $v
 | $tpl[$stage]
 | fill($v)

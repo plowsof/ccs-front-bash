@@ -140,26 +140,36 @@ cp -r "$here/fixtures/original" "$tmp/slot"
 sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"
 must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
 
-# a pinned subaddress list: every donation address must be in it, and it goes out with the site
+# a signed subaddress list (the list, .asc, .key.asc, .pin beside it): every donation address
+# must be in it; the Verify page shows the steps and the fingerprint, each donation box links
+# there, and the list, signature and key go out with the site
 mkdir -p "$tmp/sub"
 jq -r '.[1].proposals[] | ."donate-address" // empty' "$here/fixtures/data/proposals.json" | awk '{ print NR, $0 }' > "$tmp/sub/list.txt"
 echo signature > "$tmp/sub/list.txt.asc"
-cp -r "$here/fixtures/original" "$tmp/pinned"
-sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1 > "$tmp/pinned/parts/subaddresses.sha256"
-if "$run" "$tmp/pinned" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
-    && cmp -s "$tmp/sub/list.txt" "$tmp/site4/subaddresses.txt" && [[ -f $tmp/site4/subaddresses.txt.asc ]]; then
-    ok "every donation address in the pinned list: the list and its signature are published"
+echo key > "$tmp/sub/list.txt.key.asc"
+pin() { printf 'sha256 %s\nkey 0123456789ABCDEF0123456789ABCDEF01234567\n' "$(sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1)" > "$tmp/sub/list.txt.pin"; }
+pin
+if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
+    && cmp -s "$tmp/sub/list.txt" "$tmp/site4/subaddresses.txt" && [[ -f $tmp/site4/subaddresses.txt.asc && -f $tmp/site4/subaddresses.txt.key.asc ]] \
+    && grep -q '0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567' "$tmp/site4/verify/index.html" \
+    && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html"; then
+    ok "a signed list: checked, published with its signature and key, the fingerprint on Verify, a link in each donation box"
 else
-    fail "a pinned list"
+    fail "a signed list"
 fi
-if [[ ! -e $tmp/site/subaddresses.txt ]]; then ok "no pin, no list published"; else fail "a list published without a pin"; fi
-cp "$tmp/pinned/parts/subaddresses.sha256" "$tmp/sub/pin"
-sed -i '2d' "$tmp/sub/list.txt"
-sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1 > "$tmp/pinned/parts/subaddresses.sha256"
-must_stop "an address not in the (pinned) list" "$tmp/pinned" "$here/fixtures/data" "$tmp/sub/list.txt"
-cp "$tmp/sub/pin" "$tmp/pinned/parts/subaddresses.sha256"
-must_stop "a list that isn't the pinned one" "$tmp/pinned" "$here/fixtures/data" "$tmp/sub/list.txt"
-must_stop "a pin but no list" "$tmp/pinned" "$here/fixtures/data"
+if [[ ! -e $tmp/site/subaddresses.txt ]] && grep -q 'no signed list' "$tmp/site/verify/index.html" \
+    && ! grep -q 'class="verify"' "$tmp/site/proposals/near-funded.html"; then
+    ok "no list: none published, Verify says so, no link in the donation boxes"
+else
+    fail "without a list"
+fi
+cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"
+sed -i '2d' "$tmp/sub/list.txt" && pin
+must_stop "an address not in the list" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
+must_stop "a list that isn't the one its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+rm "$tmp/sub/list.txt.key.asc"
+must_stop "a list without its key" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 
 # one pass: a value that looks like a slot or a marker is text, never filled again
 mkdir -p "$tmp/literal"
