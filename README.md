@@ -12,7 +12,7 @@
 - **Zero-cost abstractions:** there are no abstractions.
 - **A strong type system:** everything is a string, the HTML too. That's how it stays escaped.
 - **A friendly compiler:** `shellcheck`.
-- **Cargo:** `apt install jq`.
+- **Cargo:** `apt install jq`. Or a pinned image of StageX parts, the same ID from the same commit ([docs](docs/image.md)).
 
 Not a crustacean. A mollusc.
 
