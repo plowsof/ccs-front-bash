@@ -11,6 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, pinned by commit
+      - name: qrencode, and mawk/gawk for the Markdown renderer
+        run: sudo apt-get update -q && sudo apt-get install -y -q qrencode mawk gawk
       - name: shellcheck
         run: shellcheck -x ccs-front-bash.sh lib/*.sh tests/*.sh
       - name: tests

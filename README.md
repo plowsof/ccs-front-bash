@@ -21,12 +21,20 @@ the proposals' Markdown into the finished CCS website, on the backend, with bash
 No Jekyll, Node or any framework runs on a live machine; the public web server only receives
 the finished files ([the design](https://github.com/plowsof/ccs-bash/blob/master/docs/design.md)).
 
-**Status:** the lists of step 3 work; donation boxes and proposal pages are next.
+**Status:** makes the whole site: the lists and every proposal page, with its donation box,
+QR code, milestones and payouts. About 1.5 seconds for 316 proposals. Not yet: called from
+ccs-bash-update, pushing to the web server.
 
 ```
-ccs-front-bash.sh ORIGINAL DATA SITE   # ccs-front-hugo's public/, ccs-bash's OUTPUT_DIR, the new site
-tests/run.sh                            # UPDATE=1 rewrites tests/expected
+ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE
+#   ORIGINAL   ccs-front-hugo's public/       DATA  ccs-bash's OUTPUT_DIR
+#   PROPOSALS  the proposals checkout          SITE  the site to write (replaced when complete)
+tests/run.sh   # UPDATE=1 rewrites tests/expected
 ```
+
+Every piece of HTML comes from the original's pages and parts; this only fills them. The one
+thing no template can do on a live machine is Markdown: `lib/markdown.awk` renders it (one awk
+run for all proposals), `lib/pages.jq` fills every page (one jq run).
 
 ## What it does
 
