@@ -49,6 +49,9 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
 3. **Every run:** the Ideas, Funding Required, Work in Progress and Completed lists, and each
    proposal's donation box, with the address and its QR code (a PNG, made fresh by ccs-bash
    in the same run as the address), from ccs-bash's JSON.
+   Tags (the front matter's `tags:`) as labels on cards and links on proposal pages, the
+   filters on Explore, and a page per tag at `/explore/tag/<tag>/` (copies of the original's
+   tag page, so still no JavaScript).
 4. **Swap and push:** a missing, unmatched or repeated marker stops the run and nothing is
    pushed; otherwise the new `site/` replaces the last one and goes to the web server.
 

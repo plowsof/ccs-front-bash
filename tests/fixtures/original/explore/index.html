@@ -37,12 +37,19 @@ Work in Progress</a>
     <a class="cp tab-cp" href="../completed-proposals/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#box"></use></svg>
 Completed</a>
   </nav>
-  <hr>
-  <a class="button primary block" href="../how-to-ccs/">Submit Idea</a>
 </aside>
 
   <section class="list" aria-label="All proposals">
     <h1 class="list-title">All proposals</h1>
+    <!-- ccs:filters -->
+    <nav class="filters" aria-label="Filter by tag"><a class="filter active" href="../explore/">All<span class="count"></span></a>
+<a class="filter" href="../explore/tag/example/">Available to pick up<span class="count">2</span></a>
+<a class="filter" href="../explore/tag/example/">Abandoned<span class="count">1</span></a>
+<a class="filter" href="../explore/tag/example/">Repurposed<span class="count">1</span></a>
+
+</nav>
+
+    <!-- /ccs:filters -->
     <!-- ccs:list fr -->
     <a class="card fr" href="../proposals/example.html">
   <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#hand-coins"></use></svg>
@@ -59,6 +66,7 @@ December 25, 2025 · funding since January 2, 2026</li>
 75 XMR</li>
 </ul>
 
+  <p class="labels"></p>
   <p class="progress-label">Raised 60 of 75 XMR · 1.5 XMR pending</p>
   <progress max="100" value="80">80%</progress>
 </a>
@@ -78,6 +86,7 @@ December 2, 2025 · funding since December 9, 2025</li>
 300 XMR</li>
 </ul>
 
+  <p class="labels"><span class="label">Available to pick up</span></p>
   <p class="progress-label">Raised 45.1234 of 300 XMR</p>
   <progress max="100" value="15">15%</progress>
 </a>
@@ -97,6 +106,7 @@ November 20, 2025</li>
 20 XMR</li>
 </ul>
 
+  <p class="labels"></p>
   <p class="progress-label">Raised 19 of 20 XMR · 0.25 XMR pending</p>
   <progress max="100" value="95">95%</progress>
 </a>
@@ -118,6 +128,7 @@ December 14, 2025</li>
 200 XMR</li>
 </ul>
 
+  <p class="labels"></p>
   <p class="progress-label">Completed 3 of 5 milestones</p>
   <div class="segments"><span class="done"></span><span class="done"></span><span class="done"></span><span></span><span></span></div>
 </a>
@@ -137,6 +148,7 @@ November 1, 2025</li>
 120 XMR</li>
 </ul>
 
+  <p class="labels"><span class="label">Abandoned</span><span class="label">Available to pick up</span></p>
   <p class="progress-label">Completed 1 of 4 milestones</p>
   <div class="segments"><span class="done"></span><span></span><span></span><span></span></div>
 </a>
@@ -154,6 +166,7 @@ rehrar</li>
 November 5, 2025</li>
 </ul>
 
+  <p class="labels"></p>
 </a>
 
     <a class="card idea" href="https://repo.getmonero.org/monero-project/ccs-proposals/-/merge_requests/11">
@@ -167,6 +180,7 @@ example</li>
 October 30, 2025</li>
 </ul>
 
+  <p class="labels"></p>
 </a>
 
     <a class="card idea" href="https://repo.getmonero.org/monero-project/ccs-proposals/-/merge_requests/12">
@@ -180,6 +194,7 @@ example</li>
 October 12, 2025</li>
 </ul>
 
+  <p class="labels"></p>
 </a>
 
     <!-- /ccs:list idea -->
@@ -199,6 +214,7 @@ January 19, 2026</li>
 200 XMR</li>
 </ul>
 
+  <p class="labels"></p>
 </a>
 
     <a class="card cp" href="../proposals/example-cp.html">
@@ -216,6 +232,7 @@ August 3, 2025</li>
 90 XMR</li>
 </ul>
 
+  <p class="labels"><span class="label">Repurposed</span></p>
 </a>
 
     <!-- /ccs:list cp -->
@@ -228,7 +245,7 @@ August 3, 2025</li>
     <h2>Donate to the Monero Project</h2>
     <p>By donating to the following Monero address (the General Fund), you are supporting the Monero
     Project. To donate to a specific proposal, see <a href="../funding-required/">Funding Required</a>.</p>
-    <a class="qr" href="monero:888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H"><img src="../assets/general-fund-qr.svg" alt="QR code of the General Fund address"></a>
+    <a class="qr" href="monero:888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H"><img src="../assets/general-fund-qr.png" alt="QR code of the General Fund address"></a>
     <p class="address">888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H</p>
   </section>
   <nav class="footer-links" aria-label="Repositories">
