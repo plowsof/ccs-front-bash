@@ -83,6 +83,45 @@ proposal's old page stays until removed by hand.
 
 The CSP above was checked with the built site: styles, fonts, icons and QR codes all load.
 
+## 5. The signed subaddress list (optional, recommended)
+
+With it, no donation address can go on the site unless it is one of the wallet's: whatever
+changes ccs-bash's JSON, the push or the web server can't slip in another address without the
+run stopping (or, on the web server, without anyone being able to tell). It checks the address
+text and its `monero:` link; the QR code is ccs-bash's PNG.
+
+On the **offline machine**, with the wallet's main address and private view key (asked for,
+not echoed; no spend key, the real wallet is not touched; about 5 minutes for 100,000):
+
+```
+tools/make-subaddresses.sh /path/to/monero-wallet-rpc 100000 subaddresses.txt   # --testnet for testnet
+tools/sign-subaddresses.sh subaddresses.txt
+```
+
+The second one makes a PGP key only for this, signs the list, and destroys the secret key: it
+prints the key's fingerprint and the list's sha256. Then, in ccs-front-hugo:
+
+- `hugo.toml`: `[params.subaddresses]` `sha256` and `key` (the fingerprint);
+- `static/assets/subaddresses-key.asc`: `subaddresses.txt.key.asc`;
+- publish the fingerprint somewhere else too (the repository's README), so people can check
+  the key doesn't come only from the site it vouches for.
+
+Build and copy the original as in step 1. Copy `subaddresses.txt` and `subaddresses.txt.asc`
+to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as a fifth argument
+in `ccs-bash-update`:
+
+```
+runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
+    /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site \
+    /etc/ccs-front/subaddresses.txt >> /var/log/ccs-bash.log 2>&1
+```
+
+Each run then checks the list against the pinned sha256 and every donation address against the
+list (about 0.2s), and publishes the list and its signature as `/subaddresses.txt(.asc)` next to
+a [Verify](https://github.com/plowsof/ccs-front-hugo) page with the steps for anyone to check an
+address. When the wallet nears the end of the list (index 100,000), make a longer one the same
+way.
+
 ## Going back
 
 Point nginx back at the Jekyll site and restore the old `ccs-bash-update`. Nothing here
