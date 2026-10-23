@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Tests: fill tests/fixtures/original (ccs-front-hugo's built pages) with tests/fixtures/data
-# (ccs-bash's test JSON), compare with tests/expected, then everything that must stop a run.
+# (ccs-bash's test JSON) and tests/fixtures/proposals (its proposals), compare with
+# tests/expected, then the Markdown renderer, then everything that must stop a run.
 # UPDATE=1 tests/run.sh rewrites tests/expected (check the diff!).
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
@@ -11,9 +12,11 @@ status=0
 ok() { echo "ok   $*"; }
 fail() { echo "FAIL $*"; status=1; }
 
-"$run" "$here/fixtures/original" "$here/fixtures/data" "$tmp/site" 2> "$tmp/log" || { cat "$tmp/log"; fail "the run"; exit 1; }
+props=$here/fixtures/proposals
+"$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site" 2> "$tmp/log" || { cat "$tmp/log"; fail "the run"; exit 1; }
 
-pages=(explore/index.html ideas/index.html funding-required/index.html work-in-progress/index.html completed-proposals/index.html)
+pages=(explore/index.html ideas/index.html funding-required/index.html work-in-progress/index.html completed-proposals/index.html
+    proposals/near-funded.html proposals/b-wip.html "proposals/c done, (old).html" "proposals/o'quote.html")
 if [[ ${UPDATE:-} ]]; then
     for p in "${pages[@]}"; do install -D -m 644 "$tmp/site/$p" "$here/expected/$p"; done
 fi
@@ -33,7 +36,15 @@ if [[ $(count funding-required/index.html) == "$fr" && $(count work-in-progress/
 else
     fail "card counts"
 fi
-if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals ]]; then ok "parts/ and proposals/ left out"; else fail "parts/ or proposals/ published"; fi
+if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok "parts/ and the example pages left out"; else fail "parts/ or an example page published"; fi
+pages_want=$((fr + wip + cp))
+if [[ $(find "$tmp/site/proposals" -name '*.html' | wc -l) == "$pages_want" ]]; then ok "a page per proposal in fr, wip, cp ($pages_want)"; else fail "proposal page count"; fi
+if grep -q '<a class="qr" href="monero:8[0-9]*"><svg' "$tmp/site/proposals/near-funded.html" \
+    && ! grep -q 'style=' "$tmp/site/proposals/near-funded.html"; then
+    ok "a funding page has its QR code, without style="
+else
+    fail "QR code on a funding page"
+fi
 
 # ccs-bash's escaping is kept, once: no double escaping, nothing unescaped
 if grep -q 'Fund &lt;b&gt;this&lt;/b&gt; &amp;amp; that\|Fund &amp;lt;' "$tmp/site/funding-required/index.html"; then
@@ -48,7 +59,7 @@ fi
 echo previous > "$tmp/site/marker-of-the-old-site"
 must_stop() {   # must_stop WHAT ORIGINAL DATA
     local what=$1
-    if "$run" "$2" "$3" "$tmp/site" 2> "$tmp/log.stop"; then
+    if "$run" "$2" "$3" "$props" "$tmp/site" 2> "$tmp/log.stop"; then
         fail "$what: the run went on"
     elif [[ ! -e $tmp/site/marker-of-the-old-site || -e $tmp/site.new ]]; then
         fail "$what: the old site was touched"
@@ -80,11 +91,58 @@ must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
 mkdir -p "$tmp/literal"
 cp "$here/fixtures/data/completed-proposals.json" "$tmp/literal/"
 jq '.[1].proposals[0].name = "{{author}} &lt;!-- ccs:list fr --&gt;"' "$here/fixtures/data/proposals.json" > "$tmp/literal/proposals.json"
-"$run" "$here/fixtures/original" "$tmp/literal" "$tmp/site2" 2> /dev/null
+"$run" "$here/fixtures/original" "$tmp/literal" "$props" "$tmp/site2" 2> /dev/null
 if grep -q '<h3>{{author}} &lt;!-- ccs:list fr --&gt;</h3>' "$tmp/site2/funding-required/index.html"; then
     ok "a title with {{author}} or a marker in it stays text"
 else
     fail "a title was filled again"
+fi
+
+# The Markdown renderer: hostile text stays text, links only https/#/site-relative, and the
+# same HTML from every awk there is (mawk, gawk, busybox: CI has the first two).
+cat > "$tmp/evil.md" <<'MD'
+---
+layout: fr
+milestones:
+  - name: "<img src=x onerror=alert(1)>"
+    funds: 1
+---
+<script>alert(1)</script> <img src=x onerror=alert(1)> <a href="javascript:alert(1)">x</a>
+[click](javascript:alert(1)) [data](data:text/html,x) [ok](https://getmonero.org/) ![pic](https://example.org/p.png)
+`<b>` **bold** <!-- ccs:list fr --> {{name}} &nbsp; &#8212; &amp;lt;
+	tab	and controls
+MD
+printf 'x999y
+' >> "$tmp/evil.md"
+awks=()
+for a in mawk gawk "busybox awk"; do
+    command -v "${a%% *}" > /dev/null && $a 'BEGIN { exit 0 }' 2> /dev/null && awks+=("$a")
+done
+first=
+for a in "${awks[@]}"; do
+    $a -f "$here/../lib/markdown.awk" "$tmp/evil.md" > "$tmp/evil.${a// /_}" || fail "markdown.awk on $a"
+    [[ $first ]] || first=$tmp/evil.${a// /_}
+    cmp -s "$first" "$tmp/evil.${a// /_}" || fail "$a renders differently from ${awks[0]}"
+done
+body=$(jq -r '.body' "$first")
+# (a proposal's own \001 and \002 are dropped: "x999y" stays text, never held HTML number 999)
+if [[ $body == *'<script'* || $body == *'<img'* || $body == *'onerror=alert(1)>'* || $body == *'href="javascript'* \
+    || $body == *'href="data'* || $body == *'<!-- ccs'* || $body != *'x999y'* ]]; then
+    echo "$body"; fail "hostile Markdown got through"
+elif [[ $body == *'<a href="https://getmonero.org/">ok</a>'* && $body == *'<a href="https://example.org/p.png">image: pic</a>'* && $body == *'&nbsp; &#8212; &amp;lt;'* ]]; then
+    ok "hostile Markdown stays text, the same on ${#awks[@]} awk(s): ${awks[*]}"
+else
+    echo "$body"; fail "the Markdown renderer lost something"
+fi
+if [[ $(jq -r '.milestones[0][0]' "$first") == '<img src=x onerror=alert(1)>' ]]; then
+    ok "front matter milestones read as text (escaped later, by jq)"
+else
+    fail "milestones from the front matter"
+fi
+if grep -q '&lt;img src=x' "$tmp/site/proposals/near-funded.html" || ! grep -q '<img src=x' "$tmp/site/proposals/near-funded.html"; then
+    ok "no raw HTML from front matter on a page"
+else
+    fail "raw HTML from front matter on a page"
 fi
 
 exit "$status"
