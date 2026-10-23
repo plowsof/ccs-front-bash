@@ -47,6 +47,10 @@ else
     fail "QR code on a funding page"
 fi
 
+# an idea's 👍/👎, and "–" where ccs-bash couldn't read them
+votes=$(grep -A2 'class="votes"' "$tmp/site/ideas/index.html" | grep -o '^[0-9–]*<' | tr -d '<' | tr '\n' ' ')
+if [[ $votes == "7 2 – – " ]]; then ok "votes on the idea cards ($votes)"; else fail "votes: '$votes'"; fi
+
 # ccs-bash's escaping is kept, once: no double escaping, nothing unescaped
 if grep -q 'Fund &lt;b&gt;this&lt;/b&gt; &amp;amp; that\|Fund &amp;lt;' "$tmp/site/funding-required/index.html"; then
     fail "a name was escaped twice"
