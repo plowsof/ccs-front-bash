@@ -27,7 +27,7 @@
   <aside class="side">
   <a class="back" href="../"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#back"></use></svg>
 Home</a>
-  <nav aria-label="Stages">
+  <nav class="stage-menu" aria-label="Stages">
     <a class="idea tab-ideas" href="../ideas/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#bulb"></use></svg>
 Ideas</a>
     <a class="fr tab-fr" href="../funding-required/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#hand-coins"></use></svg>
@@ -37,19 +37,23 @@ Work in Progress</a>
     <a class="cp tab-cp" href="../completed-proposals/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#box"></use></svg>
 Completed</a>
   </nav>
+  <!-- ccs:filters -->
+  <div class="tags-block">
+  <hr>
+  <p class="tags-title">Tags</p>
+  <nav class="filters" aria-label="Filter by tag"><a class="filter tag-all active" href="../explore/">All<span class="count"></span></a>
+<a class="filter tag-0" href="../explore/tag/example/">Available to pick up<span class="count">2</span></a>
+<a class="filter tag-1" href="../explore/tag/example/">Abandoned<span class="count">1</span></a>
+<a class="filter tag-2" href="../explore/tag/example/">Repurposed<span class="count">1</span></a>
+
+  </nav>
+</div>
+
+  <!-- /ccs:filters -->
 </aside>
 
   <section class="list" aria-label="All proposals">
     <h1 class="list-title">All proposals</h1>
-    <!-- ccs:filters -->
-    <nav class="filters" aria-label="Filter by tag"><a class="filter active" href="../explore/">All<span class="count"></span></a>
-<a class="filter" href="../explore/tag/example/">Available to pick up<span class="count">2</span></a>
-<a class="filter" href="../explore/tag/example/">Abandoned<span class="count">1</span></a>
-<a class="filter" href="../explore/tag/example/">Repurposed<span class="count">1</span></a>
-
-</nav>
-
-    <!-- /ccs:filters -->
     <!-- ccs:list fr -->
     <a class="card fr" href="../proposals/example.html">
   <span class="tag"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#hand-coins"></use></svg>
@@ -86,7 +90,7 @@ December 2, 2025 · funding since December 9, 2025</li>
 300 XMR</li>
 </ul>
 
-  <p class="labels"><span class="label">Available to pick up</span></p>
+  <p class="labels"><span class="label tag-0">Available to pick up</span></p>
   <p class="progress-label">Raised 45.1234 of 300 XMR</p>
   <progress max="100" value="15">15%</progress>
 </a>
@@ -148,7 +152,7 @@ November 1, 2025</li>
 120 XMR</li>
 </ul>
 
-  <p class="labels"><span class="label">Abandoned</span><span class="label">Available to pick up</span></p>
+  <p class="labels"><span class="label tag-1">Abandoned</span><span class="label tag-0">Available to pick up</span></p>
   <p class="progress-label">Completed 1 of 4 milestones</p>
   <div class="segments"><span class="done"></span><span></span><span></span><span></span></div>
 </a>
@@ -232,7 +236,7 @@ August 3, 2025</li>
 90 XMR</li>
 </ul>
 
-  <p class="labels"><span class="label">Repurposed</span></p>
+  <p class="labels"><span class="label tag-2">Repurposed</span></p>
 </a>
 
     <!-- /ccs:list cp -->
