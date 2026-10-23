@@ -32,6 +32,8 @@ ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE
 tests/run.sh   # UPDATE=1 rewrites tests/expected
 ```
 
+To install it: [docs/setup.md](docs/setup.md).
+
 Every piece of HTML comes from the original's pages and parts; this only fills them. The one
 thing no template can do on a live machine is Markdown: `lib/markdown.awk` renders it (one awk
 run for all proposals), `lib/pages.jq` fills every page (one jq run).
