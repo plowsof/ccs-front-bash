@@ -16,7 +16,8 @@ props=$here/fixtures/proposals
 "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site" 2> "$tmp/log" || { cat "$tmp/log"; fail "the run"; exit 1; }
 
 pages=(explore/index.html ideas/index.html funding-required/index.html work-in-progress/index.html completed-proposals/index.html
-    proposals/near-funded.html proposals/b-wip.html "proposals/c done, (old).html" "proposals/o'quote.html")
+    proposals/near-funded.html proposals/b-wip.html "proposals/c done, (old).html" "proposals/o'quote.html"
+    explore/tag/available-to-pick-up/index.html)
 if [[ ${UPDATE:-} ]]; then
     for p in "${pages[@]}"; do install -D -m 644 "$tmp/site/$p" "$here/expected/$p"; done
 fi
@@ -55,6 +56,31 @@ else
     fail "escaped name not found"
 fi
 
+# tags: a page per tag (spellings that differ only in case or punctuation are one tag, a tag
+# with no letters or digits gets none), with that tag's proposals; filters on Explore
+tagpages=$(cd "$tmp/site/explore/tag" && printf '%s ' *)
+if [[ $tagpages == "abandoned available-to-pick-up b-x-b-y repurposed " ]]; then ok "a page per tag ($tagpages)"; else fail "tag pages: $tagpages"; fi
+if [[ $(count explore/tag/available-to-pick-up/index.html) == 2 && $(count explore/tag/repurposed/index.html) == 1 ]]; then
+    ok "a tag page has that tag's proposals, from every stage"
+else
+    fail "cards on the tag pages"
+fi
+if grep -q '<a class="filter active" href="/explore/">All' "$tmp/site/explore/index.html" \
+    && grep -q '<a class="filter active" href="/explore/tag/repurposed/">Repurposed<span class="count">1' "$tmp/site/explore/tag/repurposed/index.html"; then
+    ok "filters on Explore and the tag pages, the shown one active"
+else
+    fail "filters"
+fi
+mkdir -p "$tmp/notags"
+jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/proposals.json" > "$tmp/notags/proposals.json"
+jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/completed-proposals.json" > "$tmp/notags/completed-proposals.json"
+"$run" "$here/fixtures/original" "$tmp/notags" "$props" "$tmp/site3" 2> /dev/null
+if [[ ! -e $tmp/site3/explore/tag ]] && ! grep -q 'class="filters"' "$tmp/site3/explore/index.html"; then
+    ok "no tags: no filters, no tag pages"
+else
+    fail "filters or tag pages without tags"
+fi
+
 # Everything below must stop the run and leave the last site as it was.
 echo previous > "$tmp/site/marker-of-the-old-site"
 must_stop() {   # must_stop WHAT ORIGINAL DATA
@@ -82,6 +108,8 @@ mkdir -p "$tmp/unescaped"
 cp "$here/fixtures/data/completed-proposals.json" "$tmp/unescaped/"
 jq '.[1].proposals[0].name = "<script>x</script>"' "$here/fixtures/data/proposals.json" > "$tmp/unescaped/proposals.json"
 must_stop "a value ccs-bash didn't escape" "$here/fixtures/original" "$tmp/unescaped"
+jq '.[2].proposals[0].tags = ["<b>"]' "$here/fixtures/data/proposals.json" > "$tmp/unescaped/proposals.json"
+must_stop "a tag ccs-bash didn't escape" "$here/fixtures/original" "$tmp/unescaped"
 
 cp -r "$here/fixtures/original" "$tmp/slot"
 sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"

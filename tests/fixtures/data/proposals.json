@@ -6,13 +6,15 @@
                 "name": "Another idea",
                 "gitlab-url": "https://example.org/mr/13",
                 "author": "grace",
-                "date": "October 3, 2026"
+                "date": "October 3, 2026",
+                "tags": []
             },
             {
                 "name": "New &lt;idea&gt;",
                 "gitlab-url": "https://example.org/mr/11",
                 "author": "erin",
-                "date": "October 1, 2026"
+                "date": "October 1, 2026",
+                "tags": []
             }
         ]
     },
@@ -35,7 +37,10 @@
                 "amount-pending": 0,
                 "author": "judy",
                 "date": "October 5, 2026",
-                "funding-required-date": null
+                "funding-required-date": null,
+                "tags": [
+                    "Available to pick up"
+                ]
             },
             {
                 "name": "Brand new",
@@ -53,7 +58,8 @@
                 "amount-pending": 0,
                 "author": "dave",
                 "date": "October 1, 2026",
-                "funding-required-date": "October 22, 2026"
+                "funding-required-date": "October 22, 2026",
+                "tags": []
             },
             {
                 "name": "Name starts with a space",
@@ -71,7 +77,8 @@
                 "amount-pending": 0,
                 "author": "ivan",
                 "date": "January 2, 2025",
-                "funding-required-date": "October 22, 2026"
+                "funding-required-date": "October 22, 2026",
+                "tags": []
             },
             {
                 "name": "Fund &lt;b&gt;this&lt;/b&gt; &amp; that",
@@ -89,7 +96,8 @@
                 "amount-pending": 14,
                 "author": "alice",
                 "date": "June 25, 2021",
-                "funding-required-date": "June 30, 2021"
+                "funding-required-date": "June 30, 2021",
+                "tags": []
             }
         ]
     },
@@ -112,7 +120,14 @@
                 "amount-pending": 0,
                 "author": "bob",
                 "date": "August 10, 2021",
-                "funding-required-date": null
+                "funding-required-date": null,
+                "tags": [
+                    "Abandoned",
+                    "Available to pick up",
+                    "abandoned!",
+                    "&lt;b&gt;x&lt;/b&gt; &amp; &#39;y&#39;",
+                    "!!"
+                ]
             }
         ]
     }

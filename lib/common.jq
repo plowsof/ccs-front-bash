@@ -30,16 +30,37 @@ def values:
 # Fill a part's {{slots}} from $v in one pass; a slot with no value stops the run.
 def fill($v): gsub("\\{\\{(?<k>[a-z_]+)\\}\\}"; $v[.k] // error("no value for {{\(.k)}}"));
 
+# Undo ccs-bash's HTML escaping (for file names and tag names in paths; never put in a page).
+def unescape: gsub("&#39;"; "'") | gsub("&apos;"; "'") | gsub("&quot;"; "\"") | gsub("&gt;"; ">") | gsub("&lt;"; "<") | gsub("&amp;"; "&");
+
+# A proposal's tags (ccs-bash's, escaped) -> [{tag, slug}]: the slug names the tag's page,
+# /explore/tag/<slug>/, so "Abandoned" and "abandoned!" are one filter. Letters (any script)
+# and digits, dashes between; a tag with none gets no filter. The first spelling is kept.
+def slug: unescape | ascii_downcase | gsub("[^\\p{L}\\p{N}]+"; "-") | sub("^-+"; "") | sub("-+$"; "");
+def tag_list:
+  [(.tags // [])[] | select(type == "string") | escaped | {tag: ., slug: slug} | select(.slug != "")]
+  | reduce .[] as $t ([]; if any(.[]; .slug == $t.slug) then . else . + [$t] end);
+def tag_href: "/explore/tag/\(.slug | @uri)/";
+# a card's labels (the card is one link: plain labels) and a proposal page's tag links
+def labels($part): [tag_list[] | . as $t | $part | rtrimstr("\n") | fill({tag: $t.tag})] | join("");
+def tag_links($part): [tag_list[] | . as $t | $part | rtrimstr("\n") | fill({tag: $t.tag, href: ($t | tag_href)})] | join("");
+
 # The milestone bar of a card: one segment part per milestone.
 def segments($done; $todo):
   . as $v | [range(0; $v.milestones | tonumber) | if . < ($v.done | tonumber) then $done else $todo end]
   | map(rtrimstr("\n")) | join("");
 
+# One card per proposal in $list, or the empty part ($empty null: nothing).
+def cards($list; $card; $empty; $segdone; $segtodo; $labelpart):
+  if ($list | length) == 0 then ($empty // "") | rtrimstr("\n")
+  else $list | map((values + {segments: (values | segments($segdone; $segtodo)), tags: labels($labelpart)}) as $v
+    | $card | rtrimstr("\n") | fill($v)) | join("\n")
+  end;
+
 # A proposal's page file name: its local-url without /proposals/ and .html, and without the
 # HTML escaping ccs-bash gave it. Checked: a plain name, no folders, nothing hidden.
 def page_file:
-  ."local-url" | ltrimstr("/proposals/") | rtrimstr(".html")
-  | gsub("&#39;"; "'") | gsub("&quot;"; "\"") | gsub("&gt;"; ">") | gsub("&lt;"; "<") | gsub("&amp;"; "&")
+  ."local-url" | ltrimstr("/proposals/") | rtrimstr(".html") | unescape
   | if test("^[^/.][^/[:cntrl:]]*$") then . else error("bad page name: \(.)") end;
 
 # The proposals that get a page (ideas link to GitLab), with their stage.
