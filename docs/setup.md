@@ -74,8 +74,10 @@ location = /projects {
 }
 ```
 
-**Two machines:** push the site instead of the JSON, as in ccs-bash's docs/two-machines.md:
-`rsync -a --delay-updates /var/lib/ccs/www/site/ ccs-data@<web server>:`. The web server's key
+**Two machines:** push the site instead of the JSON, as in ccs-bash's docs/two-machines.md (way A,
+tried from node3 to an Oracle VM): `rsync -a --delay-updates -e "ssh -p 22 …"
+/var/lib/ccs/www/site/ ccs-data@<web server>:` after this run, as the `ccs` user. The site
+carries `projects.json`, so this one push is all the web server gets. The web server's key
 keeps `-no-del`, so nothing on it can be deleted from here; the cost is that a renamed
 proposal's old page stays until removed by hand.
 
