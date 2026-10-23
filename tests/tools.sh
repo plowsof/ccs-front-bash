@@ -11,9 +11,9 @@ ok() { echo "ok   $*"; }
 fail() { echo "FAIL $*"; status=1; }
 
 for i in 0 1 2; do printf '%d 8%094d\n' "$i" "$i"; done > "$tmp/list.txt"
-before=$(ls -A "${TMPDIR:-/tmp}" | wc -l)
 out=$("$here/../tools/sign-subaddresses.sh" "$tmp/list.txt" 2> "$tmp/log") || { cat "$tmp/log"; fail "signing"; exit 1; }
 fpr=$(sed -n 's/^key: *//p' <<<"$out") sum=$(sed -n 's/^sha256: *//p' <<<"$out")
+keydir=$(sed -n 's/.*the secret key is gone with //p' <<<"$out")   # its temporary GNUPGHOME
 
 export GNUPGHOME=$tmp/verify
 mkdir -m 700 "$GNUPGHOME"
@@ -30,7 +30,7 @@ else
 fi
 sed -i '2s/^1 8/1 9/' "$tmp/list.txt"
 if ! gpg --batch --verify "$tmp/list.txt.asc" "$tmp/list.txt" 2> /dev/null; then ok "a changed list fails"; else fail "a changed list verified"; fi
-if [[ -z $(gpg --batch --list-secret-keys 2> /dev/null) && $(ls -A "${TMPDIR:-/tmp}" | wc -l) -le $before ]]; then
+if [[ -z $(gpg --batch --list-secret-keys 2> /dev/null) && $keydir && ! -e $keydir ]]; then
     ok "no secret key kept: not exported, its folder gone"
 else
     fail "a secret key or its folder was left"
