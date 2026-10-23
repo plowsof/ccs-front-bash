@@ -9,7 +9,10 @@ include "common";
 def part: rtrimstr("\n");
 
 {fr: $proposals[0][1].proposals, wip: $proposals[0][2].proposals, cp: $completed[0][0].proposals} as $lists
-| {fr: $cardfr, wip: $cardwip, cp: $cardcp} as $card
+| # The card parts' own links (icons) are relative to parts/, one folder down like Explore; the
+# tag pages are three down (explore/tag/<slug>/). Only the part's markup is changed, before
+# any value is filled in.
+{fr: $cardfr, wip: $cardwip, cp: $cardcp} | map_values(gsub("=\"\\.\\./"; "=\"../../../")) as $card
 # every tag with its first spelling and how many proposals have it, most used first
 | [$lists.fr[], $lists.wip[], $lists.cp[] | tag_list[]] as $all
 | ($all | group_by(.slug) | map(.[0] + {count: length}) | sort_by(-.count, .slug)) as $tags
