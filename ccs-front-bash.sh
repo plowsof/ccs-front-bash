@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE [SUBADDRESSES]: fill the original (ccs-front-hugo's
 # built site) with ccs-bash's JSON in DATA and the proposals' Markdown in PROPOSALS, into a new
-# SITE. If the original pins a list of the wallet's subaddresses (see check_addresses), every
-# donation address must be in SUBADDRESSES. Every
-# piece of HTML comes from the original's pages and parts; this only fills them. The original
-# is never changed; SITE is replaced only once the new one is complete. Needs no network.
+# SITE. With SUBADDRESSES, a signed list of the wallet's subaddresses (see check_addresses), every
+# donation address must be in it. Every piece of HTML comes from the original's pages and parts;
+# this only fills them. The original is never changed; SITE is replaced only once the new one is
+# complete. Needs no network.
 set -euo pipefail
 export LC_ALL=C
 
@@ -34,7 +34,7 @@ proposal_pages() {
         --rawfile labellink "$p/label-link.html" \
         --rawfile cidea "$work/regions/count_idea.html" --rawfile cfr "$work/regions/count_fr.html" \
         --rawfile cwip "$work/regions/count_wip.html" --rawfile ccp "$work/regions/count_cp.html" \
-        --rawfile filters "$work/regions/filters.html" -f "$LIB/pages.jq" > "$work/pages"
+        --rawfile filters "$work/regions/filters.html" --arg verifylink "$verify_link" -f "$LIB/pages.jq" > "$work/pages"
     # split: a line "\001<name>" starts the next page (pages.jq removes \001 from page text)
     awk -v dir="$out/proposals" '/^\001/ { if (f) close(f); f = dir "/" substr($0, 2) ".html"; next } { print > f }' "$work/pages"
 }
@@ -62,25 +62,36 @@ tag_regions() {
         { print > f }' "$work/tags.out"
 }
 
-# check_addresses ORIGINAL DATA LIST: the original (built offline) may pin the sha256 of a signed
-# list of the wallet's subaddresses ("index address" lines, tools/make-subaddresses.sh). Then
-# LIST must be that list, every donation address on the site must be in it, and LIST and its
-# signature LIST.asc go out with the site for anyone to check. No pin: nothing to check.
+# check_addresses ORIGINAL DATA LIST: with a signed list of the wallet's subaddresses (LIST,
+# "index address" lines, tools/make-subaddresses.sh; beside it LIST.asc, LIST.key.asc and
+# LIST.pin, its sha256 and the key's fingerprint, tools/sign-subaddresses.sh), LIST must be the
+# one LIST.pin names and every donation address on the site must be in it; the Verify page gets
+# the steps and the fingerprint, each donation box a link there, and the list, signature and key
+# go out with the site. No LIST: no check, and the Verify page says there is no list yet.
 check_addresses() {
-    local original=$1 data=$2 list=$3 pin
-    pin=$(tr -d ' \n' < "$original/parts/subaddresses.sha256" 2> /dev/null || true)
-    [[ $pin ]] || return 0
-    listed=1   # global: main publishes the list
-    [[ $pin =~ ^[0-9a-f]{64}$ ]] || die "parts/subaddresses.sha256 is not a sha256"
-    [[ $list && -f $list && -f $list.asc ]] || die "the original pins a subaddress list: give it (and its .asc) as SUBADDRESSES"
-    [[ $(sha256sum < "$list" | cut -d' ' -f1) == "$pin" ]] || die "$list is not the subaddress list the original pins"
+    local original=$1 data=$2 list=$3 sum fpr f
+    verify_link=''   # global, for pages.jq: the donation boxes' link to /verify/
+    if [[ -z $list ]]; then
+        cp "$original/parts/no-list.html" "$work/regions/verify.html"
+        return 0
+    fi
+    for f in "$list" "$list.asc" "$list.key.asc" "$list.pin"; do [[ -f $f ]] || die "no $f (see docs/setup.md, step 5)"; done
+    sum=$(sed -n 's/^sha256 *//p' "$list.pin") fpr=$(sed -n 's/^key *//p' "$list.pin")
+    [[ $sum =~ ^[0-9a-f]{64}$ && $fpr =~ ^[0-9A-F]{40}$ ]] || die "$list.pin: want a 'sha256 <hex>' and a 'key <fingerprint>' line"
+    [[ $(sha256sum < "$list" | cut -d' ' -f1) == "$sum" ]] || die "$list is not the list $list.pin pins"
     jq -r '.[1].proposals[] | ."donate-address" // empty' "$data/proposals.json" > "$work/addresses"
     awk 'NR == FNR { ok[$2] = 1; next } !($0 in ok) { print "not in the subaddress list: " $0; bad = 1 } END { exit bad }' \
         "$list" "$work/addresses" >&2 || die "a donation address is not one of the wallet's (see above)"
+    listed=1   # global: main publishes the list
+    # the fingerprint as gpg shows it: 10 groups of 4, two spaces in the middle (hex: nothing to escape)
+    fpr=$(sed -E 's/(.{4})/\1 /g; s/ $//; s/^((.{4} ){5})/\1 /' <<<"$fpr")
+    f=$(cat "$original/parts/verify.html")
+    printf '%s\n' "${f//\{\{fingerprint\}\}/$fpr}" > "$work/regions/verify.html"
+    verify_link=$(cat "$original/parts/verify-link.html")
 }
 
 main() {
-    local original data proposals site subaddresses stage page tag tags
+    local original data proposals site subaddresses stage page tag tags f
     # absolute paths, then work from /: started by runuser from root's home, the current
     # directory may not be readable (find needs it)
     original=$(readlink -f "${1:?ORIGINAL}") data=$(readlink -f "${2:?DATA}")
@@ -134,7 +145,7 @@ main() {
     # the /projects API goes with the site, so one push carries everything public
     if [[ -f $data/projects.json ]]; then cp "$data/projects.json" "$new/projects.json"; fi
     if [[ ${listed:-} ]]; then
-        cp "$subaddresses" "$new/subaddresses.txt" && cp "$subaddresses.asc" "$new/subaddresses.txt.asc"
+        for f in "" .asc .key.asc; do cp "$subaddresses$f" "$new/subaddresses.txt$f"; done
     fi
 
     rm -rf "$site.old"

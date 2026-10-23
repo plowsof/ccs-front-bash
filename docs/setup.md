@@ -120,17 +120,14 @@ Then sign it, a standard detached signature (`subaddresses.txt.asc`, ASCII armou
 tools/sign-subaddresses.sh subaddresses.txt
 ```
 
-It makes a PGP key only for this, signs the list, and destroys the secret key: it prints the
-key's fingerprint and the list's sha256. Then, in ccs-front-hugo:
+It makes a PGP key only for this, signs the list, and destroys the secret key. Beside the list
+it leaves the three files that go with it: `subaddresses.txt.asc` (the signature),
+`subaddresses.txt.key.asc` (the public key) and `subaddresses.txt.pin` (the list's sha256 and
+the key's fingerprint). Publish the fingerprint somewhere besides the site too (ccs-front-hugo's
+README), so people can check the key doesn't come only from the site it vouches for.
 
-- `hugo.toml`: `[params.subaddresses]` `sha256` and `key` (the fingerprint);
-- `static/assets/subaddresses-key.asc`: `subaddresses.txt.key.asc`;
-- publish the fingerprint somewhere else too (the repository's README), so people can check
-  the key doesn't come only from the site it vouches for.
-
-Build and copy the original as in step 1. Copy `subaddresses.txt` and `subaddresses.txt.asc`
-to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as a fifth argument
-in `ccs-bash-update`:
+Copy the four files to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as
+a fifth argument in `ccs-bash-update`:
 
 ```
 runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
@@ -146,15 +143,15 @@ after the image (the five arguments replace the default four):
     ccs-front-bash /original /data /proposals /www/site /subaddresses/subaddresses.txt
 ```
 
-Give it the list **before** deploying an original that pins it: an original with a pin and no
-list stops every run (and an original without a pin ignores the list).
-
-Each run then checks the list against the pinned sha256 and every donation address against the
-list (about 0.2s), and publishes the list and its signature as `/subaddresses.txt(.asc)` next to
-the site's `/verify/` page, with the steps for anyone to check an address. With two machines, copy the
-list to the web server too, for its gate (ccs-bash's docs/two-machines.md, "The gate"): it then
-refuses any push with an address that isn't on it. When the wallet nears the end of the list (index 100,000), make a longer one the same
-way.
+Each run then checks the list against its `.pin` and every donation address against the list
+(about 0.2s); a missing file, a list that isn't the one the pin names, or an address not in it
+stops the run. It publishes the list, its signature and the key (`/subaddresses.txt`, `.asc`,
+`.key.asc`), fills the site's `/verify/` page with the steps and the fingerprint, and puts a link
+to it in every donation box. Without the fifth argument there is no check, and `/verify/` says
+there is no list yet. Nothing about the list is in the original: a new list is the four files,
+copied here and (with two machines) to the web server for its gate (ccs-bash's
+docs/two-machines.md, "The gate"), which then refuses any push with an address not on it. When
+the wallet nears the end of the list (index 100,000), make a longer one the same way.
 
 ## Going back
 
