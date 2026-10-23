@@ -95,15 +95,33 @@ run stopping (or, on the web server, without anyone being able to tell). It chec
 text and its `monero:` link; the QR code is ccs-bash's PNG.
 
 On the **offline machine**, with the wallet's main address and private view key (asked for,
-not echoed; no spend key, the real wallet is not touched; about 5 minutes for 100,000):
+not echoed; no spend key, the real wallet is not touched; about half an hour for 100,000, as the
+view-only wallet slows down while it grows):
 
 ```
 tools/make-subaddresses.sh /path/to/monero-wallet-rpc 100000 subaddresses.txt   # --testnet for testnet
+```
+
+**Check it before signing**: it must be this wallet's. Its first line is the main address, and
+the subaddresses the wallet has already made are its first lines (here with the wallet's
+wallet-rpc; `address all` in monero-wallet-cli shows the same):
+
+```
+head -n 1 subaddresses.txt                         # 0 <the main address, WALLET_ADDRESS>
+curl -s --digest -u user:pass http://127.0.0.1:18082/json_rpc \
+    -d '{"jsonrpc":"2.0","id":0,"method":"get_address","params":{"account_index":0}}' \
+    | jq -r '.result.addresses | sort_by(.address_index)[] | "\(.address_index) \(.address)"' > made.txt
+head -n "$(wc -l < made.txt)" subaddresses.txt | cmp - made.txt && echo "the wallet's own"
+```
+
+Then sign it, a standard detached signature (`subaddresses.txt.asc`, ASCII armour):
+
+```
 tools/sign-subaddresses.sh subaddresses.txt
 ```
 
-The second one makes a PGP key only for this, signs the list, and destroys the secret key: it
-prints the key's fingerprint and the list's sha256. Then, in ccs-front-hugo:
+It makes a PGP key only for this, signs the list, and destroys the secret key: it prints the
+key's fingerprint and the list's sha256. Then, in ccs-front-hugo:
 
 - `hugo.toml`: `[params.subaddresses]` `sha256` and `key` (the fingerprint);
 - `static/assets/subaddresses-key.asc`: `subaddresses.txt.key.asc`;
@@ -120,10 +138,20 @@ runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
     /etc/ccs-front/subaddresses.txt >> /var/log/ccs-bash.log 2>&1
 ```
 
+From the pinned image instead ([the pinned image](image.md)), mount the folder and name the list
+after the image (the five arguments replace the default four):
+
+```
+    -v /etc/ccs-front:/subaddresses:ro \
+    ccs-front-bash /original /data /proposals /www/site /subaddresses/subaddresses.txt
+```
+
+Give it the list **before** deploying an original that pins it: an original with a pin and no
+list stops every run (and an original without a pin ignores the list).
+
 Each run then checks the list against the pinned sha256 and every donation address against the
 list (about 0.2s), and publishes the list and its signature as `/subaddresses.txt(.asc)` next to
-a [Verify](https://github.com/plowsof/ccs-front-hugo) page with the steps for anyone to check an
-address. When the wallet nears the end of the list (index 100,000), make a longer one the same
+the site's `/verify/` page, with the steps for anyone to check an address. When the wallet nears the end of the list (index 100,000), make a longer one the same
 way.
 
 ## Going back
