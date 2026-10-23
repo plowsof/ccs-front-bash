@@ -25,17 +25,25 @@ for p in "${pages[@]}"; do
     if diff -u "$here/expected/$p" "$tmp/site/$p" > "$tmp/diff"; then ok "$p"; else cat "$tmp/diff"; fail "$p"; fi
 done
 
-# every proposal in the JSON gets a card on its stage's page, and all of them on Explore
+# every proposal in the JSON gets a card on its stage's page; Explore has none, only the stages'
+# counts (as every stage menu does) and the tags
 count() { grep -c 'class="card ' "$tmp/site/$1" || true; }
 want() { jq "$2" "$here/fixtures/data/$1"; }
 fr=$(want proposals.json '.[1].proposals | length') wip=$(want proposals.json '.[2].proposals | length')
 idea=$(want proposals.json '.[0].proposals | length') cp=$(want completed-proposals.json '.[0].proposals | length')
 if [[ $(count funding-required/index.html) == "$fr" && $(count work-in-progress/index.html) == "$wip" \
     && $(count ideas/index.html) == "$idea" && $(count completed-proposals/index.html) == "$cp" \
-    && $(count explore/index.html) == $((fr + wip + idea + cp)) ]]; then
-    ok "a card per proposal ($fr fr, $wip wip, $idea ideas, $cp completed)"
+    && $(count explore/index.html) == 0 ]]; then
+    ok "a card per proposal ($fr fr, $wip wip, $idea ideas, $cp completed), none on Explore"
 else
     fail "card counts"
+fi
+counts() { grep -A1 '<!-- ccs:count ' "$tmp/site/$1" | grep -o '^[0-9]*$' | tr '\n' ' '; }
+if [[ $(counts explore/index.html) == "$idea $fr $wip $cp " && $(counts funding-required/index.html) == "$idea $fr $wip $cp " \
+    && $(counts explore/tag/repurposed/index.html) == "$idea $fr $wip $cp " ]]; then
+    ok "each stage's count, on Explore, a stage page and a tag page"
+else
+    fail "stage counts: $(counts explore/index.html)"
 fi
 if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok "parts/ and the example pages left out"; else fail "parts/ or an example page published"; fi
 if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok "projects.json goes with the site"; else fail "projects.json"; fi

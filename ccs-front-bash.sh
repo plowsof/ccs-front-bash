@@ -101,6 +101,15 @@ main() {
             --rawfile segdone "$original/parts/segment-done.html" --rawfile segtodo "$original/parts/segment-todo.html" \
             --rawfile labelpart "$original/parts/label.html" -f "$LIB/regions.jq" > "$work/regions/list_$stage.html"
     done
+    # how many proposals each stage has (the stage menu, Explore's stage cards)
+    jq -r --slurpfile c "$data/completed-proposals.json" '"\(.[0].proposals | length) \(.[1].proposals | length) \(.[2].proposals | length) \($c[0][0].proposals | length)"' \
+        "$data/proposals.json" | {
+        read -r n_idea n_fr n_wip n_cp
+        for stage in idea fr wip cp; do
+            n=n_$stage
+            printf '%s\n' "${!n}" > "$work/regions/count_$stage.html"
+        done
+    }
 
     check_addresses "$original" "$data" "$subaddresses"
     mapfile -t tags < <(tag_regions "$original" "$data")
@@ -115,6 +124,7 @@ main() {
     done < <(find "$new" -name '*.html' -print0)
     # a page per tag: the original's tag page, at the same depth (its relative links still work)
     for tag in "${tags[@]}"; do
+        cp "$work/regions"/count_*.html "$work/tags/$tag/"
         mkdir -p "$new/explore/tag/$tag"
         fill_page "$original/explore/tag/example/index.html" "$work/tags/$tag" > "$new/explore/tag/$tag/index.html"
     done
