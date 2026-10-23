@@ -7,14 +7,18 @@
                 "gitlab-url": "https://example.org/mr/13",
                 "author": "grace",
                 "date": "October 3, 2026",
-                "tags": []
+                "tags": [],
+                "upvotes": 7,
+                "downvotes": 2
             },
             {
                 "name": "New &lt;idea&gt;",
                 "gitlab-url": "https://example.org/mr/11",
                 "author": "erin",
                 "date": "October 1, 2026",
-                "tags": []
+                "tags": [],
+                "upvotes": null,
+                "downvotes": null
             }
         ]
     },
