@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Check a donation address · Monero CCS</title>
-<link rel="stylesheet" href="../assets/style.677e50709841dd852dbf8a3fb9fb642a8cfaf30b2f732f9fa51ea833858691cf.css" integrity="sha256-Z35QcJhB3YUtv4o/uftkKoz68wsvcy&#43;fpR6oM4WGkc8=">
+<link rel="stylesheet" href="../assets/style.ea2b3f986e37abcd18fb367e68543405edaa7446626c5477e0493e065ac0507d.css" integrity="sha256-6is/mG43q80Y&#43;zZ&#43;aFQ0Be2qdEZibFR34Ek&#43;BlrAUH0=">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 </head>
 <body class="page-other">
 <input type="checkbox" id="nav-toggle" class="nav-toggle">
 <header class="site-header">
-  <a class="brand" href="../"><svg aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#logo"></use></svg>Community Crowdfunding System</a>
-  <label for="nav-toggle" class="nav-button" aria-label="Menu"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#menu"></use></svg>
-</label>
+  <label for="nav-toggle" class="nav-button"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#menu"></use></svg>
+<span>Menu</span></label>
+  <a class="brand" href="../" aria-label="Community Crowdfunding System, home"><svg aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#logo"></use></svg><span class="brand-long">Community Crowdfunding System</span><span class="brand-short" aria-hidden="true">CCS</span></a>
   <nav class="site-nav" aria-label="Site"><a href="../funding-required/">Proposals</a>
 <a href="../what-is-ccs/">What is the CCS</a>
 <a href="../how-to-ccs/">Submit a proposal</a>
@@ -59,7 +59,33 @@ Completed<span class="count"><!-- ccs:count cp -->2<!-- /ccs:count cp --></span>
 
 <article class="proposal"><div class="body">
   <h1>Check a donation address</h1>
-  <p>This CCS has no signed list of its donation addresses yet.</p>
+  <!-- ccs:verify -->
+  <p>Every donation address on this site is one of the CCS wallet&rsquo;s subaddresses, taken from a
+list made once, offline, from a view-only copy of the wallet, and signed with a key made
+only for that. The secret key was destroyed right after signing, so no other list can ever
+carry that signature. The site is checked against the list each time it is made: an address
+that is not in it is never shown.</p>
+<p>You can check it yourself, with nothing from this site but the files below:</p>
+<ol>
+<li>
+<p>Download <a href="../subaddresses.txt">the list</a>, <a href="../subaddresses.txt.asc">its signature</a> and
+<a href="../subaddresses.txt.key.asc">the public key</a>.</p>
+</li>
+<li>
+<p>Check the key&rsquo;s fingerprint against the one the CCS maintainers publish elsewhere (in the
+<a href="https://repo.getmonero.org/monero-project/ccs-front">front end&rsquo;s repository</a> and in its README), then:</p>
+<pre tabindex="0"><code>gpg --import subaddresses.txt.key.asc
+gpg --verify subaddresses.txt.asc subaddresses.txt
+</code></pre></li>
+<li>
+<p>Look for the address you are about to pay to:</p>
+<pre tabindex="0"><code>grep -c &#34; THE_ADDRESS$&#34; subaddresses.txt
+</code></pre><p><code>1</code> means it is the wallet&rsquo;s. <code>0</code> means do not send: tell the CCS maintainers.</p>
+</li>
+</ol>
+<p>The key&rsquo;s fingerprint: <code>0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567</code></p>
+
+  <!-- /ccs:verify -->
 </div></article>
 
   </main>
