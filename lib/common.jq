@@ -23,7 +23,10 @@ def values:
     done: (."milestones-completed" // 0),
     address: (."donate-address" // ""),
     pending_note: (if (."amount-pending" // 0) > 0 then " · \(."amount-pending" | trim0) XMR pending" else "" end),
-    funding_note: (if ."funding-required-date" then " · funding since \(."funding-required-date")" else "" end)
+    funding_note: (if ."funding-required-date" then " · funding since \(."funding-required-date")" else "" end),
+    # an idea's 👍/👎 (ccs-bash: null if they couldn't be read, missing before ccs-bash had them)
+    upvotes: (.upvotes | if type == "number" then . else "–" end),
+    downvotes: (.downvotes | if type == "number" then . else "–" end)
   }
   | map_values(tostring | escaped);
 
