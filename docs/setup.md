@@ -5,31 +5,32 @@ It reads three things and writes one:
 
 | | Path here | What |
 |---|---|---|
-| the original | `/opt/ccs-front-hugo/public` | ccs-front-hugo's built site, from the offline build machine |
+| the original | `/opt/ccs-front-hugo/public` | ccs-front-hugo's built site, from its release zip |
 | the data | `/var/lib/ccs/out` | ccs-bash's `OUTPUT_DIR` |
 | the proposals | `/var/lib/ccs/proposals` | the checkout ccs-bash reads |
 | the site | `/var/lib/ccs/www/site` | written each run, swapped in when complete (with ccs-bash's `projects.json`, for `/projects`) |
 
-Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils, `tar` and `find`:
+Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils, `tar` and `find`
+(and `unzip` for step 1):
 on Debian, `apt install jq` on top of what ccs-bash needs. The QR codes are ccs-bash's (PNG).
 
 ## 1. The original
 
-Build it on the offline machine (see ccs-front-hugo), never on this one:
+ccs-front-hugo's releases carry the site as a zip, built reproducibly (the same tag gives the same
+zip on any machine; build it yourself from the tag with its `container/build.sh` to check). Take
+the release you mean to ship, check its sha256 against the one in the release notes, and unpack
+it here (`apt install unzip` if needed):
 
 ```
-hugo build --cleanDestinationDir          # in ccs-front-hugo, at the commit you mean to ship
-tar -C public -c . | sha256sum            # note this
+v=v0.1.0
+curl -fLO https://github.com/plowsof/ccs-front-hugo/releases/download/$v/ccs-front-hugo-$v.zip
+sha256sum ccs-front-hugo-$v.zip           # must be the release's sha256 (and your own build's)
+rm -rf /opt/ccs-front-hugo/public && install -d -m 755 /opt/ccs-front-hugo/public
+unzip -q ccs-front-hugo-$v.zip -d /opt/ccs-front-hugo/public
 ```
 
-Copy it here and check it is what was built:
-
-```
-install -d -m 755 /opt/ccs-front-hugo/public
-ssh build-machine 'tar -C ccs-front-hugo/public -c .' | tee >(sha256sum >&2) | tar -x -C /opt/ccs-front-hugo/public
-```
-
-The two sums must match. It stays owned by root: ccs-front-bash only reads it.
+It stays owned by root: ccs-front-bash only reads it. A new design is a new release, unpacked
+the same way; the next run uses it.
 
 ## 2. ccs-front-bash
 
@@ -150,7 +151,8 @@ stops the run. It publishes the list, its signature and the key (`/subaddresses.
 to it in every donation box. Without the fifth argument there is no check, and `/verify/` says
 there is no list yet. Nothing about the list is in the original: a new list is the four files,
 copied here and (with two machines) to the web server for its gate (ccs-bash's
-docs/two-machines.md, "The gate"), which then refuses any push with an address not on it. When
+docs/two-machines.md, "The gate"), which then holds back any page with an address not on it
+and tells IRC. When
 the wallet nears the end of the list (index 100,000), make a longer one the same way.
 
 ## Going back
