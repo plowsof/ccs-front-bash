@@ -98,8 +98,8 @@ text and its `monero:` link; the QR code is ccs-bash's PNG.
 
 A **Core Team member** makes the list on an offline machine with the script below, then signs it
 as described further down (`tools/sign-subaddresses.sh`). The script asks for the wallet's main
-address and private view key, which are public. It doesn't need the spend key and doesn't touch
-the real wallet. 15,000 subaddresses take about a minute, enough for decades of proposals:
+address and private view key, which are public. 15,000 subaddresses take about a minute, enough
+for decades of proposals:
 
 ```
 tools/make-subaddresses.sh /path/to/monero-wallet-rpc 15000 subaddresses.txt   # --testnet for testnet
