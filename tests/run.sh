@@ -146,7 +146,7 @@ if [[ -z $abs ]] && grep -q 'href="../proposals/near-funded.html"' "$tmp/site/fu
     && grep -q 'href="../../../proposals/' "$tmp/site/explore/tag/repurposed/index.html"; then
     ok "every link relative to its page (a proposal's, a tag's), so /dark/ and /light/ stay while browsing"
 else
-    printf '%s\n' $abs | head -3; fail "absolute links"
+    printf '%s\n' "$abs" | head -3; fail "absolute links"
 fi
 
 # a signed subaddress list (the list, .asc, .key.asc, .pin beside it): every donation address
