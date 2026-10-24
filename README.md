@@ -33,7 +33,8 @@ ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE
 tests/run.sh   # UPDATE=1 rewrites tests/expected
 ```
 
-To install it: [docs/setup.md](docs/setup.md).
+To install it: [docs/setup.md](docs/setup.md); the whole CCS, all three repositories in order:
+[ccs-bash's deploying page](https://github.com/plowsof/ccs-bash/blob/master/docs/deploy.md).
 
 Every piece of HTML comes from the original's pages and parts; this only fills them. The one
 thing no template can do on a live machine is Markdown: `lib/markdown.awk` renders it (one awk

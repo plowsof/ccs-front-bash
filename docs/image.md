@@ -38,5 +38,4 @@ As in ccs-bash: `container/update-images.sh` repins to StageX's current release,
 signatures in `container/sigs/` and checks them (review the diff); `container/update-keys.sh` refreshes the maintainers' keys. Push a
 tag `vX.Y.Z` on `master` and the `release` workflow builds, tests, runs `check-pinned.sh`, pushes
 `ghcr.io/plowsof/ccs-front-bash:vX.Y.Z` and puts the pull-by-digest line and the image ID in the
-release notes. While this repository is private, so is the package: make it public under the
-package's settings on GitHub when the repository is.
+release notes.
