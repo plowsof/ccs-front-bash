@@ -99,20 +99,20 @@ check_addresses() {
         src=$(sed -n 's/^source  *//p' "$list.viewkey")
         text=$(sed -n 's/^source-text  *//p' "$list.viewkey")
         [[ $text =~ ^[A-Za-z0-9\ .,:\'_-]*$ ]] || die "$list.viewkey: source-text: letters, digits, spaces and .,:'_- only"
-        text=${text//\'/&#39;}
+        text=${text//\'/"&#39;"}   # a quoted replacement: in bash 5.2+ an unquoted & means the match
         if [[ -z $src ]]; then
             src='published by this site'
         elif [[ $src =~ ^https://[A-Za-z0-9._~:/?#@!$\&\'()*+,\;=%-]+$ && $src != *\"* ]]; then
-            src="<a href=\"${src//&/&amp;}\">${text:-where they were published}</a>"
+            src="<a href=\"${src//&/"&amp;"}\">${text:-where they were published}</a>"
         else
             die "$list.viewkey: the source must be one https link"
         fi
         case $main in 9* | A*) net=' --testnet' ;; 5* | 7*) net=' --stagenet' ;; *) net='' ;; esac
         # base58 and hex: nothing to escape
-        f=${f//\{\{address\}\}/$main} f=${f//\{\{viewkey\}\}/$vk} f=${f//\{\{network\}\}/$net}
-        f=${f//\{\{wallet_source\}\}/$src}
+        f=${f//\{\{address\}\}/"$main"} f=${f//\{\{viewkey\}\}/"$vk"} f=${f//\{\{network\}\}/"$net"}
+        f=${f//\{\{wallet_source\}\}/"$src"}
     fi
-    printf '%s\n' "${f//\{\{fingerprint\}\}/$fpr}" > "$work/regions/verify.html"
+    printf '%s\n' "${f//\{\{fingerprint\}\}/"$fpr"}" > "$work/regions/verify.html"
     verify_link=$(cat "$original/parts/verify-link.html")
 }
 
