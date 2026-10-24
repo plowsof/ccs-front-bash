@@ -96,7 +96,8 @@ changes ccs-bash's JSON, the push or the web server can't slip in another addres
 run stopping (or, on the web server, without anyone being able to tell). It checks the address
 text and its `monero:` link; the QR code is ccs-bash's PNG.
 
-On the **offline machine**, with the wallet's main address and private view key (asked for,
+On the **offline machine**, with the wallet's main address and private view key (both public: the
+CCS publishes its view key, and ccs-bash's contrib/release/wallets/ has them; asked for,
 not echoed; no spend key, the real wallet is not touched; about a minute for 15,000, enough for
 decades of proposals at one subaddress each):
 
