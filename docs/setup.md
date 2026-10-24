@@ -142,6 +142,21 @@ the default four):
     ccs-front-bash /original /data /proposals /www/site /subaddresses/subaddresses.txt
 ```
 
+With them, `subaddresses.txt.viewkey` (root-owned, 644): the wallet's view key on its first line,
+and optionally a line `source <https link>` to where the address and view key were published,
+and `source-text <words>` for what that link says (default "where they were published"). For the
+mainnet CCS wallet that is luigi1111's comment in monero-project/meta #935:
+
+```
+62ad19781466882d8df0ae85743abcc5c8ef81e52e051e7cc56fe3c610d18001
+source https://github.com/monero-project/meta/issues/935#issuecomment-1867257410
+source-text shared by luigi1111 here
+```
+
+The Verify page
+shows them, with the commands to ask a copy of the wallet whether an address is one of its own
+(`get_address_index`).
+
 Each run then checks the list against its `.pin` and every donation address against the list
 (about 0.2s); a missing file, a list that isn't the one the pin names, or an address not in it
 stops the run. It publishes the list, its signature and the key (`/subaddresses.txt`, `.asc`,

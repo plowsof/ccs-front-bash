@@ -11,7 +11,7 @@ that is not in it is never shown.</p>
 </li>
 <li>
 <p>Check the key&rsquo;s fingerprint against the one the CCS maintainers publish elsewhere (in the
-<a href="https://repo.getmonero.org/monero-project/ccs-front">front end&rsquo;s repository</a> and in its README), then:</p>
+<a href="https://github.com/plowsof/ccs-front-hugo">design repository</a>, in its README), then:</p>
 <pre tabindex="0"><code>gpg --import subaddresses.txt.key.asc
 gpg --verify subaddresses.txt.asc subaddresses.txt
 </code></pre></li>
@@ -22,4 +22,21 @@ gpg --verify subaddresses.txt.asc subaddresses.txt
 </li>
 </ol>
 <p>The key&rsquo;s fingerprint: <code>{{fingerprint}}</code></p>
+<h2 id="or-ask-the-wallet-itself">Or ask the wallet itself</h2>
+<p>The wallet&rsquo;s address and view key are public ({{wallet_source}}), so you can also ask a copy of
+the wallet whether an address is one of its own, without the list. A view key can&rsquo;t spend; it only shows
+what the wallet received.</p>
+<p>The wallet&rsquo;s address: <code>{{address}}</code></p>
+<p>Its view key: <code>{{viewkey}}</code></p>
+<p>With <code>monero-wallet-rpc</code> from the Monero CLI (<a href="https://www.getmonero.org/downloads/">getmonero.org</a>,
+check its hashes as the site explains), offline, in one terminal:</p>
+<pre tabindex="0"><code>monero-wallet-rpc{{network}} --offline --wallet-dir ccs-check --rpc-bind-port 18088 --disable-rpc-login
+</code></pre><p>and in another:</p>
+<pre tabindex="0"><code>rpc() { curl -s http://127.0.0.1:18088/json_rpc -d &#34;{\&#34;jsonrpc\&#34;:\&#34;2.0\&#34;,\&#34;id\&#34;:0,\&#34;method\&#34;:\&#34;$1\&#34;,\&#34;params\&#34;:$2}&#34;; }
+rpc generate_from_keys &#39;{&#34;filename&#34;:&#34;ccs&#34;,&#34;address&#34;:&#34;{{address}}&#34;,&#34;viewkey&#34;:&#34;{{viewkey}}&#34;,&#34;password&#34;:&#34;&#34;}&#39;
+rpc set_subaddress_lookahead &#39;{&#34;password&#34;:&#34;&#34;,&#34;major_idx&#34;:1,&#34;minor_idx&#34;:20000}&#39;
+rpc get_address_index &#39;{&#34;address&#34;:&#34;THE_ADDRESS&#34;}&#39;
+</code></pre><p><code>&quot;index&quot;:{&quot;major&quot;:0,&quot;minor&quot;:…}</code> means it is the wallet&rsquo;s. <code>Address doesn't belong to the wallet</code>
+means do not send: tell the CCS maintainers. (The lookahead makes the copy look at its first
+20,000 subaddresses; a fresh one only looks at 200.) Delete the <code>ccs-check</code> folder when done.</p>
 
