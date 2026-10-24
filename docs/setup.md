@@ -1,5 +1,8 @@
 # Setup
 
+ccs-front-bash's own steps. The whole CCS (the order across the three repositories, and the
+update script that runs them all) starts at [ccs-bash's deploying page](https://github.com/plowsof/ccs-bash/blob/master/docs/deploy.md).
+
 ccs-front-bash runs on the ccs-bash machine, right after ccs-bash, and replaces the Jekyll build.
 It reads three things and writes one:
 
@@ -38,13 +41,19 @@ the same way; the next run uses it.
 git clone https://github.com/plowsof/ccs-front-bash /opt/ccs-front-bash
 useradd --system --no-create-home --shell /usr/sbin/nologin ccs-front   # if not there already
 install -d -o ccs-front -g ccs-front -m 755 /var/lib/ccs/www
-runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
+```
+
+`/usr/local/bin/ccs-front-run`, one run (`chmod 755`, then try it), as ccs-bash has
+`ccs-bash-run`. **A)** on the host:
+
+```
+#!/bin/sh
+exec runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
     /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site
 ```
 
-Or run it from the pinned image (StageX parts only, no network, the same image ID from the same
-commit anywhere): see [the pinned image](image.md) for the `docker run` line, and use it in
-place of the `runuser` lines here and in step 3.
+**B)** from the pinned image (StageX parts only, no network, the same image ID from the same
+commit anywhere): the `docker run` line in [the pinned image](image.md), after `exec`.
 
 It writes `site.new` next to `site`, and only swaps it in once every page is made. Anything
 off (a marker, a value ccs-bash didn't escape, a proposal file missing) stops the run, logs why,
@@ -52,18 +61,8 @@ and leaves the last good site as it was.
 
 ## 3. In ccs-bash-update
 
-Replace the Jekyll line of ccs-bash's `ccs-bash-update` (ccs-bash's docs/setup.md, step 6):
-
-```
-#!/bin/sh
-# /usr/local/bin/ccs-bash-update (chmod 755)
-timeout -k 5 40 runuser -u ccs-git -- env HOME=/ \
-    git -C /var/lib/ccs/proposals pull -q --ff-only   # GitLab down: give up
-ccs-bash-run >> /var/log/ccs-bash.log 2>&1
-runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
-    /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site \
-    >> /var/log/ccs-bash.log 2>&1
-```
+`ccs-bash-update` runs `ccs-front-run` right after `ccs-bash-run`, then pushes the site. The
+script, the only full copy: [ccs-bash's deploying page](https://github.com/plowsof/ccs-bash/blob/master/docs/deploy.md#the-update).
 
 ## 4. Serving it
 
@@ -79,16 +78,14 @@ location = /projects {
 }
 ```
 
-For the footer's Light / Dark / System toggle (kept in the address, no cookies, no JavaScript),
+For the header's Light / Dark / System button (kept in the address, no cookies, no JavaScript),
 add the theme lines from ccs-bash's docs/two-machines.md ("The theme"), with
 `/var/lib/ccs/www/site/` in place of `/var/lib/ccs-data/`.
 
-**Two machines:** push the site instead of the JSON, as in ccs-bash's docs/two-machines.md (way A,
-tried from node3 to an Oracle VM): `rsync -a --delay-updates -e "ssh -p 22 …"
-/var/lib/ccs/www/site/ ccs-data@<web server>:` after this run, as the `ccs` user. The site
-carries `projects.json`, so this one push is all the web server gets. The web server's key
-keeps `-no-del`, so nothing on it can be deleted from here; the cost is that a renamed
-proposal's old page stays until removed by hand.
+**Two machines** (recommended): the site is pushed to a web server that only serves it, as
+ccs-bash's docs/two-machines.md, way A, describes (its nginx, the gate, the alerts). The site
+carries `projects.json`, so that one push is all the web server gets. Its key can't delete, so a
+renamed proposal's old page stays until removed by hand.
 
 The CSP above was checked with the built site: styles, fonts, icons and QR codes all load.
 
@@ -132,16 +129,9 @@ the key's fingerprint). Publish the fingerprint somewhere besides the site too (
 README), so people can check the key doesn't come only from the site it vouches for.
 
 Copy the four files to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as
-a fifth argument in `ccs-bash-update`:
-
-```
-runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
-    /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site \
-    /etc/ccs-front/subaddresses.txt >> /var/log/ccs-bash.log 2>&1
-```
-
-From the pinned image instead ([the pinned image](image.md)), mount the folder and name the list
-after the image (the five arguments replace the default four):
+a fifth argument, in `ccs-front-run` (step 2): **A)** add `/etc/ccs-front/subaddresses.txt` after
+the four. **B)** mount the folder and name the list after the image (the five arguments replace
+the default four):
 
 ```
     -v /etc/ccs-front:/subaddresses:ro \
