@@ -96,17 +96,17 @@ changes ccs-bash's JSON, the push or the web server can't slip in another addres
 run stopping (or, on the web server, without anyone being able to tell). It checks the address
 text and its `monero:` link; the QR code is ccs-bash's PNG.
 
-**Two people make it**, each on their own offline machine: a CCS maintainer and another
-contributor. Each runs the script below. It asks for the wallet's main address and private view
-key, which the CCS publishes. It doesn't need the spend key and doesn't touch the real wallet.
-15,000 subaddresses take about a minute, enough for decades of proposals:
+A **Core Team member** makes the list on an offline machine with the script below, then signs it
+as described further down (`tools/sign-subaddresses.sh`). The script asks for the wallet's main
+address and private view key, which are public. It doesn't need the spend key and doesn't touch
+the real wallet. 15,000 subaddresses take about a minute, enough for decades of proposals:
 
 ```
 tools/make-subaddresses.sh /path/to/monero-wallet-rpc 15000 subaddresses.txt   # --testnet for testnet
 ```
 
-Both run `sha256sum subaddresses.txt` and compare. Only if the two match does one of them sign it
-(below); if they differ, find out why before going on.
+Contributors can confirm it independently: run the same script with the same address and view
+key, then compare `sha256sum subaddresses.txt` with the published list's.
 
 **Check it before signing**: it must be this wallet's. Its first line is the main address, and
 the subaddresses the wallet has already made are its first lines (here with the wallet's
