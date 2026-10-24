@@ -81,9 +81,9 @@ else
     fail "cards on the tag pages"
 fi
 repurposed=$(jq -rn -L "$here/../lib" 'include "common"; "repurposed" | tag_color')
-if grep -q "<a class=\"filter $repurposed\" href=\"/explore/tag/repurposed/\">Repurposed" "$tmp/site/funding-required/index.html" \
-    && grep -q "<a class=\"filter $repurposed\" href=\"/explore/tag/repurposed/\">Repurposed" "$tmp/site/proposals/b-wip.html" \
-    && grep -q "<a class=\"filter $repurposed active\" href=\"/explore/tag/repurposed/\">Repurposed<span class=\"count\">1" "$tmp/site/explore/tag/repurposed/index.html" \
+if grep -q "<a class=\"filter $repurposed\" href=\"../explore/tag/repurposed/\">Repurposed" "$tmp/site/funding-required/index.html" \
+    && grep -q "<a class=\"filter $repurposed\" href=\"../explore/tag/repurposed/\">Repurposed" "$tmp/site/proposals/b-wip.html" \
+    && grep -q "<a class=\"filter $repurposed active\" href=\"../../../explore/tag/repurposed/\">Repurposed<span class=\"count\">1" "$tmp/site/explore/tag/repurposed/index.html" \
     && grep -q "<span class=\"label $repurposed\">Repurposed</span>" "$tmp/site/completed-proposals/index.html"; then
     ok "the tags in every page's sidebar, the shown one active on its page; a tag has one colour everywhere"
 else
@@ -139,6 +139,15 @@ must_stop "a tag ccs-bash didn't escape" "$here/fixtures/original" "$tmp/unescap
 cp -r "$here/fixtures/original" "$tmp/slot"
 sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"
 must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
+
+# no absolute link on any page: under /dark/ or /light/ (the theme), every link keeps the prefix
+abs=$(grep -rlE '(href|src)="/[^/]' "$tmp/site" --include='*.html' | grep -v '/404.html$' || true)
+if [[ -z $abs ]] && grep -q 'href="../proposals/near-funded.html"' "$tmp/site/funding-required/index.html" \
+    && grep -q 'href="../../../proposals/' "$tmp/site/explore/tag/repurposed/index.html"; then
+    ok "every link relative to its page (a proposal's, a tag's), so /dark/ and /light/ stay while browsing"
+else
+    printf '%s\n' $abs | head -3; fail "absolute links"
+fi
 
 # a signed subaddress list (the list, .asc, .key.asc, .pin beside it): every donation address
 # must be in it; the Verify page shows the steps and the fingerprint, each donation box links
