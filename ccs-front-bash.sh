@@ -67,9 +67,13 @@ tag_regions() {
 # LIST.pin, its sha256 and the key's fingerprint, tools/sign-subaddresses.sh), LIST must be the
 # one LIST.pin names and every donation address on the site must be in it; the Verify page gets
 # the steps and the fingerprint, each donation box a link there, and the list, signature and key
-# go out with the site. No LIST: no check, and the Verify page says there is no list yet.
+# go out with the site. If the Verify part asks for them, it also gets the wallet's main address
+# (the list's index 0), its view key (LIST.viewkey: public; a line "source <https link>" says
+# where it was published, and "source-text <words>" what that link says) and the network, so a visitor can ask a copy of the wallet about an
+# address. No LIST: no check, and the Verify
+# page says there is no list yet.
 check_addresses() {
-    local original=$1 data=$2 list=$3 sum fpr f
+    local original=$1 data=$2 list=$3 sum fpr f main vk net src text
     verify_link=''   # global, for pages.jq: the donation boxes' link to /verify/
     if [[ -z $list ]]; then
         cp "$original/parts/no-list.html" "$work/regions/verify.html"
@@ -86,7 +90,29 @@ check_addresses() {
     # the fingerprint as gpg shows it: 10 groups of 4, two spaces in the middle (hex: nothing to escape)
     fpr=$(sed -E 's/(.{4})/\1 /g; s/ $//; s/^((.{4} ){5})/\1 /' <<<"$fpr")
     f=$(cat "$original/parts/verify.html")
-    printf '%s\n' "${f//\{\{fingerprint\}\}/$fpr}" > "$work/regions/verify.html"
+    if [[ $f == *'{{address}}'* || $f == *'{{viewkey}}'* || $f == *'{{network}}'* || $f == *'{{wallet_source}}'* ]]; then
+        main=$(awk '$1 == "0" { print $2; exit }' "$list")
+        [[ $main =~ ^[0-9A-Za-z]{95}$ ]] || die "$list has no index 0 (the wallet's main address), which the Verify page shows"
+        [[ -f $list.viewkey ]] || die "no $list.viewkey: the wallet's view key, which the Verify page shows (see docs/setup.md, step 5)"
+        vk=$(head -n 1 "$list.viewkey" | tr -d ' ')
+        [[ $vk =~ ^[0-9a-f]{64}$ ]] || die "$list.viewkey: want the view key's 64 hex characters on its first line"
+        src=$(sed -n 's/^source  *//p' "$list.viewkey")
+        text=$(sed -n 's/^source-text  *//p' "$list.viewkey")
+        [[ $text =~ ^[A-Za-z0-9\ .,:\'_-]*$ ]] || die "$list.viewkey: source-text: letters, digits, spaces and .,:'_- only"
+        text=${text//\'/"&#39;"}   # a quoted replacement: in bash 5.2+ an unquoted & means the match
+        if [[ -z $src ]]; then
+            src='published by this site'
+        elif [[ $src =~ ^https://[A-Za-z0-9._~:/?#@!$\&\'()*+,\;=%-]+$ && $src != *\"* ]]; then
+            src="<a href=\"${src//&/"&amp;"}\">${text:-where they were published}</a>"
+        else
+            die "$list.viewkey: the source must be one https link"
+        fi
+        case $main in 9* | A*) net=' --testnet' ;; 5* | 7*) net=' --stagenet' ;; *) net='' ;; esac
+        # base58 and hex: nothing to escape
+        f=${f//\{\{address\}\}/"$main"} f=${f//\{\{viewkey\}\}/"$vk"} f=${f//\{\{network\}\}/"$net"}
+        f=${f//\{\{wallet_source\}\}/"$src"}
+    fi
+    printf '%s\n' "${f//\{\{fingerprint\}\}/"$fpr"}" > "$work/regions/verify.html"
     verify_link=$(cat "$original/parts/verify-link.html")
 }
 
