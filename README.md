@@ -66,4 +66,6 @@ The contract between the two (markers, parts, `{{slots}}`) is in
 - Values are HTML-escaped exactly once; links must be `https:` (or local).
 - Markers are replaced in one pass: text put into a page is never searched for markers again.
 - The output keeps the original's rules: no `<script>`, no `style=`, nothing from other sites.
+- A proposal's images are links, except those ccs-bash keeps a copy of (uploads to the proposals'
+  forge, in its `images.json` and `images/`): those show, copied into the site's `images/`.
 - It needs no network: run it without any (it reads files, writes `site/`).

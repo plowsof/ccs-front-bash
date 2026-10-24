@@ -23,7 +23,20 @@ proposal_pages() {
         files+=("$proposals/$file.md")
     done < <(jq -r -L "$LIB" --slurpfile c "$data/completed-proposals.json" --slurpfile pr "$data/proposals.json" -n \
         'include "common"; paged($pr; $c) | .[1] | page_file')
-    printf '%s\0' "${files[@]}" | xargs -0 -r awk -f "$LIB/markdown.awk" > "$work/md.jsonl"
+    # the images ccs-bash keeps (images.json): only plain addresses and upload-ID file names that are
+    # there, so nothing in them can make markup or leave the folder; copied into the site
+    : > "$work/images.tsv"
+    if [[ -f $data/images.json ]]; then
+        jq -r 'to_entries[] | select((.key | test("^[A-Za-z0-9:/._%+-]+$")) and (.value | test("^[0-9a-f-]{32,36}\\.(png|jpg|gif)$")))
+            | "\(.key)\t\(.value)"' "$data/images.json" | while IFS=$'\t' read -r a f; do
+            [[ -f $data/images/$f ]] && printf '%s\t%s\n' "$a" "$f"
+        done > "$work/images.tsv"
+    fi
+    if [[ -s $work/images.tsv ]]; then
+        mkdir -p "$out/images"
+        cut -f2 "$work/images.tsv" | while IFS= read -r f; do cp "$data/images/$f" "$out/images/$f"; done
+    fi
+    printf '%s\0' "${files[@]}" | xargs -0 -r awk -v images="$work/images.tsv" -f "$LIB/markdown.awk" > "$work/md.jsonl"
     jq -nr -L "$LIB" --slurpfile proposals "$data/proposals.json" --slurpfile completed "$data/completed-proposals.json" \
         --slurpfile md "$work/md.jsonl" \
         --rawfile fr "$p/proposal-fr.html" --rawfile wip "$p/proposal-wip.html" --rawfile cp "$p/proposal-cp.html" \
