@@ -97,11 +97,11 @@ run stopping (or, on the web server, without anyone being able to tell). It chec
 text and its `monero:` link; the QR code is ccs-bash's PNG.
 
 On the **offline machine**, with the wallet's main address and private view key (asked for,
-not echoed; no spend key, the real wallet is not touched; about half an hour for 100,000, as the
-view-only wallet slows down while it grows):
+not echoed; no spend key, the real wallet is not touched; about a minute for 15,000, enough for
+decades of proposals at one subaddress each):
 
 ```
-tools/make-subaddresses.sh /path/to/monero-wallet-rpc 100000 subaddresses.txt   # --testnet for testnet
+tools/make-subaddresses.sh /path/to/monero-wallet-rpc 15000 subaddresses.txt   # --testnet for testnet
 ```
 
 **Check it before signing**: it must be this wallet's. Its first line is the main address, and
@@ -146,8 +146,10 @@ to it in every donation box. Without the fifth argument there is no check, and `
 there is no list yet. Nothing about the list is in the original: a new list is the four files,
 copied here and (with two machines) to the web server for its gate (ccs-bash's
 docs/two-machines.md, "The gate"), which then holds back any page with an address not on it
-and tells IRC. When
-the wallet nears the end of the list (index 100,000), make a longer one the same way.
+and tells IRC. When the wallet nears the end of the list (index 15,000), make a longer one the same
+way: its first lines are the old list, line for line (`head -n 15000 new | cmp - old`), which
+anyone can check. A shorter one, the same: cut it with `head`, then sign it (the old signature
+covers the whole old file, and its key is gone).
 
 ## Going back
 
