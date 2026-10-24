@@ -172,6 +172,5 @@ covers the whole old file, and its key is gone).
 
 ## Going back
 
-As in [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#stage-2-jekyll--ccs-front-bash-and-the-design), stage 2: point
-nginx back at the Jekyll site and restore the earlier `ccs-bash-update`. Nothing here changes
-ccs-bash, its data or the proposals checkout.
+During the move from Jekyll: [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#10-the-cutover),
+step 10. Nothing here changes ccs-bash, its data or the proposals checkout.
