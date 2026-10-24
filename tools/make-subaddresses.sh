@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # make-subaddresses.sh WALLET_RPC COUNT OUT [--testnet]: write the first COUNT subaddresses of
 # account 0 of a wallet to OUT, one "index address" per line (index 0 is the main address).
-# Asks for the wallet's main address and private view key (not echoed) and derives them in a
+# Asks for the wallet's main address and private view key and derives them in a
 # view-only copy made in a temporary folder by an offline monero-wallet-rpc (WALLET_RPC, the
 # binary): no spend key, no daemon, nothing written to the real wallet. The folder is removed
 # at the end. Run it on the offline machine, then sign OUT with sign-subaddresses.sh.
