@@ -62,7 +62,7 @@ and leaves the last good site as it was.
 ## 3. In ccs-bash-update
 
 `ccs-bash-update` runs `ccs-front-run` right after `ccs-bash-run`, then pushes the site. The
-script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#the-update).
+script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#9-the-update).
 
 ## 4. Serving it
 
