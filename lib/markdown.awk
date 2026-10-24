@@ -6,8 +6,9 @@
 #
 # Safe by construction: all text is HTML-escaped first, and the only tags in the output are the
 # ones written here. Raw HTML in a proposal shows as text; links must be https:, #anchor or
-# site-relative; images show as links (no requests to other sites), except the ones ccs-bash keeps
-# a copy of (-v images=FILE: "address<TAB>file" lines): those show, from the site's own images/. A strict subset: headings,
+# site-relative; images show as links (no requests to other sites), except a proposal's own images
+# ccs-bash copied (-v images=FILE: "images/<proposal>/<file><TAB><proposal>/<file>" lines): those
+# show, from the site's own images/. A strict subset: headings,
 # paragraphs, lists (nested by indentation), code, quotes, tables, rules, emphasis, links.
 # Anything else stays plain text. POSIX awk only (mawk, gawk, busybox).
 
