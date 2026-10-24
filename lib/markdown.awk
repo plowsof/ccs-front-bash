@@ -6,9 +6,15 @@
 #
 # Safe by construction: all text is HTML-escaped first, and the only tags in the output are the
 # ones written here. Raw HTML in a proposal shows as text; links must be https:, #anchor or
-# site-relative; images show as links (no requests to other sites). A strict subset: headings,
+# site-relative; images show as links (no requests to other sites), except the ones ccs-bash keeps
+# a copy of (-v images=FILE: "address<TAB>file" lines): those show, from the site's own images/. A strict subset: headings,
 # paragraphs, lists (nested by indentation), code, quotes, tables, rules, emphasis, links.
 # Anything else stays plain text. POSIX awk only (mawk, gawk, busybox).
+
+BEGIN {
+    # the images the site has a copy of: plain addresses and file names only (ccs-front-bash.sh checks)
+    if (images != "") while ((getline l < images) > 0) { split(l, kv, "\t"); if (kv[2] != "") copy[kv[1]] = kv[2] }
+}
 
 FNR == 1 {
     if (started) finish()
@@ -145,11 +151,12 @@ function inline(s,    out, a, b, t, u, lab, m) {
         s = substr(s, a + b + 1)
     }
     s = out s
-    # images become links: no requests to other sites from a proposal page
+    # images become links: no requests to other sites from a proposal page; one the site has a
+    # copy of shows, from there
     out = ""
     while (match(s, /!\[[^]]*\]\([^) ]+( [^)]*)?\)/)) {
         m = substr(s, RSTART, RLENGTH); t = substr(m, 3, index(m, "](") - 3); u = substr(m, index(m, "](") + 2); sub(/\)$/, "", u); sub(/ .*/, "", u)
-        out = out substr(s, 1, RSTART - 1) link("image" (t == "" ? "" : ": " t), u)
+        out = out substr(s, 1, RSTART - 1) ((u in copy) ? hold("<img src=\"/images/" copy[u] "\" alt=\"") t hold("\" loading=\"lazy\">") : link("image" (t == "" ? "" : ": " t), u))
         s = substr(s, RSTART + RLENGTH)
     }
     s = out s

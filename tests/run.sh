@@ -262,4 +262,28 @@ else
     fail "raw HTML from front matter on a page"
 fi
 
+# Images: one ccs-bash keeps a copy of (images.json, images/) shows from the site's own images/,
+# relative to the page; any other stays a link; a list entry that isn't a plain address and an
+# upload-ID file name is ignored, and nothing outside images/ is copied.
+im=$(mktemp -d)
+cp -r "$here/fixtures/data" "$im/data" && cp -r "$props" "$im/props" && mkdir "$im/data/images"
+id=0c1d2e3f-1111-2222-3333-444455556666
+printf 'png bytes' > "$im/data/images/$id.png"
+printf 'secret' > "$im/data/secret.png"
+printf '\n![a chart](/attachments/%s "t") and ![other](https://elsewhere.example/x.png) and ![sneaky](/attachments/evil)\n' "$id" >> "$im/props/near-funded.md"
+jq -n --arg id "$id" '{("/attachments/" + $id): ($id + ".png"), "/attachments/evil": "../secret.png", "/a\"b": ($id + ".png")}' > "$im/data/images.json"
+if "$run" "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/log"; then
+    page=$im/site/proposals/near-funded.html
+    if grep -qF "<img src=\"../images/$id.png\" alt=\"a chart\" loading=\"lazy\">" "$page" \
+        && grep -qF '<a href="https://elsewhere.example/x.png">image: other</a>' "$page" \
+        && ! grep -q 'secret' "$page" && [[ $(ls "$im/site/images") == "$id.png" ]] && [[ ! -e $im/site/secret.png ]]; then
+        ok "images: a kept copy shows from the site (relative), others stay links, a bad list entry is ignored"
+    else
+        grep -oE '<img[^>]*>|<a href="[^"]*">image[^<]*</a>|image: [a-z]+[^<]*' "$page"; ls -R "$im/site/images" 2> /dev/null; fail "images"
+    fi
+else
+    cat "$im/log"; fail "images: the run"
+fi
+rm -rf "$im"
+
 exit "$status"
