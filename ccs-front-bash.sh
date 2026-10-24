@@ -116,6 +116,20 @@ check_addresses() {
     verify_link=$(cat "$original/parts/verify-link.html")
 }
 
+# relative_links SITE: links from the data (a proposal's local-url, /proposals/x.html; a tag's
+# page, /explore/tag/x/) are absolute. Make every one relative to its page, as the original's own
+# links are, so a site served under a prefix keeps it while browsing: the theme is /dark/ or
+# /light/ in the address. One sed per folder depth; //host and https: links are left alone.
+relative_links() {
+    local depth prefix i
+    for depth in 0 1 2 3 4 5; do
+        prefix=./
+        if ((depth)); then prefix=''; for ((i = 0; i < depth; i++)); do prefix+=../; done; fi
+        find "$1" -mindepth $((depth + 1)) -maxdepth $((depth + 1)) -name '*.html' \
+            -exec sed -i -E "s#((href|src)=\")/([^/])#\\1$prefix\\3#g" {} +
+    done
+}
+
 main() {
     local original data proposals site subaddresses stage page tag tags f
     # absolute paths, then work from /: started by runuser from root's home, the current
@@ -173,6 +187,8 @@ main() {
     if [[ ${listed:-} ]]; then
         for f in "" .asc .key.asc; do cp "$subaddresses$f" "$new/subaddresses.txt$f"; done
     fi
+
+    relative_links "$new"
 
     rm -rf "$site.old"
     if [[ -e $site ]]; then mv "$site" "$site.old"; fi
