@@ -133,16 +133,16 @@ a fifth argument, in `ccs-front-run` (step 2): **A)** add `/etc/ccs-front/subadd
 the four. **B)** mount the folder and name the list after the image (the five arguments replace
 the default four):
 
+```
+    -v /etc/ccs-front:/subaddresses:ro \
+    ccs-front-bash /original /data /proposals /www/site /subaddresses/subaddresses.txt
+```
+
 With them, `subaddresses.txt.viewkey` (root-owned, 644): the wallet's view key on its first line,
 and optionally a second line `source <https link>` to where the address and view key were
 published (for the CCS wallet: Luigi's comment in the monero-meta wallet thread). The Verify page
 shows them, with the commands to ask a copy of the wallet whether an address is one of its own
 (`get_address_index`).
-
-```
-    -v /etc/ccs-front:/subaddresses:ro \
-    ccs-front-bash /original /data /proposals /www/site /subaddresses/subaddresses.txt
-```
 
 Each run then checks the list against its `.pin` and every donation address against the list
 (about 0.2s); a missing file, a list that isn't the one the pin names, or an address not in it
