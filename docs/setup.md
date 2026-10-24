@@ -139,12 +139,14 @@ the default four):
 ```
 
 With them, `subaddresses.txt.viewkey` (root-owned, 644): the wallet's view key on its first line,
-and optionally a second line `source <https link>` to where the address and view key were
-published. For the mainnet CCS wallet that is luigi1111's comment in monero-project/meta #935:
+and optionally a line `source <https link>` to where the address and view key were published,
+and `source-text <words>` for what that link says (default "where they were published"). For the
+mainnet CCS wallet that is luigi1111's comment in monero-project/meta #935:
 
 ```
 62ad19781466882d8df0ae85743abcc5c8ef81e52e051e7cc56fe3c610d18001
 source https://github.com/monero-project/meta/issues/935#issuecomment-1867257410
+source-text shared by luigi1111 here
 ```
 
 The Verify page

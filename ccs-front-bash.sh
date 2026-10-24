@@ -68,12 +68,12 @@ tag_regions() {
 # one LIST.pin names and every donation address on the site must be in it; the Verify page gets
 # the steps and the fingerprint, each donation box a link there, and the list, signature and key
 # go out with the site. If the Verify part asks for them, it also gets the wallet's main address
-# (the list's index 0), its view key (LIST.viewkey: public; a second line "source <https link>"
-# says where it was published) and the network, so a visitor can ask a copy of the wallet about an
+# (the list's index 0), its view key (LIST.viewkey: public; a line "source <https link>" says
+# where it was published, and "source-text <words>" what that link says) and the network, so a visitor can ask a copy of the wallet about an
 # address. No LIST: no check, and the Verify
 # page says there is no list yet.
 check_addresses() {
-    local original=$1 data=$2 list=$3 sum fpr f main vk net src
+    local original=$1 data=$2 list=$3 sum fpr f main vk net src text
     verify_link=''   # global, for pages.jq: the donation boxes' link to /verify/
     if [[ -z $list ]]; then
         cp "$original/parts/no-list.html" "$work/regions/verify.html"
@@ -96,11 +96,14 @@ check_addresses() {
         [[ -f $list.viewkey ]] || die "no $list.viewkey: the wallet's view key, which the Verify page shows (see docs/setup.md, step 5)"
         vk=$(head -n 1 "$list.viewkey" | tr -d ' ')
         [[ $vk =~ ^[0-9a-f]{64}$ ]] || die "$list.viewkey: want the view key's 64 hex characters on its first line"
-        src=$(sed -n 's/^source *//p' "$list.viewkey")
+        src=$(sed -n 's/^source  *//p' "$list.viewkey")
+        text=$(sed -n 's/^source-text  *//p' "$list.viewkey")
+        [[ $text =~ ^[A-Za-z0-9\ .,:\'_-]*$ ]] || die "$list.viewkey: source-text: letters, digits, spaces and .,:'_- only"
+        text=${text//\'/&#39;}
         if [[ -z $src ]]; then
             src='published by this site'
         elif [[ $src =~ ^https://[A-Za-z0-9._~:/?#@!$\&\'()*+,\;=%-]+$ && $src != *\"* ]]; then
-            src="<a href=\"${src//&/&amp;}\">where they were published</a>"
+            src="<a href=\"${src//&/&amp;}\">${text:-where they were published}</a>"
         else
             die "$list.viewkey: the source must be one https link"
         fi

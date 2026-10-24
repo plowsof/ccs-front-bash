@@ -167,15 +167,17 @@ if [[ $(grep -o "$main" "$v" | wc -l) == 2 && $(grep -o "$viewkey" "$v" | wc -l)
 else
     fail "Verify: asking the wallet"
 fi
-printf '%s\nsource https://example.org/r/Monero/comments/x?context=3&y=1\n' "$viewkey" > "$tmp/sub/list.txt.viewkey"
+printf '%s\nsource https://example.org/r/Monero/comments/x?context=3&y=1\nsource-text shared by luigi1111 here\n' "$viewkey" > "$tmp/sub/list.txt.viewkey"
 if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> /dev/null \
-    && grep -q 'are public (<a href="https://example.org/r/Monero/comments/x?context=3&amp;y=1">where they were published</a>)' "$tmp/site5/verify/index.html"; then
-    ok "Verify: a source line in list.txt.viewkey becomes a link to where they were published"
+    && grep -q 'are public (<a href="https://example.org/r/Monero/comments/x?context=3&amp;y=1">shared by luigi1111 here</a>)' "$tmp/site5/verify/index.html"; then
+    ok "Verify: the source and source-text lines in list.txt.viewkey become the link to where they were published"
 else
     fail "Verify: the source"
 fi
 printf '%s\nsource https://x.org/"><script>\n' "$viewkey" > "$tmp/sub/list.txt.viewkey"
 must_stop "a view key's source that isn't one https link" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+printf '%s\nsource-text <b>x</b>\n' "$viewkey" > "$tmp/sub/list.txt.viewkey"
+must_stop "a source-text with HTML in it" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 rm "$tmp/sub/list.txt.viewkey"
 must_stop "no view key file, when Verify shows the view key" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 echo "$viewkey" > "$tmp/sub/list.txt.viewkey"
