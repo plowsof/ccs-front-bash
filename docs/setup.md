@@ -79,6 +79,10 @@ location = /projects {
 }
 ```
 
+For the footer's Light / Dark / System toggle (kept in the address, no cookies, no JavaScript),
+add the theme lines from ccs-bash's docs/two-machines.md ("The theme"), with
+`/var/lib/ccs/www/site/` in place of `/var/lib/ccs-data/`.
+
 **Two machines:** push the site instead of the JSON, as in ccs-bash's docs/two-machines.md (way A,
 tried from node3 to an Oracle VM): `rsync -a --delay-updates -e "ssh -p 22 …"
 /var/lib/ccs/www/site/ ccs-data@<web server>:` after this run, as the `ccs` user. The site
