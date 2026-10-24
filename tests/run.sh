@@ -276,10 +276,10 @@ if "$run" "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/lo
     page=$im/site/proposals/near-funded.html
     if grep -qF "<img src=\"../images/$id.png\" alt=\"a chart\" loading=\"lazy\">" "$page" \
         && grep -qF '<a href="https://elsewhere.example/x.png">image: other</a>' "$page" \
-        && ! grep -q 'secret' "$page" && [[ $(ls "$im/site/images") == "$id.png" ]] && [[ ! -e $im/site/secret.png ]]; then
+        && ! grep -q 'secret' "$page" && [[ $(cd "$im/site/images" && echo *) == "$id.png" ]] && [[ ! -e $im/site/secret.png ]]; then
         ok "images: a kept copy shows from the site (relative), others stay links, a bad list entry is ignored"
     else
-        grep -oE '<img[^>]*>|<a href="[^"]*">image[^<]*</a>|image: [a-z]+[^<]*' "$page"; ls -R "$im/site/images" 2> /dev/null; fail "images"
+        grep -oE '<img[^>]*>|<a href="[^"]*">image[^<]*</a>|image: [a-z]+[^<]*' "$page"; (cd "$im/site/images" 2> /dev/null && echo *); fail "images"
     fi
 else
     cat "$im/log"; fail "images: the run"
