@@ -1,7 +1,7 @@
 # Setup
 
 ccs-front-bash's own steps. The whole CCS (the order across the three repositories, and the
-update script that runs them all) starts at [ccs-bash's deploying page](https://github.com/plowsof/ccs-bash/blob/master/docs/deploy.md).
+update script that runs them all) starts at [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md).
 
 ccs-front-bash runs on the ccs-bash machine, right after ccs-bash, and replaces the Jekyll build.
 It reads three things and writes one:
@@ -62,7 +62,7 @@ and leaves the last good site as it was.
 ## 3. In ccs-bash-update
 
 `ccs-bash-update` runs `ccs-front-run` right after `ccs-bash-run`, then pushes the site. The
-script, the only full copy: [ccs-bash's deploying page](https://github.com/plowsof/ccs-bash/blob/master/docs/deploy.md#the-update).
+script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#the-update).
 
 ## 4. Serving it
 
@@ -172,5 +172,5 @@ covers the whole old file, and its key is gone).
 
 ## Going back
 
-Point nginx back at the Jekyll site and restore the old `ccs-bash-update`. Nothing here
-changes ccs-bash, its data or the proposals checkout.
+During the move from Jekyll: [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#10-the-cutover),
+step 10. Nothing here changes ccs-bash, its data or the proposals checkout.
