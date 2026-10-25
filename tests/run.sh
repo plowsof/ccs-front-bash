@@ -108,10 +108,12 @@ if grep -q "<a class=\"filter $repurposed\" href=\"../explore/tag/repurposed/\">
 else
     fail "filters"
 fi
-# a tag page is three folders down: every link to the assets (the cards' icons too) goes three up
-if grep -q 'href="../../../assets/icons[.0-9a-f]*svg#user' "$tmp/site/explore/tag/repurposed/index.html" \
+# a tag page is three folders down: every link to the assets goes three up (the cards' icons
+# are the stylesheet's, by class)
+if grep -q 'href="../../../assets/style\.' "$tmp/site/explore/tag/repurposed/index.html" \
+    && grep -q 'class="icon icon-user"' "$tmp/site/explore/tag/repurposed/index.html" \
     && ! grep -q '"\.\./assets/\|"\.\./\.\./assets/' "$tmp/site/explore/tag/repurposed/index.html"; then
-    ok "a tag page's cards link their icons from three folders down"
+    ok "a tag page's cards have their icons, and it links the assets from three folders down"
 else
     fail "icons on a tag page's cards"
 fi

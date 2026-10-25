@@ -5,15 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Check a donation address · Monero CCS</title>
-<link rel="stylesheet" href="../assets/style.ea2b3f986e37abcd18fb367e68543405edaa7446626c5477e0493e065ac0507d.css" integrity="sha256-6is/mG43q80Y&#43;zZ&#43;aFQ0Be2qdEZibFR34Ek&#43;BlrAUH0=">
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/dm-sans-latin.9fea608a947e67020c33cad9a6fe3d60c54119dfb8cff87768a8117a15ed7543.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/style.0e6e77f76bbe2737d7bcaeba15a55c1fee7f266c2bf6142b91bdf5e4e53e7601.css" integrity="sha256-Dm5392u&#43;JzfXvK66FaVcH&#43;5/Jmwr9hQrkb315OU&#43;dgE=">
+<link rel="stylesheet" href="../assets/theme.css" integrity="sha256-YmjQigvTSGOW47gt4Mkv/5Clxv6ziNRo26w516C78tQ= sha256-Zhmh&#43;mEiLZDerrW/Jhzplqiu1XE&#43;XjP5t9xb5TYxp8Q= sha256-KICcRA8PabbHVzNSEttYOlilCAqMG0X4seSIUzsBC5o=">
+<link rel="icon" href="../assets/icons/favicon-32.439e3f483cb3d5f639a0c355f24a8c1516f5714f6fa1fd7b7706cb68110ebe62.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../assets/icons/favicon-180.6b765aa0888a02b21fbace4221ddd4b89813f8164fb4bbcdaf4151eb9bb7b7c1.png">
 </head>
 <body class="page-other">
 <input type="checkbox" id="nav-toggle" class="nav-toggle">
 <header class="site-header">
-  <label for="nav-toggle" class="nav-button"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#menu"></use></svg>
-<span>Menu</span></label>
-  <a class="brand" href="../" aria-label="Community Crowdfunding System, home"><svg aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#logo"></use></svg><span class="brand-long">Community Crowdfunding System</span><span class="brand-short" aria-hidden="true">CCS</span></a>
+  <label for="nav-toggle" class="nav-button"><span class="icon icon-menu" aria-hidden="true"></span>
+<span class="when-closed">Menu</span><span class="when-open">Close</span></label>
+  <a class="brand" href="../" aria-label="Community Crowdfunding System, home"><img src="../assets/icons/logo-1x.8b530ece36bda4909ac6d5238797e5ab3b90f165c97c8d0ef0011b10db943ba6.png" srcset="../assets/icons/logo-2x.6ebd24600e029d5d086c578db9e6ecef0b4544ff87692835fc6a75c07df28d35.png 2x, ../assets/icons/logo-3x.8314789b9185b3f23d02f35438c00617c2ac72fa9d154b0f8ca54f54bc6f69a4.png 3x" width="28" height="28" alt=""><span class="brand-long">Community Crowdfunding System</span><span class="brand-short" aria-hidden="true">CCS</span></a>
+  <div class="header-end">
   <nav class="site-nav" aria-label="Site"><a href="../funding-required/">Proposals</a>
 <a href="../what-is-ccs/">What is the CCS</a>
 <a href="../how-to-ccs/">Submit a proposal</a>
@@ -21,17 +25,26 @@
 <a href="https://beta.getmonero.org/">getmonero.org</a>
 
   </nav>
+  <nav class="theme-toggle" aria-label="Theme">
+    <a class="to-light" href="?theme=light" title="Theme: system. Switch to light"><span class="icon icon-contrast" aria-hidden="true"></span>
+<span class="visually-hidden">Theme: system. Switch to light</span></a>
+    <a class="to-dark" href="?theme=dark" title="Theme: light. Switch to dark"><span class="icon icon-sun" aria-hidden="true"></span>
+<span class="visually-hidden">Theme: light. Switch to dark</span></a>
+    <a class="to-system" href="?theme=system" title="Theme: dark. Switch to the system's"><span class="icon icon-moon" aria-hidden="true"></span>
+<span class="visually-hidden">Theme: dark. Switch to the system's</span></a>
+  </nav>
+  </div>
 </header>
 <div class="layout">
   <aside class="side drawer" aria-label="Proposals">
   <nav class="stage-menu" aria-label="Stages">
-    <a class="idea tab-ideas" href="../ideas/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
+    <a class="idea tab-ideas" href="../ideas/"><span class="icon icon-bulb" aria-hidden="true"></span>
 Ideas<span class="count"><!-- ccs:count idea -->3<!-- /ccs:count idea --></span></a>
-    <a class="fr tab-fr" href="../funding-required/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#hand-coins"></use></svg>
+    <a class="fr tab-fr" href="../funding-required/"><span class="icon icon-hand-coins" aria-hidden="true"></span>
 Funding Required<span class="count"><!-- ccs:count fr -->3<!-- /ccs:count fr --></span></a>
-    <a class="wip tab-wip" href="../work-in-progress/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#gear"></use></svg>
+    <a class="wip tab-wip" href="../work-in-progress/"><span class="icon icon-gear" aria-hidden="true"></span>
 Work in Progress<span class="count"><!-- ccs:count wip -->2<!-- /ccs:count wip --></span></a>
-    <a class="cp tab-cp" href="../completed-proposals/"><svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#box"></use></svg>
+    <a class="cp tab-cp" href="../completed-proposals/"><span class="icon icon-box" aria-hidden="true"></span>
 Completed<span class="count"><!-- ccs:count cp -->2<!-- /ccs:count cp --></span></a>
   </nav>
   <!-- ccs:filters -->
@@ -60,30 +73,45 @@ Completed<span class="count"><!-- ccs:count cp -->2<!-- /ccs:count cp --></span>
 <article class="proposal"><div class="body">
   <h1>Check a donation address</h1>
   <!-- ccs:verify -->
-  <p>Every donation address on this site is one of the CCS wallet&rsquo;s subaddresses, taken from a
-list made once, offline, from a view-only copy of the wallet, and signed with a key made
-only for that. The secret key was destroyed right after signing, so no other list can ever
-carry that signature. The site is checked against the list each time it is made: an address
-that is not in it is never shown.</p>
-<p>You can check it yourself, with nothing from this site but the files below:</p>
+  <p>Every donation address here is one of the CCS wallet&rsquo;s subaddresses, from a list made offline and
+signed. Check it with a key that <strong>doesn&rsquo;t come from this site</strong>: whoever took over the site could
+change the addresses, the list, its signature and this page together.</p>
 <ol>
 <li>
-<p>Download <a href="../subaddresses.txt">the list</a>, <a href="../subaddresses.txt.asc">its signature</a> and
-<a href="../subaddresses.txt.key.asc">the public key</a>.</p>
+<p>Get the key from the design repository, <code>github.com/plowsof/ccs-front-hugo</code> (in <code>keys/</code>, its
+fingerprint in the README). Type the address yourself rather than following a link from here,
+or ask someone you trust for the fingerprint.</p>
 </li>
 <li>
-<p>Check the key&rsquo;s fingerprint against the one the CCS maintainers publish elsewhere (in the
-<a href="https://repo.getmonero.org/monero-project/ccs-front">front end&rsquo;s repository</a> and in its README), then:</p>
-<pre tabindex="0"><code>gpg --import subaddresses.txt.key.asc
+<p>Download <a href="../subaddresses.txt">the list</a> and <a href="../subaddresses.txt.asc">its signature</a>, and check
+them with that key:</p>
+<pre tabindex="0"><code>gpg --import &lt;the key from step 1&gt;
 gpg --verify subaddresses.txt.asc subaddresses.txt
 </code></pre></li>
 <li>
-<p>Look for the address you are about to pay to:</p>
+<p>Look for the address <strong>your wallet shows</strong> after scanning or pasting (a QR code can hold
+another address than the text beside it):</p>
 <pre tabindex="0"><code>grep -c &#34; THE_ADDRESS$&#34; subaddresses.txt
-</code></pre><p><code>1</code> means it is the wallet&rsquo;s. <code>0</code> means do not send: tell the CCS maintainers.</p>
+</code></pre><p><code>1</code>: it is the wallet&rsquo;s. <code>0</code>: do not send, tell the CCS maintainers.</p>
 </li>
 </ol>
-<p>The key&rsquo;s fingerprint: <code>0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567</code></p>
+<p>This site says the fingerprint is <code>0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567</code>: if it differs from the one you got, do not send.</p>
+<h2 id="or-ask-the-wallet-itself">Or ask the wallet itself</h2>
+<p>The wallet&rsquo;s address and view key are public (<a href="#">where they were published</a>): take them from there, found
+yourself, not from this page. A copy of the wallet made from them, offline, says whether an address
+is its own; a view key can&rsquo;t spend. This site says they are:</p>
+<p>The wallet&rsquo;s address: <code>9xExampleWalletAddress</code></p>
+<p>Its view key: <code>0123456789abcdef</code></p>
+<p>With <code>monero-wallet-rpc</code> from the Monero CLI (<a href="https://www.getmonero.org/downloads/">getmonero.org</a>,
+hashes checked), in one terminal:</p>
+<pre tabindex="0"><code>monero-wallet-rpc --testnet --offline --wallet-dir ccs-check --rpc-bind-port 18088 --disable-rpc-login
+</code></pre><p>and in another:</p>
+<pre tabindex="0"><code>rpc() { curl -s http://127.0.0.1:18088/json_rpc -d &#34;{\&#34;jsonrpc\&#34;:\&#34;2.0\&#34;,\&#34;id\&#34;:0,\&#34;method\&#34;:\&#34;$1\&#34;,\&#34;params\&#34;:$2}&#34;; }
+rpc generate_from_keys &#39;{&#34;filename&#34;:&#34;ccs&#34;,&#34;address&#34;:&#34;9xExampleWalletAddress&#34;,&#34;viewkey&#34;:&#34;0123456789abcdef&#34;,&#34;password&#34;:&#34;&#34;}&#39;
+rpc set_subaddress_lookahead &#39;{&#34;password&#34;:&#34;&#34;,&#34;major_idx&#34;:1,&#34;minor_idx&#34;:20000}&#39;
+rpc get_address_index &#39;{&#34;address&#34;:&#34;THE_ADDRESS&#34;}&#39;
+</code></pre><p><code>&quot;index&quot;:{&quot;major&quot;:0,&quot;minor&quot;:…}</code>: it is the wallet&rsquo;s. <code>Address doesn't belong to the wallet</code>: do
+not send, tell the CCS maintainers. Delete <code>ccs-check</code> when done.</p>
 
   <!-- /ccs:verify -->
 </div></article>
@@ -100,13 +128,16 @@ gpg --verify subaddresses.txt.asc subaddresses.txt
     <p class="address">888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H</p>
   </section>
   <nav class="footer-links" aria-label="Repositories">
-  <a href="https://repo.getmonero.org/monero-project/ccs-front">Frontend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-front-hugo">Design (ccs-front-hugo) <span class="icon icon-external" aria-hidden="true"></span>
 </a>
-  <a href="https://github.com/plowsof/ccs-bash">Backend Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-front-bash">Site builder (ccs-front-bash) <span class="icon icon-external" aria-hidden="true"></span>
 </a>
-  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals Repo <svg class="icon" aria-hidden="true"><use href="../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-bash">Backend (ccs-bash) <span class="icon icon-external" aria-hidden="true"></span>
+</a>
+  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals (ccs-proposals) <span class="icon icon-external" aria-hidden="true"></span>
 </a>
   </nav>
 </footer>
+
 </body>
 </html>

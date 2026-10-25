@@ -5,15 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Tagged proposals · Monero CCS</title>
-<link rel="stylesheet" href="../../../assets/style.ea2b3f986e37abcd18fb367e68543405edaa7446626c5477e0493e065ac0507d.css" integrity="sha256-6is/mG43q80Y&#43;zZ&#43;aFQ0Be2qdEZibFR34Ek&#43;BlrAUH0=">
-<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../../../assets/fonts/dm-sans-latin.9fea608a947e67020c33cad9a6fe3d60c54119dfb8cff87768a8117a15ed7543.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../assets/style.0e6e77f76bbe2737d7bcaeba15a55c1fee7f266c2bf6142b91bdf5e4e53e7601.css" integrity="sha256-Dm5392u&#43;JzfXvK66FaVcH&#43;5/Jmwr9hQrkb315OU&#43;dgE=">
+<link rel="stylesheet" href="../../../assets/theme.css" integrity="sha256-YmjQigvTSGOW47gt4Mkv/5Clxv6ziNRo26w516C78tQ= sha256-Zhmh&#43;mEiLZDerrW/Jhzplqiu1XE&#43;XjP5t9xb5TYxp8Q= sha256-KICcRA8PabbHVzNSEttYOlilCAqMG0X4seSIUzsBC5o=">
+<link rel="icon" href="../../../assets/icons/favicon-32.439e3f483cb3d5f639a0c355f24a8c1516f5714f6fa1fd7b7706cb68110ebe62.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../../assets/icons/favicon-180.6b765aa0888a02b21fbace4221ddd4b89813f8164fb4bbcdaf4151eb9bb7b7c1.png">
 </head>
 <body class="page-explore">
 <input type="checkbox" id="nav-toggle" class="nav-toggle">
 <header class="site-header">
-  <label for="nav-toggle" class="nav-button"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#menu"></use></svg>
-<span>Menu</span></label>
-  <a class="brand" href="../../../" aria-label="Community Crowdfunding System, home"><svg aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#logo"></use></svg><span class="brand-long">Community Crowdfunding System</span><span class="brand-short" aria-hidden="true">CCS</span></a>
+  <label for="nav-toggle" class="nav-button"><span class="icon icon-menu" aria-hidden="true"></span>
+<span class="when-closed">Menu</span><span class="when-open">Close</span></label>
+  <a class="brand" href="../../../" aria-label="Community Crowdfunding System, home"><img src="../../../assets/icons/logo-1x.8b530ece36bda4909ac6d5238797e5ab3b90f165c97c8d0ef0011b10db943ba6.png" srcset="../../../assets/icons/logo-2x.6ebd24600e029d5d086c578db9e6ecef0b4544ff87692835fc6a75c07df28d35.png 2x, ../../../assets/icons/logo-3x.8314789b9185b3f23d02f35438c00617c2ac72fa9d154b0f8ca54f54bc6f69a4.png 3x" width="28" height="28" alt=""><span class="brand-long">Community Crowdfunding System</span><span class="brand-short" aria-hidden="true">CCS</span></a>
+  <div class="header-end">
   <nav class="site-nav" aria-label="Site"><a href="../../../funding-required/">Proposals</a>
 <a href="../../../what-is-ccs/">What is the CCS</a>
 <a href="../../../how-to-ccs/">Submit a proposal</a>
@@ -21,23 +25,32 @@
 <a href="https://beta.getmonero.org/">getmonero.org</a>
 
   </nav>
+  <nav class="theme-toggle" aria-label="Theme">
+    <a class="to-light" href="?theme=light" title="Theme: system. Switch to light"><span class="icon icon-contrast" aria-hidden="true"></span>
+<span class="visually-hidden">Theme: system. Switch to light</span></a>
+    <a class="to-dark" href="?theme=dark" title="Theme: light. Switch to dark"><span class="icon icon-sun" aria-hidden="true"></span>
+<span class="visually-hidden">Theme: light. Switch to dark</span></a>
+    <a class="to-system" href="?theme=system" title="Theme: dark. Switch to the system's"><span class="icon icon-moon" aria-hidden="true"></span>
+<span class="visually-hidden">Theme: dark. Switch to the system's</span></a>
+  </nav>
+  </div>
 </header>
 <div class="layout with-side">
   <aside class="side drawer" aria-label="Proposals">
   <nav class="stage-menu" aria-label="Stages">
-    <a class="idea tab-ideas" href="../../../ideas/"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#bulb"></use></svg>
+    <a class="idea tab-ideas" href="../../../ideas/"><span class="icon icon-bulb" aria-hidden="true"></span>
 Ideas<span class="count"><!-- ccs:count idea -->
 2
 <!-- /ccs:count idea --></span></a>
-    <a class="fr tab-fr" href="../../../funding-required/"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#hand-coins"></use></svg>
+    <a class="fr tab-fr" href="../../../funding-required/"><span class="icon icon-hand-coins" aria-hidden="true"></span>
 Funding Required<span class="count"><!-- ccs:count fr -->
 4
 <!-- /ccs:count fr --></span></a>
-    <a class="wip tab-wip" href="../../../work-in-progress/"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#gear"></use></svg>
+    <a class="wip tab-wip" href="../../../work-in-progress/"><span class="icon icon-gear" aria-hidden="true"></span>
 Work in Progress<span class="count"><!-- ccs:count wip -->
 1
 <!-- /ccs:count wip --></span></a>
-    <a class="cp tab-cp" href="../../../completed-proposals/"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#box"></use></svg>
+    <a class="cp tab-cp" href="../../../completed-proposals/"><span class="icon icon-box" aria-hidden="true"></span>
 Completed<span class="count"><!-- ccs:count cp -->
 3
 <!-- /ccs:count cp --></span></a>
@@ -70,17 +83,17 @@ Available to pick up
 <!-- /ccs:title --></h1>
     <!-- ccs:list fr -->
 <a class="card fr" href="../../../proposals/near-funded.html">
-  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#hand-coins"></use></svg>
+  <span class="tag"><span class="icon icon-hand-coins" aria-hidden="true"></span>
 Funding Required</span>
   <h3>Nearly funded</h3>
   <ul class="meta">
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#user"></use></svg>
+  <li><span class="icon icon-user" aria-hidden="true"></span>
 judy</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#calendar"></use></svg>
+  <li><span class="icon icon-calendar" aria-hidden="true"></span>
 October 5, 2026</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#users"></use></svg>
+  <li><span class="icon icon-users" aria-hidden="true"></span>
 1 contributors</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#coins"></use></svg>
+  <li><span class="icon icon-coins" aria-hidden="true"></span>
 100 XMR</li>
 </ul>
 
@@ -91,17 +104,17 @@ October 5, 2026</li>
 <!-- /ccs:list fr -->
     <!-- ccs:list wip -->
 <a class="card wip" href="../../../proposals/b-wip.html">
-  <span class="tag"><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#gear"></use></svg>
+  <span class="tag"><span class="icon icon-gear" aria-hidden="true"></span>
 Work in Progress</span>
   <h3>Work in progress</h3>
   <ul class="meta">
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#user"></use></svg>
+  <li><span class="icon icon-user" aria-hidden="true"></span>
 bob</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#calendar"></use></svg>
+  <li><span class="icon icon-calendar" aria-hidden="true"></span>
 August 10, 2021</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#users"></use></svg>
+  <li><span class="icon icon-users" aria-hidden="true"></span>
 1 contributors</li>
-  <li><svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#coins"></use></svg>
+  <li><span class="icon icon-coins" aria-hidden="true"></span>
 85 XMR</li>
 </ul>
 
@@ -127,13 +140,16 @@ August 10, 2021</li>
     <p class="address">888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H</p>
   </section>
   <nav class="footer-links" aria-label="Repositories">
-  <a href="https://repo.getmonero.org/monero-project/ccs-front">Frontend Repo <svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-front-hugo">Design (ccs-front-hugo) <span class="icon icon-external" aria-hidden="true"></span>
 </a>
-  <a href="https://github.com/plowsof/ccs-bash">Backend Repo <svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-front-bash">Site builder (ccs-front-bash) <span class="icon icon-external" aria-hidden="true"></span>
 </a>
-  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals Repo <svg class="icon" aria-hidden="true"><use href="../../../assets/icons.870305ae1fb147fec16aa8c80f50d6c5f7a9e2f1c05787aa9b8680ee982b80ec.svg#external"></use></svg>
+  <a href="https://github.com/plowsof/ccs-bash">Backend (ccs-bash) <span class="icon icon-external" aria-hidden="true"></span>
+</a>
+  <a href="https://repo.getmonero.org/monero-project/ccs-proposals">Proposals (ccs-proposals) <span class="icon icon-external" aria-hidden="true"></span>
 </a>
   </nav>
 </footer>
+
 </body>
 </html>
