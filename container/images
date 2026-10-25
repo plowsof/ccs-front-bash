@@ -5,6 +5,8 @@ musl                       stagex/core-musl@sha256:94f77e4b1841987a42efce52aac54
 bash                       stagex/core-bash@sha256:f1e9107e8b2ce20c33dc47bf335d345bd337c51298efc7ca0e7805c3b8845bab
 ncurses                    stagex/core-ncurses@sha256:75ff2773ec899b83185e6050d9bf5c80d54459531d708adca8dbab9f6189cb2f
 jq                         stagex/user-jq@sha256:4148299a2beb46fa5f0494ea456f1968500ca99c7fd96298be766195cf716855
+zlib                       stagex/core-zlib@sha256:6b843e1875989a330d0b2051ddd1ab0178f01c9f476fb64727c8bd388eda9839
+libpng                     stagex/core-libpng@sha256:60ad8b2685cdc0766fa476b63855a22a0dc6f69998fb697f9d3a783e957e4785
 # the builder (builder.Dockerfile): BuildKit, runc and its library, certificates to fetch the pins
 ca-certificates            stagex/core-ca-certificates@sha256:fe24a3809eba30972b64ddd8b611a6494bebea7631f805d795cec4241f5a11c6
 buildkit                   stagex/user-buildkit@sha256:91bff9810facddaa795fe3173d190b25b1919bd4eb21dc8e81ce4d632161faa7

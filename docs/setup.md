@@ -13,9 +13,10 @@ It reads three things and writes one:
 | the proposals | `/var/lib/ccs/proposals` | the checkout ccs-bash reads |
 | the site | `/var/lib/ccs/www/site` | written each run, swapped in when complete (with ccs-bash's `projects.json`, for `/projects`) |
 
-Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils, `grep`, `sed`, `tar`,
-`find` and `xargs` (and `unzip` for step 1):
-on Debian, `apt install jq` on top of what ccs-bash needs. The QR codes are ccs-bash's (PNG).
+Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils (`base64` too), `grep`, `sed`, `tar`,
+`find`, `xargs` and `qrencode` (and `unzip` for step 1):
+on Debian, `apt install jq qrencode` on top of what ccs-bash needs. It makes the QR codes itself
+(qrencode, PNG), from the addresses it has checked; ccs-bash's are not used.
 
 ## 1. The original
 
@@ -71,7 +72,8 @@ script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs
 
 ```
 root /var/lib/ccs/www/site;           # with Docker: mount /var/lib/ccs/www, root …/www/site
-add_header Content-Security-Policy "default-src 'none'; style-src 'self'; img-src 'self' data:; font-src 'self'" always;
+add_header Content-Security-Policy "default-src 'none'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'" always;
+add_header Strict-Transport-Security "max-age=31536000" always;   # with HTTPS (ccs-bash's docs/two-machines.md)
 location = /projects {
     alias /var/lib/ccs/out/projects.json;
     default_type application/json;
@@ -94,7 +96,7 @@ The CSP above was checked with the built site: styles, fonts, icons and QR codes
 With it, no donation address can go on the site unless it is one of the wallet's: whatever
 changes ccs-bash's JSON, the push or the web server can't slip in another address without the
 run stopping (or, on the web server, without anyone being able to tell). It checks the address
-text and its `monero:` link; the QR code is ccs-bash's PNG.
+text and its `monero:` link, and the QR code is made here from the checked address.
 
 A **Core Team member** makes the list on an offline machine with the script below, then signs it
 as described further down (`tools/sign-subaddresses.sh`). The script asks for the wallet's main

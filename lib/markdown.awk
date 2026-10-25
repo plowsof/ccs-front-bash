@@ -115,9 +115,10 @@ function unhold(s,    out, j) {
     }
     return s
 }
-# u is already escaped
+# u is already escaped. A site-relative one starts "/" and a plain character: not "//", "/\" or
+# an entity ("/&#47;"), which a browser reads as another site's address.
 function safeurl(u) {
-    return u ~ /^https:\/\/[^ \001\002]+$/ || u ~ /^#[A-Za-z0-9_-]+$/ || u ~ /^\/[^\/ \001\002][^ \001\002]*$/
+    return u ~ /^https:\/\/[^ \001\002]+$/ || u ~ /^#[A-Za-z0-9_-]+$/ || (u ~ /^\/[A-Za-z0-9._~-][^ \001\002]*$/ && u !~ /\\/)
 }
 function link(text, u, title) {
     if (!safeurl(u)) return text " (" u ")"
