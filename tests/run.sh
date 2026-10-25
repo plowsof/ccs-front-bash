@@ -52,8 +52,19 @@ if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok 
 if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok "projects.json goes with the site"; else fail "projects.json"; fi
 pages_want=$((fr + wip + cp))
 if [[ $(find "$tmp/site/proposals" -name '*.html' | wc -l) == "$pages_want" ]]; then ok "a page per proposal in fr, wip, cp ($pages_want)"; else fail "proposal page count"; fi
-if grep -q '<a class="qr" href="monero:8[0-9]*"><img src="data:image/png;base64,' "$tmp/site/proposals/near-funded.html"; then
-    ok "a funding page has its QR code (ccs-bash's PNG)"
+# the QR code is made here from the address (a PNG: its base64 starts iVBORw0KGgo), never ccs-bash's (the fixture's is the text "QR for
+# monero:…", not a PNG): zbarimg reads it back where it is installed (not in the image)
+page=$tmp/site/proposals/near-funded.html
+addr=$(grep -m 1 -o 'href="monero:[0-9A-Za-z]*"' "$page" | sed 's/^href="monero://; s/"$//')
+qr=$(grep -m 1 -o 'src="data:image/png;base64,[A-Za-z0-9+/=]*"' "$page" | sed 's/^src="data:image\/png;base64,//; s/"$//')
+if [[ $qr == iVBORw0KGgo* ]] \
+    && ! grep -qF "$(jq -r 'first(.[1].proposals[] | ."donate-qr-code" // empty)' "$here/fixtures/data/proposals.json")" "$page"; then
+    if command -v zbarimg > /dev/null; then
+        base64 -d <<<"$qr" > "$tmp/qr.png"
+        if [[ $(zbarimg -q --raw "$tmp/qr.png") == "monero:$addr" ]]; then ok "a funding page's QR code is made here, of its address (zbarimg reads it back)"; else fail "the QR code isn't of its address"; fi
+    else
+        ok "a funding page's QR code is made here, a PNG, not ccs-bash's (no zbarimg to read it back)"
+    fi
 else
     fail "QR code on a funding page"
 fi
@@ -215,7 +226,8 @@ else
     fail "a title was filled again"
 fi
 
-# The Markdown renderer: hostile text stays text, links only https/#/site-relative, and the
+# The Markdown renderer: hostile text stays text, links only https/#/site-relative (never one a
+# browser reads as another site's: //host, /\host, /&#47;host), and the
 # same HTML from every awk there is (mawk, gawk, busybox: CI has the first two).
 cat > "$tmp/evil.md" <<'MD'
 ---
@@ -226,6 +238,7 @@ milestones:
 ---
 <script>alert(1)</script> <img src=x onerror=alert(1)> <a href="javascript:alert(1)">x</a>
 [click](javascript:alert(1)) [data](data:text/html,x) [ok](https://getmonero.org/) ![pic](https://example.org/p.png)
+[a](//evil.example/) [b](/\evil.example) [c](/&#47;evil.example) [d](/&#x2f;evil.example) [here](/proposals/x.html)
 `<b>` **bold** <!-- ccs:list fr --> {{name}} &nbsp; &#8212; &amp;lt;
 	tab	and controls
 MD
@@ -244,9 +257,10 @@ done
 body=$(jq -r '.body' "$first")
 # (a proposal's own \001 and \002 are dropped: "x999y" stays text, never held HTML number 999)
 if [[ $body == *'<script'* || $body == *'<img'* || $body == *'onerror=alert(1)>'* || $body == *'href="javascript'* \
-    || $body == *'href="data'* || $body == *'<!-- ccs'* || $body != *'x999y'* ]]; then
+    || $body == *'href="data'* || $body == *'<!-- ccs'* || $body != *'x999y'* \
+    || $body == *'href="//'* || $body == *"href=\"/\\"* || $body == *'href="/&'* ]]; then
     echo "$body"; fail "hostile Markdown got through"
-elif [[ $body == *'<a href="https://getmonero.org/">ok</a>'* && $body == *'<a href="https://example.org/p.png">image: pic</a>'* && $body == *'&nbsp; &#8212; &amp;lt;'* ]]; then
+elif [[ $body == *'<a href="https://getmonero.org/">ok</a>'* && $body == *'<a href="/proposals/x.html">here</a>'* && $body == *'<a href="https://example.org/p.png">image: pic</a>'* && $body == *'&nbsp; &#8212; &amp;lt;'* ]]; then
     ok "hostile Markdown stays text, the same on ${#awks[@]} awk(s): ${awks[*]}"
 else
     echo "$body"; fail "the Markdown renderer lost something"
