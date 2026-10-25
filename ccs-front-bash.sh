@@ -35,7 +35,9 @@ proposal_pages() {
         done > "$work/images.tsv"
     fi
     cut -f2 "$work/images.tsv" | while IFS= read -r f; do
-        mkdir -p "$out/images/${f%/*}" && cp -p "$data/images/$f" "$out/images/$f"
+        # with its time (rsync then sends it only when it changed); not cp -p, which would also try
+        # to keep the owner
+        mkdir -p "$out/images/${f%/*}" && cp "$data/images/$f" "$out/images/$f" && touch -r "$data/images/$f" "$out/images/$f"
     done
     printf '%s\0' "${files[@]}" | xargs -0 -r awk -v images="$work/images.tsv" -f "$LIB/markdown.awk" > "$work/md.jsonl"
     jq -nr -L "$LIB" --slurpfile proposals "$data/proposals.json" --slurpfile completed "$data/completed-proposals.json" \
