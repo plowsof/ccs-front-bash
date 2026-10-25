@@ -72,8 +72,8 @@ script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs
 
 ```
 root /var/lib/ccs/www/site;           # with Docker: mount /var/lib/ccs/www, root …/www/site
-add_header Content-Security-Policy "default-src 'none'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'" always;
-add_header Strict-Transport-Security "max-age=31536000" always;   # with HTTPS (ccs-bash's docs/two-machines.md)
+server_tokens off;
+include snippets/ccs-headers.conf;    # the security headers: ccs-bash's docs/two-machines.md, way A
 location = /projects {
     alias /var/lib/ccs/out/projects.json;
     default_type application/json;
@@ -89,7 +89,7 @@ ccs-bash's docs/two-machines.md, way A, describes (its nginx, the gate, the aler
 carries `projects.json`, so that one push is all the web server gets. Its key can't delete, so a
 renamed proposal's old page stays until removed by hand.
 
-The CSP above was checked with the built site: styles, fonts, icons and QR codes all load.
+The headers above were checked with the built site: styles, fonts, icons and QR codes all load.
 
 ## 5. The signed subaddress list (optional, recommended)
 
