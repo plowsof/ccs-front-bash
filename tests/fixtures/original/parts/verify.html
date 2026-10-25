@@ -1,42 +1,40 @@
-<p>Every donation address on this site is one of the CCS wallet&rsquo;s subaddresses, taken from a
-list made once, offline, from a view-only copy of the wallet, and signed with a key made
-only for that. The secret key was destroyed right after signing, so no other list can ever
-carry that signature. The site is checked against the list each time it is made: an address
-that is not in it is never shown.</p>
-<p>You can check it yourself, with nothing from this site but the files below:</p>
+<p>Every donation address here is one of the CCS wallet&rsquo;s subaddresses, from a list made offline and
+signed. Check it with a key that <strong>doesn&rsquo;t come from this site</strong>: whoever took over the site could
+change the addresses, the list, its signature and this page together.</p>
 <ol>
 <li>
-<p>Download <a href="../subaddresses.txt">the list</a>, <a href="../subaddresses.txt.asc">its signature</a> and
-<a href="../subaddresses.txt.key.asc">the public key</a>.</p>
+<p>Get the key from the design repository, <code>github.com/plowsof/ccs-front-hugo</code> (in <code>keys/</code>, its
+fingerprint in the README). Type the address yourself rather than following a link from here,
+or ask someone you trust for the fingerprint.</p>
 </li>
 <li>
-<p>Check the key&rsquo;s fingerprint against the one the CCS maintainers publish elsewhere (in the
-<a href="https://github.com/plowsof/ccs-front-hugo">design repository</a>, in its README), then:</p>
-<pre tabindex="0"><code>gpg --import subaddresses.txt.key.asc
+<p>Download <a href="../subaddresses.txt">the list</a> and <a href="../subaddresses.txt.asc">its signature</a>, and check
+them with that key:</p>
+<pre tabindex="0"><code>gpg --import &lt;the key from step 1&gt;
 gpg --verify subaddresses.txt.asc subaddresses.txt
 </code></pre></li>
 <li>
-<p>Look for the address you are about to pay to:</p>
+<p>Look for the address <strong>your wallet shows</strong> after scanning or pasting (a QR code can hold
+another address than the text beside it):</p>
 <pre tabindex="0"><code>grep -c &#34; THE_ADDRESS$&#34; subaddresses.txt
-</code></pre><p><code>1</code> means it is the wallet&rsquo;s. <code>0</code> means do not send: tell the CCS maintainers.</p>
+</code></pre><p><code>1</code>: it is the wallet&rsquo;s. <code>0</code>: do not send, tell the CCS maintainers.</p>
 </li>
 </ol>
-<p>The key&rsquo;s fingerprint: <code>{{fingerprint}}</code></p>
+<p>This site says the fingerprint is <code>{{fingerprint}}</code>: if it differs from the one you got, do not send.</p>
 <h2 id="or-ask-the-wallet-itself">Or ask the wallet itself</h2>
-<p>The wallet&rsquo;s address and view key are public ({{wallet_source}}), so you can also ask a copy of
-the wallet whether an address is one of its own, without the list. A view key can&rsquo;t spend; it only shows
-what the wallet received.</p>
+<p>The wallet&rsquo;s address and view key are public ({{wallet_source}}): take them from there, found
+yourself, not from this page. A copy of the wallet made from them, offline, says whether an address
+is its own; a view key can&rsquo;t spend. This site says they are:</p>
 <p>The wallet&rsquo;s address: <code>{{address}}</code></p>
 <p>Its view key: <code>{{viewkey}}</code></p>
 <p>With <code>monero-wallet-rpc</code> from the Monero CLI (<a href="https://www.getmonero.org/downloads/">getmonero.org</a>,
-check its hashes as the site explains), offline, in one terminal:</p>
+hashes checked), in one terminal:</p>
 <pre tabindex="0"><code>monero-wallet-rpc{{network}} --offline --wallet-dir ccs-check --rpc-bind-port 18088 --disable-rpc-login
 </code></pre><p>and in another:</p>
 <pre tabindex="0"><code>rpc() { curl -s http://127.0.0.1:18088/json_rpc -d &#34;{\&#34;jsonrpc\&#34;:\&#34;2.0\&#34;,\&#34;id\&#34;:0,\&#34;method\&#34;:\&#34;$1\&#34;,\&#34;params\&#34;:$2}&#34;; }
 rpc generate_from_keys &#39;{&#34;filename&#34;:&#34;ccs&#34;,&#34;address&#34;:&#34;{{address}}&#34;,&#34;viewkey&#34;:&#34;{{viewkey}}&#34;,&#34;password&#34;:&#34;&#34;}&#39;
 rpc set_subaddress_lookahead &#39;{&#34;password&#34;:&#34;&#34;,&#34;major_idx&#34;:1,&#34;minor_idx&#34;:20000}&#39;
 rpc get_address_index &#39;{&#34;address&#34;:&#34;THE_ADDRESS&#34;}&#39;
-</code></pre><p><code>&quot;index&quot;:{&quot;major&quot;:0,&quot;minor&quot;:…}</code> means it is the wallet&rsquo;s. <code>Address doesn't belong to the wallet</code>
-means do not send: tell the CCS maintainers. (The lookahead makes the copy look at its first
-20,000 subaddresses; a fresh one only looks at 200.) Delete the <code>ccs-check</code> folder when done.</p>
+</code></pre><p><code>&quot;index&quot;:{&quot;major&quot;:0,&quot;minor&quot;:…}</code>: it is the wallet&rsquo;s. <code>Address doesn't belong to the wallet</code>: do
+not send, tell the CCS maintainers. Delete <code>ccs-check</code> when done.</p>
 
