@@ -52,6 +52,14 @@ if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok 
 if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok "projects.json goes with the site"; else fail "projects.json"; fi
 pages_want=$((fr + wip + cp))
 if [[ $(find "$tmp/site/proposals" -name '*.html' | wc -l) == "$pages_want" ]]; then ok "a page per proposal in fr, wip, cp ($pages_want)"; else fail "proposal page count"; fi
+# the Payouts tab where the original has it (work in progress, completed), not on a funding page,
+# which has nothing paid out yet; either way the run fills what is there
+if ! grep -q 'tab-payouts' "$tmp/site/proposals/near-funded.html" && grep -q 'tab-payouts' "$tmp/site/proposals/b-wip.html" \
+    && grep -q 'tab-payouts' "$tmp/site/proposals/c done, (old).html"; then
+    ok "Payouts only on work-in-progress and completed pages, as the original has them"
+else
+    fail "the Payouts tab"
+fi
 # the QR code is made here from the address (a PNG: its base64 starts iVBORw0KGgo), never ccs-bash's (the fixture's is the text "QR for
 # monero:…", not a PNG): zbarimg reads it back where it is installed (not in the image)
 page=$tmp/site/proposals/near-funded.html
