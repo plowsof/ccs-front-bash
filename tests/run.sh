@@ -268,6 +268,7 @@ fi
 im=$(mktemp -d)
 cp -r "$here/fixtures/data" "$im/data" && cp -r "$props" "$im/props" && mkdir -p "$im/data/images/near-funded"
 printf 'png bytes' > "$im/data/images/near-funded/chart.png"
+touch -d @1700000000 "$im/data/images/near-funded/chart.png"   # the copy keeps this time
 printf 'secret' > "$im/data/secret.png"
 printf '\n![a chart](images/near-funded/chart.png "t") and ![other](https://elsewhere.example/x.png) and ![sneaky](images/../secret.png) ![odd](images/x/y.png)\n' >> "$im/props/near-funded.md"
 jq -n '{"images/near-funded/chart.png": "near-funded/chart.png", "images/../secret.png": "../secret.png",
@@ -277,8 +278,9 @@ if "$run" "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/lo
     if grep -qF '<img src="../images/near-funded/chart.png" alt="a chart" loading="lazy">' "$page" \
         && grep -qF '<a href="https://elsewhere.example/x.png">image: other</a>' "$page" \
         && ! grep -q 'src="[^"]*secret' "$page" && ! grep -q 'src="[^"]*images/x/' "$page" \
-        && [[ $(cd "$im/site/images" && echo */*) == near-funded/chart.png ]] && [[ ! -e $im/site/secret.png ]]; then
-        ok "images: a proposal's own copied image shows from the site (relative), others stay links, bad entries ignored"
+        && [[ $(cd "$im/site/images" && echo */*) == near-funded/chart.png ]] && [[ ! -e $im/site/secret.png ]] \
+        && [[ $(date -r "$im/site/images/near-funded/chart.png" +%s) == 1700000000 ]]; then
+        ok "images: a proposal's own copied image shows from the site (relative, with its time), others stay links, bad entries ignored"
     else
         grep -oE '<img[^>]*>|<a href="[^"]*">image[^<]*</a>|image: [a-z]+[^<]*' "$page"; (cd "$im/site/images" 2> /dev/null && echo */*); fail "images"
     fi
