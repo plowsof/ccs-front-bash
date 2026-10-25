@@ -20,6 +20,11 @@ def region($name; $html):
   | if ($y | length) != 2 then error("<!-- /ccs:\($name) --> \($y | length - 1) times") else . end
   | $x[0] + $a + "\n" + $html + "\n" + $b + $y[1];
 
+# The same for a region the original leaves out of some pages (the payouts: not on a funding
+# page, where nothing is paid out yet): filled where its marker is, else the page stays as it is.
+def region_if_there($name; $html):
+  if contains("<!-- ccs:\($name) -->") then region($name; $html) else . end;
+
 ($md | map({key: .file, value: .}) | from_entries) as $byfile
 | {fr: $fr, wip: $wip, cp: $cp} as $tpl
 | paged($proposals; $completed) | .[0] as $stage | .[1] as $p
@@ -45,7 +50,7 @@ def region($name; $html):
 | fill($v)
 | region(if $stage == "fr" then "donate" else "funded" end; (if $stage == "fr" then $donate else $funded end) | part | fill($v))
 | region("milestones"; if $milestones == "" then $nom | part else $milestones end)
-| region("payouts"; if $payouts == "" then $nop | part else $payouts end)
+| region_if_there("payouts"; if $payouts == "" then $nop | part else $payouts end)
 | region("count idea"; $cidea | part) | region("count fr"; $cfr | part)
 | region("count wip"; $cwip | part) | region("count cp"; $ccp | part)
 | region("filters"; $filters | part)
