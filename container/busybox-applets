@@ -22,6 +22,7 @@ rm
 sed
 sha256sum
 tar
+touch
 tr
 wc
 xargs
