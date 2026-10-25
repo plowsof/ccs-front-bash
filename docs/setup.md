@@ -13,9 +13,9 @@ It reads three things and writes one:
 | the proposals | `/var/lib/ccs/proposals` | the checkout ccs-bash reads |
 | the site | `/var/lib/ccs/www/site` | written each run, swapped in when complete (with ccs-bash's `projects.json`, for `/projects`) |
 
-Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils (`base64` too), `grep`, `sed`, `tar`,
-`find`, `xargs` and `qrencode` (and `unzip` for step 1):
-on Debian, `apt install jq qrencode` on top of what ccs-bash needs. It makes the QR codes itself
+Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils (`base64` too),
+`grep`, `sed`, `tar`, `find`, `xargs` and `qrencode` (and `unzip` for step 1): on Debian,
+`apt install jq qrencode` on top of what ccs-bash needs. It makes the QR codes itself
 (qrencode, PNG), from the addresses it has checked; ccs-bash's are not used.
 
 ## 1. The original

@@ -4,8 +4,8 @@ The same as [ccs-bash's](https://github.com/plowsof/ccs-bash/blob/master/docs/im
 less in it (about 14 MB): ccs-front-bash needs no network.
 
 - **[StageX](https://stagex.tools) packages**, pinned by digest in `container/images`: bash, jq,
-  musl, ncurses (bash's), libpng and zlib (qrencode's). Two or more StageX maintainers reproduce and sign each release, and
-  every build checks those signatures (`container/verify-images.sh`, `container/stagex-keys.asc`),
+  musl, ncurses (bash's), libpng and zlib (qrencode's). Two or more StageX maintainers reproduce
+  and sign each release, and every build checks those signatures (`container/verify-images.sh`, `container/stagex-keys.asc`),
   from the copy in `container/sigs/`, so a build needs nothing from StageX's signature site.
 - **busybox and qrencode, built here** from upstream source pinned by sha256 in
   `container/sources.lock` (StageX's sums): busybox with only the applets in
