@@ -2,9 +2,9 @@
 # ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE [SUBADDRESSES]: fill the original (ccs-front-hugo's
 # built site) with ccs-bash's JSON in DATA and the proposals' Markdown in PROPOSALS, into a new
 # SITE. With SUBADDRESSES, a signed list of the wallet's subaddresses (see check_addresses), every
-# donation address must be in it. Every piece of HTML comes from the original's pages and parts;
+# donation address must be in it. The QR codes are made here, from those addresses (qr_codes). Every piece of HTML comes from the original's pages and parts;
 # this only fills them. The original is never changed; SITE is replaced only once the new one is
-# complete. Needs no network.
+# complete. Needs no network; needs qrencode.
 set -euo pipefail
 export LC_ALL=C
 
@@ -50,7 +50,8 @@ proposal_pages() {
         --rawfile labellink "$p/label-link.html" \
         --rawfile cidea "$work/regions/count_idea.html" --rawfile cfr "$work/regions/count_fr.html" \
         --rawfile cwip "$work/regions/count_wip.html" --rawfile ccp "$work/regions/count_cp.html" \
-        --rawfile filters "$work/regions/filters.html" --arg verifylink "$verify_link" -f "$LIB/pages.jq" > "$work/pages"
+        --rawfile filters "$work/regions/filters.html" --arg verifylink "$verify_link" \
+        --slurpfile qrs "$work/qr.json" -f "$LIB/pages.jq" > "$work/pages"
     # split: a line "\001<name>" starts the next page (pages.jq removes \001 from page text)
     awk -v dir="$out/proposals" '/^\001/ { if (f) close(f); f = dir "/" substr($0, 2) ".html"; next } { print > f }' "$work/pages"
 }
@@ -132,6 +133,19 @@ check_addresses() {
     verify_link=$(cat "$original/parts/verify-link.html")
 }
 
+# qr_codes DATA: {"<address>": "data:image/png;base64,…"}, a QR code (monero:<address>) for each
+# donation address, made here, after check_addresses: ccs-bash's own (donate-qr-code) are not
+# used, so what its account writes can't put another address in one. The same qrencode and
+# options as ccs-bash's, so the same PNG.
+qr_codes() {
+    local addr
+    jq -r '[.[1].proposals[] | ."donate-address" // empty] | unique[]' "$1/proposals.json" | while IFS= read -r addr; do
+        [[ $addr =~ ^[0-9A-Za-z]{95}$ ]] || die "not a donation address: '${addr:0:30}'"
+        qrencode -s 10 -o "$work/qr.png" "monero:$addr" || die "qrencode failed for $addr"
+        printf '%s\t%s\n' "$addr" "$(base64 -w 0 "$work/qr.png")"
+    done | jq -R -s 'split("\n") | map(select(. != "") | split("\t") | {(.[0]): "data:image/png;base64,\(.[1])"}) | add // {}' > "$work/qr.json"
+}
+
 # relative_links SITE: links from the data (a proposal's local-url, /proposals/x.html; a tag's
 # page, /explore/tag/x/) are absolute. Make every one relative to its page, as the original's own
 # links are, so a site served under a prefix keeps it while browsing: the theme is /dark/ or
@@ -181,6 +195,7 @@ main() {
         "$data/proposals.json")
 
     check_addresses "$original" "$data" "$subaddresses"
+    qr_codes "$data"
     mapfile -t tags < <(tag_regions "$original" "$data")
 
     rm -rf "$new"

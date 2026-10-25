@@ -50,8 +50,9 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
    into HTML (a strict subset in awk, everything escaped first), filled into
    `parts/proposal-<stage>.html`.
 3. **Every run:** the Ideas, Funding Required, Work in Progress and Completed lists, and each
-   proposal's donation box, with the address and its QR code (a PNG, made fresh by ccs-bash
-   in the same run as the address), from ccs-bash's JSON.
+   proposal's donation box, with the address, from ccs-bash's JSON, checked against the signed
+   list, and its QR code, made here from it (qrencode, a PNG): ccs-bash's own QR codes are never
+   used, so what its account writes can't put another address in one.
    Tags (the front matter's `tags:`) as labels on cards and links on proposal pages, the
    filters on Explore, and a page per tag at `/explore/tag/<tag>/` (copies of the original's
    tag page, so still no JavaScript).

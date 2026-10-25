@@ -4,6 +4,24 @@
 # Same commit, same hash: every file gets the commit's time (SOURCE_DATE_EPOCH) and the
 # result is one layer in an empty image. No user account: it runs as a numeric user.
 
+# qrencode, built from source with PNG output (StageX's own is built without libpng), as in
+# ccs-bash's image: the same version and options, so the same QR codes.
+FROM toolchain AS qrencode
+COPY --from=libpng / /
+COPY --from=zlib / /
+# bash for verify.sh (the toolchain only has busybox sh)
+COPY --from=bash / /
+COPY --from=ncurses / /
+RUN --mount=type=bind,source=container,target=/pin \
+    bash /pin/verify.sh /pin/sources.lock /pin/sources \
+    && tar -xzf /pin/sources/v4.1.1.tar.gz -C / \
+    && cd /libqrencode-4.1.1 \
+    && autoreconf -fi \
+    && ./configure --prefix=/usr --with-tools \
+    && make \
+    && make DESTDIR=/rootfs install \
+    && rm -rf /rootfs/usr/include /rootfs/usr/lib/pkgconfig /rootfs/usr/share /rootfs/usr/lib/*.a /rootfs/usr/lib/*.la
+
 # busybox with only the applets in busybox-applets (and their options, like readlink -f).
 # The toolchain's cc is clang.
 FROM toolchain AS busybox
@@ -31,8 +49,8 @@ RUN --mount=type=bind,source=container,target=/pin \
         ! "/rootfs/usr/bin/$applet" --help 2>&1 | grep -q "applet not found" || { echo "$applet not built" >&2; exit 1; }; \
     done
 
-# Everything ccs-front-bash runs, and nothing else: bash, jq and busybox. (The QR codes are
-# ccs-bash's PNGs, so no qrencode.)
+# Everything ccs-front-bash runs, and nothing else: bash, jq, busybox and qrencode (it makes the
+# QR codes, from the checked addresses).
 FROM scratch AS tree
 COPY --from=filesystem / /
 COPY --from=musl / /
@@ -40,6 +58,9 @@ COPY --from=busybox /rootfs/ /
 COPY --from=bash / /
 COPY --from=ncurses / /
 COPY --from=jq / /
+COPY --from=zlib / /
+COPY --from=libpng / /
+COPY --from=qrencode /rootfs/ /
 COPY ccs-front-bash.sh /opt/ccs-front-bash/
 COPY lib/ /opt/ccs-front-bash/lib/
 

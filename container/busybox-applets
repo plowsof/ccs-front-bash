@@ -2,6 +2,7 @@
 # and wc for the tests, so they run against exactly what ships. Nothing else is compiled into
 # busybox (no shell, no network tools).
 awk
+base64
 cat
 cmp
 cp
