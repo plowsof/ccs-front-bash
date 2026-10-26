@@ -23,7 +23,8 @@ container/build.sh            # needs Docker with buildx, git, gpg, jq; prints t
 It runs as a numeric user (default 10002), reads three folders and writes one:
 
 ```
-docker run --rm --network none --read-only --user "$(id -u ccs-front):$(id -g ccs-front)" \
+docker run --rm --network none --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+    --user "$(id -u ccs-front):$(id -g ccs-front)" \
     -v /opt/ccs-front-hugo/public:/original:ro -v /var/lib/ccs/out:/data:ro \
     -v /var/lib/ccs/proposals:/proposals:ro -v /var/lib/ccs/www:/www \
     --pull never sha256:<image ID>                   # writes /www/site
