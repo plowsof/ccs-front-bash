@@ -56,8 +56,10 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
    Tags (the front matter's `tags:`) as labels on cards and links on proposal pages, the
    filters on Explore, and a page per tag at `/explore/tag/<tag>/` (copies of the original's
    tag page, so still no JavaScript).
-4. **Swap and push:** a missing, unmatched or repeated marker stops the run and nothing is
-   pushed; otherwise the new `site/` replaces the last one and goes to the web server.
+4. **Swap and push:** a missing, unmatched or repeated marker stops the run and no new site is
+   made (the last good one is pushed again); otherwise the new `site/` replaces the last one and
+   goes to the web server. A funding-required proposal whose address isn't on the signed list is
+   left off, and the run exits 3.
 
 The contract between the two (markers, parts, `{{slots}}`) is in
 [ccs-front-hugo's README](https://github.com/plowsof/ccs-front-hugo#what-ccs-front-bash-fills-in).
