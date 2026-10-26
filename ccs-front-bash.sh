@@ -133,7 +133,6 @@ check_addresses() {
                 "$data/projects.json" > "$work/data/projects.json"
         fi
     fi
-    listed=1   # global: main publishes the list
     # the fingerprint as gpg shows it: 10 groups of 4, two spaces in the middle (hex: nothing to escape)
     fpr=$(sed -E 's/(.{4})/\1 /g; s/ $//; s/^((.{4} ){5})/\1 /' <<<"$fpr")
     f=$(cat "$original/parts/verify.html")
@@ -247,9 +246,6 @@ main() {
     proposal_pages "$original" "$data" "$proposals" "$new"
     # the /projects API goes with the site, so one push carries everything public
     if [[ -f $data/projects.json ]]; then cp "$data/projects.json" "$new/projects.json"; fi
-    if [[ ${listed:-} ]]; then
-        for f in "" .asc .key.asc; do cp "$subaddresses$f" "$new/subaddresses.txt$f"; done
-    fi
 
     relative_links "$new"
 
