@@ -150,9 +150,9 @@ check_addresses() {
 }
 
 # qr_codes DATA: {"<address>": "data:image/png;base64,…"}, a QR code (monero:<address>) for each
-# donation address, made here, after check_addresses: ccs-bash's own (donate-qr-code) are not
-# used, so what its account writes can't put another address in one. The same qrencode and
-# options as ccs-bash's, so the same PNG.
+# donation address, made here, after check_addresses: ccs-bash writes none (and one in its JSON
+# would not be used), so what its account writes can't put another address in one. The same
+# qrencode options the web server's gate remakes them with.
 qr_codes() {
     local addr
     jq -r '[.[1].proposals[] | ."donate-address" // empty] | unique[]' "$1/proposals.json" | while IFS= read -r addr; do
