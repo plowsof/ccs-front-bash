@@ -185,10 +185,10 @@ echo key > "$tmp/sub/list.txt.key.asc"
 pin() { printf 'sha256 %s\nkey 0123456789ABCDEF0123456789ABCDEF01234567\n' "$(sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1)" > "$tmp/sub/list.txt.pin"; }
 pin
 if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
-    && cmp -s "$tmp/sub/list.txt" "$tmp/site4/subaddresses.txt" && [[ -f $tmp/site4/subaddresses.txt.asc && -f $tmp/site4/subaddresses.txt.key.asc ]] \
+    && [[ ! -e $tmp/site4/subaddresses.txt && ! -e $tmp/site4/subaddresses.txt.asc ]] \
     && grep -q '0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567' "$tmp/site4/verify/index.html" \
     && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html"; then
-    ok "a signed list: checked, published with its signature and key, the fingerprint on Verify, a link in each donation box"
+    ok "a signed list: checked, not copied into the site, the fingerprint on Verify if the design asks for it, a link in each donation box"
 else
     fail "a signed list"
 fi
