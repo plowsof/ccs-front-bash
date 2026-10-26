@@ -111,7 +111,11 @@ check_addresses() {
             | "warning: left off the site: \(."local-url"): its donation address \(."donate-address"[0:6])… is not one of the wallet'"'"'s (the signed list)"' \
             "$data/proposals.json" | while IFS= read -r line; do log "$line"; done
         mkdir -p "$work/data"
-        for f in "$data"/*; do [[ ${f##*/} == proposals.json ]] || ln -s "$f" "$work/data/"; done
+        # the rest copied as it is (the image has no ln), images with their times (see proposal_pages)
+        for f in "$data"/*; do [[ ${f##*/} == proposals.json ]] || cp -R "$f" "$work/data/"; done
+        [[ ! -d $data/images ]] || (cd "$data/images" && find . -type f) | while IFS= read -r f; do
+            touch -r "$data/images/$f" "$work/data/images/$f"
+        done
         jq --rawfile off "$work/off" '.[1].proposals |= map(select(."donate-address" as $a | ($off | split("\n") | any(.[]; . == $a)) | not))' \
             "$data/proposals.json" > "$work/data/proposals.json"
     fi
