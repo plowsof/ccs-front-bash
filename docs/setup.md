@@ -176,8 +176,7 @@ The Verify page shows them, with the commands to ask a copy of the wallet about 
 Each run checks the list against its `.pin` (a missing file or another list stops the run) and
 every address on the site against the list: a funding-required proposal, or a `/projects` entry,
 whose address isn't on it is left off (`warning: left off the site: …`), the rest is made, and the
-run exits 3. The list isn't published: it is the backend's and the gate's. `/verify/`, linked from
-each donation box, shows the wallet's address and view key for visitors to check an address in a
+run exits 3. `/verify/`, linked from each donation box, shows the wallet's address and view key for visitors to check an address in a
 view-only copy of the wallet; without the fifth argument, no check, and `/verify/` says so. The same four files go to the web server's gate (ccs-bash's two-machines, "The gate").
 Near index 15,000, make a longer list the same way: its first lines are the old one
 (`head -n 15000 new | cmp - old`).
