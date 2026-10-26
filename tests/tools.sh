@@ -35,4 +35,38 @@ if [[ -z $(gpg --batch --list-secret-keys 2> /dev/null) && $keydir && ! -e $keyd
 else
     fail "a secret key or its folder was left"
 fi
+
+# Signed with a Core Team member's own key (SIGNING_KEY), as the mainnet list is, and checked with
+# verify-subaddresses.sh: only a key in SIGNERS counts, and the list must be the pin's, the
+# signature good, the lines in order, line 0 the wallet's main address.
+core=$tmp/core && mkdir -m 700 "$core"
+GNUPGHOME=$core gpg -q --batch --passphrase '' --quick-gen-key 'Core Team member <core@test>' ed25519 sign 1d 2> /dev/null
+cfpr=$(GNUPGHOME=$core gpg --batch --with-colons --list-keys 2> /dev/null | awk -F: '$1 == "fpr" { print $10; exit }')
+mk() { for i in 0 1 2; do printf '%d %s\n' "$i" "$(printf '9%094d' "$i" | tr 0 A)"; done > "$1"; }
+mk "$tmp/main.txt"
+out=$(GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" "$tmp/main.txt" 2>&1) || { echo "$out"; fail "signing with SIGNING_KEY"; }
+if [[ $(sed -n 's/^key *//p' "$tmp/main.txt.pin") == "$cfpr" && -n $(GNUPGHOME=$core gpg --batch --list-secret-keys "$cfpr" 2> /dev/null) ]]; then
+    ok "SIGNING_KEY: signed with that key, its fingerprint in LIST.pin, the key left as it was"
+else
+    fail "SIGNING_KEY's pin or key"
+fi
+wallet=$(awk 'NR == 1 { print $2 }' "$tmp/main.txt")
+echo "$cfpr  # the Core Team member" > "$tmp/signers"; echo "${cfpr//?/0}  # someone else" > "$tmp/others"
+v() { (unset GNUPGHOME; "$here/../tools/verify-subaddresses.sh" "$@") > "$tmp/v.out" 2>&1; }
+if v "$tmp/main.txt" "$tmp/signers" "$wallet" && grep -q "signed by $cfpr (Core Team member <core@test>)" "$tmp/v.out"; then
+    ok "verify: the list, signed by a key in SIGNERS, its pin, line 0 the wallet's: OK, and who signed"
+else
+    cat "$tmp/v.out"; fail "verify a good list"
+fi
+nope() { if ! v "${@:2}" && grep -q "NOT OK: .*$1" "$tmp/v.out"; then ok "verify refuses: $1"; else cat "$tmp/v.out"; fail "verify accepted: $1"; fi; }
+nope "is not one of" "$tmp/main.txt" "$tmp/others" "$wallet"
+nope "line 0 is not" "$tmp/main.txt" "$tmp/signers" "$(addr=$(awk 'NR == 2 { print $2 }' "$tmp/main.txt"); echo "$addr")"
+cp "$tmp/main.txt" "$tmp/keep.txt"; sed -i '2s/ 9/ A/' "$tmp/main.txt"
+nope "is not the list" "$tmp/main.txt" "$tmp/signers" "$wallet"
+cp "$tmp/keep.txt" "$tmp/main.txt"; cp "$tmp/main.txt.key.asc" "$tmp/keep.key.asc"; cp "$tmp/list.txt.key.asc" "$tmp/main.txt.key.asc"
+nope "not a good signature" "$tmp/main.txt" "$tmp/signers" "$wallet"
+cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
+{ sed -n 1p "$tmp/main.txt"; sed -n 3p "$tmp/main.txt"; sed -n 2p "$tmp/main.txt"; } > "$tmp/order.txt"
+(cd "$tmp" && GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" order.txt > /dev/null 2>&1)
+nope "not 'index address' lines" "$tmp/order.txt" "$tmp/signers"
 exit "$status"

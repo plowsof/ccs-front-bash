@@ -99,9 +99,13 @@ run stopping (or, on the web server, without anyone being able to tell). It chec
 text and its `monero:` link, and the QR code is made here from the checked address.
 
 A **Core Team member** makes the list on an offline machine with the script below, then signs it
-as described further down (`tools/sign-subaddresses.sh`). The script asks for the wallet's main
-address and private view key, which are public. 15,000 subaddresses take about a minute, enough
-for decades of proposals:
+**with their own PGP key**, the one the Monero repository publishes for them
+([utils/gpg_keys/](https://github.com/monero-project/monero/tree/master/utils/gpg_keys)): for the
+mainnet CCS, binaryFate (`81AC 591F E9C4 B65C 5806  AFC3 F0AF 4D46 2A0B DF92`) or luigi1111
+(`8777 AB8F 778E E894 87A2  F8E7 F4AC A018 3641 E010`). Anyone can then check who signed it,
+against keys Monero already vouches for. The script asks for the wallet's main address and
+private view key, which are public. 15,000 subaddresses take about a minute, enough for decades
+of proposals:
 
 ```
 tools/make-subaddresses.sh /path/to/monero-wallet-rpc 15000 subaddresses.txt   # --testnet for testnet
@@ -122,17 +126,41 @@ curl -s --digest -u user:pass http://127.0.0.1:18082/json_rpc \
 head -n "$(wc -l < made.txt)" subaddresses.txt | cmp - made.txt && echo "the wallet's own"
 ```
 
-Then sign it, a standard detached signature (`subaddresses.txt.asc`, ASCII armour):
+Then sign it, a standard detached signature (`subaddresses.txt.asc`, ASCII armour), with the
+signer's own key (its fingerprint; their keyring, where the secret key already is):
 
 ```
-tools/sign-subaddresses.sh subaddresses.txt
+SIGNING_KEY=<the signer's fingerprint> tools/sign-subaddresses.sh subaddresses.txt
 ```
 
-It makes a PGP key only for this, signs the list, and destroys the secret key. Beside the list
-it leaves the three files that go with it: `subaddresses.txt.asc` (the signature),
-`subaddresses.txt.key.asc` (the public key) and `subaddresses.txt.pin` (the list's sha256 and
-the key's fingerprint). Publish the fingerprint somewhere besides the site too (ccs-front-hugo's
-README), so people can check the key doesn't come only from the site it vouches for.
+Beside the list it leaves the three files that go with it: `subaddresses.txt.asc` (the
+signature), `subaddresses.txt.key.asc` (the public key) and `subaddresses.txt.pin` (the list's
+sha256 and the key's fingerprint). (Without `SIGNING_KEY` it makes a key only for this and
+destroys it after signing: the signature then binds the file, not a person. The testnet's list
+is signed so.)
+
+**Publish what was signed** where the wallet's address and view key were published, by the same
+people: the signer posts the list's sha256 and their fingerprint (for the mainnet, a comment on
+monero-project/meta #935, beside luigi1111's). **Have it reproduced:** two contributors run
+`make-subaddresses.sh` with the same address and view key and post the same sha256. The list is
+the wallet's because anyone gets the same file from public data; the signature says who stands
+behind this copy.
+
+**Check it before installing it**, on the machine it goes on, with a file of your own of the keys
+that may sign it (root-owned, 644; their fingerprints as the Monero repository's
+`utils/gpg_keys/` show them: `gpg --show-keys binaryfate.asc`):
+
+```
+cat > /etc/ccs-front/list-signers <<'SIGNERS'
+81AC591FE9C4B65C5806AFC3F0AF4D462A0BDF92  # binaryFate (monero-project/monero utils/gpg_keys)
+8777AB8F778EE89487A2F8E7F4ACA0183641E010  # luigi1111 (monero-project/monero utils/gpg_keys)
+SIGNERS
+tools/verify-subaddresses.sh subaddresses.txt /etc/ccs-front/list-signers <WALLET_ADDRESS>
+```
+
+It says OK, and who signed, only if the list is the one its `.pin` names, the `.pin`'s key is one
+of `list-signers`, `.asc` is that key's good signature of the list, the lines run 0, 1, 2... and
+line 0 is `WALLET_ADDRESS`. Compare its sha256 with the published and reproduced ones.
 
 Copy the four files to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as
 a fifth argument, in `ccs-front-run` (step 2): **A)** add `/etc/ccs-front/subaddresses.txt` after
@@ -169,8 +197,8 @@ copied here and (with two machines) to the web server for its gate (ccs-bash's
 docs/two-machines.md, "The gate"), which then holds back any page with an address not on it
 and tells IRC. When the wallet nears the end of the list (index 15,000), make a longer one the same
 way: its first lines are the old list, line for line (`head -n 15000 new | cmp - old`), which
-anyone can check. A shorter one, the same: cut it with `head`, then sign it (the old signature
-covers the whole old file, and its key is gone).
+anyone can check. A shorter one, the same: cut it with `head`, then sign it again (the old signature
+covers the whole old file).
 
 ## Going back
 
