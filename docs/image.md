@@ -26,8 +26,13 @@ It runs as a numeric user (default 10002), reads three folders and writes one:
 docker run --rm --network none --read-only --user "$(id -u ccs-front):$(id -g ccs-front)" \
     -v /opt/ccs-front-hugo/public:/original:ro -v /var/lib/ccs/out:/data:ro \
     -v /var/lib/ccs/proposals:/proposals:ro -v /var/lib/ccs/www:/www \
-    ghcr.io/plowsof/ccs-front-bash@sha256:…          # writes /www/site
+    --pull never sha256:<image ID>                   # writes /www/site
 ```
+
+By its image ID (the release's, the one you built and checked), never pulled: a tag can be
+removed from under it (a nightly Docker cleanup, Coolify's say, does), and `docker run` would
+then try a registry; an ID can't be moved. Keep one stopped container on it, so no cleanup
+removes the image itself: `docker create --name ccs-front-bash-keep --network none <image ID>`.
 
 With a [signed subaddress list](setup.md#5-the-signed-subaddress-list-optional-recommended), mount
 it too and name it: `-v /etc/ccs-front:/subaddresses:ro … /original /data /proposals /www/site
