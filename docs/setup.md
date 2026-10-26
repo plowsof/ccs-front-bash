@@ -162,6 +162,17 @@ It says OK, and who signed, only if the list is the one its `.pin` names, the `.
 of `list-signers`, `.asc` is that key's good signature of the list, the lines run 0, 1, 2... and
 line 0 is `WALLET_ADDRESS`. Compare its sha256 with the published and reproduced ones.
 
+It only knows the public key that comes with the list (`.key.asc`), so it can't tell that key was
+revoked since. Check that against Monero's own copy, fetched fresh, before installing a list (and
+again before installing a new one):
+
+```
+curl -fsSO https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/luigi1111.asc   # or binaryfate.asc
+gpg --show-keys --with-colons luigi1111.asc | awk -F: '$1 == "pub" { print ($2 == "r" ? "REVOKED" : "not revoked") }'
+```
+
+A revoked key: don't install the list, and ask the Core Team for one signed again.
+
 Copy the four files to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as
 a fifth argument, in `ccs-front-run` (step 2): **A)** add `/etc/ccs-front/subaddresses.txt` after
 the four. **B)** mount the folder and name the list after the image (the five arguments replace

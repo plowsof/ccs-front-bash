@@ -176,7 +176,9 @@ fi
 mkdir -p "$tmp/sub"
 main=9$(printf '%094d' 0 | tr 0 W)   # the wallet's main address, index 0 (testnet: it starts with 9)
 viewkey=$(printf '%064d' 0 | tr 0 a)
-{ echo "0 $main"; jq -r '.[1].proposals[] | ."donate-address" // empty' "$here/fixtures/data/proposals.json" | awk '{ print NR, $0 }'; } > "$tmp/sub/list.txt"
+# the wallet's subaddresses: every address the fixtures use (funding-required, and /projects')
+{ echo "0 $main"; { jq -r '.[1].proposals[] | ."donate-address" // empty' "$here/fixtures/data/proposals.json"
+    jq -r '.[] | .address // empty' "$here/fixtures/data/projects.json"; } | awk '!seen[$0]++ { print ++n, $0 }'; } > "$tmp/sub/list.txt"
 echo "$viewkey" > "$tmp/sub/list.txt.viewkey"
 echo signature > "$tmp/sub/list.txt.asc"
 echo key > "$tmp/sub/list.txt.key.asc"
@@ -219,6 +221,18 @@ else
 fi
 cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"
 sed -i '2d' "$tmp/sub/list.txt" && pin
+# a foreign address in /projects (ccs-bash's projects.json goes out with the site): taken out, exit 3
+rm -rf "$tmp/data-p" "$tmp/site6"; cp -r "$here/fixtures/data" "$tmp/data-p"
+foreign=8$(printf '%094d' 0 | tr 0 Z)
+jq --arg a "$foreign" '.[-1].address = $a' "$here/fixtures/data/projects.json" > "$tmp/data-p/projects.json"
+set +e; "$run" "$here/fixtures/original" "$tmp/data-p" "$props" "$tmp/site6" "$tmp/sub/list.txt" 2> "$tmp/log.p"; rc=$?; set -e
+if [[ $rc == 3 && -f $tmp/site6/projects.json ]] && ! grep -q "$foreign" "$tmp/site6/projects.json" \
+    && [[ $(jq length "$tmp/site6/projects.json") == $(jq length "$here/fixtures/data/projects.json") ]] \
+    && grep -q '/projects: .*taken out' "$tmp/log.p"; then
+    ok "a foreign address in /projects: taken out (the rest of it kept), exit 3"
+else
+    fail "a foreign address in /projects (exit $rc)"; cat "$tmp/log.p" >&2
+fi
 # an address not in the list: that proposal is left off (its page, its card), the rest made, exit 3
 rm -rf "$tmp/site5"; set +e
 "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> "$tmp/log.off"; rc=$?; set -e

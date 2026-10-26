@@ -105,19 +105,33 @@ check_addresses() {
     # 3, which the update script counts as a failed run (IRC hears of it).
     jq -r '.[1].proposals[] | ."donate-address" // empty' "$data/proposals.json" > "$work/addresses"
     awk 'NR == FNR { ok[$2] = 1; next } !($0 in ok)' "$list" "$work/addresses" > "$work/off"
-    if [[ -s $work/off ]]; then
+    # /projects too (the site carries ccs-bash's projects.json): an address in it that isn't the
+    # list's is taken out, the same failed run
+    : > "$work/offp"
+    if [[ -f $data/projects.json ]]; then
+        jq -r '.[] | .address // empty' "$data/projects.json" > "$work/paddresses"
+        awk 'NR == FNR { ok[$2] = 1; next } !($0 in ok)' "$list" "$work/paddresses" > "$work/offp"
+    fi
+    if [[ -s $work/off || -s $work/offp ]]; then
         left_off=1   # global: main uses the data without them, and exits 3
         jq -r --rawfile off "$work/off" '.[1].proposals[] | select(."donate-address" as $a | $off | split("\n") | any(.[]; . == $a))
             | "warning: left off the site: \(."local-url"): its donation address \(."donate-address"[0:6])… is not one of the wallet'"'"'s (the signed list)"' \
             "$data/proposals.json" | while IFS= read -r line; do log "$line"; done
         mkdir -p "$work/data"
         # the rest copied as it is (the image has no ln), images with their times (see proposal_pages)
-        for f in "$data"/*; do [[ ${f##*/} == proposals.json ]] || cp -R "$f" "$work/data/"; done
+        for f in "$data"/*; do [[ ${f##*/} == proposals.json || ${f##*/} == projects.json ]] || cp -R "$f" "$work/data/"; done
         [[ ! -d $data/images ]] || (cd "$data/images" && find . -type f) | while IFS= read -r f; do
             touch -r "$data/images/$f" "$work/data/images/$f"
         done
         jq --rawfile off "$work/off" '.[1].proposals |= map(select(."donate-address" as $a | ($off | split("\n") | any(.[]; . == $a)) | not))' \
             "$data/proposals.json" > "$work/data/proposals.json"
+        if [[ -f $data/projects.json ]]; then
+            jq -r --rawfile off "$work/offp" '.[] | select(.address as $a | $off | split("\n") | any(.[]; . == $a))
+                | "warning: /projects: \(.filename // .title | tostring | .[0:60]): address \(.address[0:6])… is not one of the wallet'"'"'s (the signed list): taken out"' \
+                "$data/projects.json" | while IFS= read -r line; do log "$line"; done
+            jq --rawfile off "$work/offp" 'map(if (.address as $a | $off | split("\n") | any(.[]; . == $a)) then .address = null else . end)' \
+                "$data/projects.json" > "$work/data/projects.json"
+        fi
     fi
     listed=1   # global: main publishes the list
     # the fingerprint as gpg shows it: 10 groups of 4, two spaces in the middle (hex: nothing to escape)
@@ -244,7 +258,7 @@ main() {
     mv "$new" "$site"
     rm -rf "$site.old"
     log "filled $site (${#tags[@]} tag pages)"
-    if [[ ${left_off:-} ]]; then log "error: a proposal was left off the site (see above)"; exit 3; fi
+    if [[ ${left_off:-} ]]; then log "error: an address not on the signed list was left off the site (see above)"; exit 3; fi
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
