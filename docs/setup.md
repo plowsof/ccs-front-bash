@@ -141,7 +141,7 @@ the default four):
 
 ```
     -v /etc/ccs-front:/subaddresses:ro \
-    ccs-front-bash /original /data /proposals /www/site /subaddresses/subaddresses.txt
+    --pull never sha256:<image ID> /original /data /proposals /www/site /subaddresses/subaddresses.txt
 ```
 
 With them, `subaddresses.txt.viewkey` (root-owned, 644): the wallet's view key on its first line,
