@@ -188,7 +188,7 @@ if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site4" 
     && [[ ! -e $tmp/site4/subaddresses.txt && ! -e $tmp/site4/subaddresses.txt.asc ]] \
     && grep -q '0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567' "$tmp/site4/verify/index.html" \
     && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html"; then
-    ok "a signed list: checked, not published (the backend's), the fingerprint on Verify if the design asks for it, a link in each donation box"
+    ok "a signed list: checked, not copied into the site, the fingerprint on Verify if the design asks for it, a link in each donation box"
 else
     fail "a signed list"
 fi
