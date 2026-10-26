@@ -16,7 +16,7 @@ It reads three things and writes one:
 Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils (`base64` too),
 `grep`, `sed`, `tar`, `find`, `xargs` and `qrencode` (and `unzip` for step 1): on Debian,
 `apt install jq qrencode` on top of what ccs-bash needs. It makes the QR codes itself
-(qrencode, PNG), from the addresses it has checked; ccs-bash's are not used.
+(qrencode, PNG), from the addresses it has checked; ccs-bash makes none.
 
 ## 1. The original
 
@@ -73,7 +73,7 @@ script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs
 ```
 root /var/lib/ccs/www/site;           # with Docker: mount /var/lib/ccs/www, root …/www/site
 server_tokens off;
-include snippets/ccs-headers.conf;    # the security headers: ccs-bash's docs/two-machines.md, way A
+include snippets/ccs-headers.conf;    # the security headers: ccs-bash's docs/two-machines.md
 location = /projects {
     alias /var/lib/ccs/out/projects.json;
     default_type application/json;
@@ -85,7 +85,7 @@ add the theme lines from ccs-bash's docs/two-machines.md ("The theme"), with
 `/var/lib/ccs/www/site/` in place of `/var/lib/ccs-data/`.
 
 **Two machines** (recommended): the site is pushed to a web server that only serves it, as
-ccs-bash's docs/two-machines.md, way A, describes (its nginx, the gate, the alerts). The site
+ccs-bash's docs/two-machines.md describes (its nginx, the gate, the alerts). The site
 carries `projects.json`, so that one push is all the web server gets. Its key can't delete, so a
 renamed proposal's old page stays until removed by hand.
 
