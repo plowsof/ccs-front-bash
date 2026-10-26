@@ -26,7 +26,7 @@ the release you mean to ship, check its sha256 against the one in the release no
 it here (`apt install unzip` if needed):
 
 ```
-v=v0.1.0
+v=v0.1.17
 curl -fLO https://github.com/plowsof/ccs-front-hugo/releases/download/$v/ccs-front-hugo-$v.zip
 sha256sum ccs-front-hugo-$v.zip           # must be the release's sha256 (and your own build's)
 rm -rf /opt/ccs-front-hugo/public && install -d -m 755 /opt/ccs-front-hugo/public
@@ -94,8 +94,8 @@ The headers above were checked with the built site: styles, fonts, icons and QR 
 ## 5. The signed subaddress list (optional, recommended)
 
 With it, no donation address can go on the site unless it is one of the wallet's: whatever
-changes ccs-bash's JSON, the push or the web server can't slip in another address without the
-run stopping (or, on the web server, without anyone being able to tell). It checks the address
+changes ccs-bash's JSON can't put another address on a page (that proposal is left off), and on
+the web server none gets past the gate, or anyone checking the list. It checks the address
 text and its `monero:` link, and the QR code is made here from the checked address.
 
 A **Core Team member** makes the list on an offline machine with the script below, then signs it
