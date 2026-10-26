@@ -37,8 +37,8 @@ def region_if_there($name; $html):
    | map(. as $x | $payout | part | fill($x)) | join("\n")) as $payouts
 | ($p | values) as $v0
 # a funding page's address, from ccs-bash's JSON (checked against the signed list), and its QR
-# code, made from it here ($qrs, ccs-front-bash.sh's qr_codes; ccs-bash's donate-qr-code is never
-# used). Anything else stops the run.
+# code, made from it here ($qrs, ccs-front-bash.sh's qr_codes; a donate-qr-code in the JSON, as
+# ccs-bash before v0.2.19 wrote, is never used). Anything else stops the run.
 | (if $stage != "fr" then ""
    elif ($v0.address | test("^[0-9A-Za-z]{95}$") | not) then error("\($file): no donation address")
    elif ($qrs[0][$v0.address] // "" | test("^data:image/png;base64,[A-Za-z0-9+/]+=*$") | not) then error("\($file): no PNG QR code")
