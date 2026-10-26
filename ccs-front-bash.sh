@@ -100,9 +100,21 @@ check_addresses() {
     sum=$(sed -n 's/^sha256 *//p' "$list.pin") fpr=$(sed -n 's/^key *//p' "$list.pin")
     [[ $sum =~ ^[0-9a-f]{64}$ && $fpr =~ ^[0-9A-F]{40}$ ]] || die "$list.pin: want a 'sha256 <hex>' and a 'key <fingerprint>' line"
     [[ $(sha256sum < "$list" | cut -d' ' -f1) == "$sum" ]] || die "$list is not the list $list.pin pins"
+    # a funding-required proposal whose address isn't the list's is left off the site (its page, its
+    # card, the counts), the rest made: one stale file mustn't stop every page. The run then exits
+    # 3, which the update script counts as a failed run (IRC hears of it).
     jq -r '.[1].proposals[] | ."donate-address" // empty' "$data/proposals.json" > "$work/addresses"
-    awk 'NR == FNR { ok[$2] = 1; next } !($0 in ok) { print "not in the subaddress list: " $0; bad = 1 } END { exit bad }' \
-        "$list" "$work/addresses" >&2 || die "a donation address is not one of the wallet's (see above)"
+    awk 'NR == FNR { ok[$2] = 1; next } !($0 in ok)' "$list" "$work/addresses" > "$work/off"
+    if [[ -s $work/off ]]; then
+        left_off=1   # global: main uses the data without them, and exits 3
+        jq -r --rawfile off "$work/off" '.[1].proposals[] | select(."donate-address" as $a | $off | split("\n") | any(.[]; . == $a))
+            | "warning: left off the site: \(."local-url"): its donation address \(."donate-address"[0:6])… is not one of the wallet'"'"'s (the signed list)"' \
+            "$data/proposals.json" | while IFS= read -r line; do log "$line"; done
+        mkdir -p "$work/data"
+        for f in "$data"/*; do [[ ${f##*/} == proposals.json ]] || ln -s "$f" "$work/data/"; done
+        jq --rawfile off "$work/off" '.[1].proposals |= map(select(."donate-address" as $a | ($off | split("\n") | any(.[]; . == $a)) | not))' \
+            "$data/proposals.json" > "$work/data/proposals.json"
+    fi
     listed=1   # global: main publishes the list
     # the fingerprint as gpg shows it: 10 groups of 4, two spaces in the middle (hex: nothing to escape)
     fpr=$(sed -E 's/(.{4})/\1 /g; s/ $//; s/^((.{4} ){5})/\1 /' <<<"$fpr")
@@ -176,8 +188,11 @@ main() {
     new=$site.new
     trap 'rm -rf "$work" "$new"' EXIT
 
-    # each list once: the same list goes on every page that shows it
     mkdir "$work/regions"
+    # the addresses first: a proposal left off (check_addresses) is off every list and count too
+    check_addresses "$original" "$data" "$subaddresses"
+    [[ -z ${left_off:-} ]] || data=$work/data
+    # each list once: the same list goes on every page that shows it
     for stage in idea fr wip cp; do
         jq -nr -L "$LIB" --arg stage "$stage" \
             --slurpfile proposals "$data/proposals.json" --slurpfile completed "$data/completed-proposals.json" \
@@ -194,7 +209,6 @@ main() {
         '"idea \(.[0].proposals | length)", "fr \(.[1].proposals | length)", "wip \(.[2].proposals | length)", "cp \($c[0][0].proposals | length)"' \
         "$data/proposals.json")
 
-    check_addresses "$original" "$data" "$subaddresses"
     qr_codes "$data"
     mapfile -t tags < <(tag_regions "$original" "$data")
 
@@ -226,6 +240,7 @@ main() {
     mv "$new" "$site"
     rm -rf "$site.old"
     log "filled $site (${#tags[@]} tag pages)"
+    if [[ ${left_off:-} ]]; then log "error: a proposal was left off the site (see above)"; exit 3; fi
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
