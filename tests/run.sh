@@ -219,7 +219,16 @@ else
 fi
 cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"
 sed -i '2d' "$tmp/sub/list.txt" && pin
-must_stop "an address not in the list" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+# an address not in the list: that proposal is left off (its page, its card), the rest made, exit 3
+rm -rf "$tmp/site5"; set +e
+"$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> "$tmp/log.off"; rc=$?; set -e
+if [[ $rc == 3 && ! -e $tmp/site5/proposals/near-funded.html && -f $tmp/site5/proposals/new-fund.html ]] \
+    && ! grep -rq 'near-funded' "$tmp/site5/funding-required" "$tmp/site5/index.html" \
+    && grep -q 'left off the site: /proposals/near-funded.html' "$tmp/log.off"; then
+    ok "an address not in the list: that proposal left off (page, cards), the rest made, exit 3"
+else
+    fail "an address not in the list (exit $rc)"; cat "$tmp/log.off" >&2
+fi
 cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 must_stop "a list that isn't the one its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 rm "$tmp/sub/list.txt.key.asc"
