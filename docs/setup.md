@@ -188,8 +188,11 @@ shows them, with the commands to ask a copy of the wallet whether an address is 
 (`get_address_index`).
 
 Each run then checks the list against its `.pin` and every donation address against the list
-(about 0.2s); a missing file, a list that isn't the one the pin names, or an address not in it
-stops the run. It publishes the list, its signature and the key (`/subaddresses.txt`, `.asc`,
+(about 0.2s); a missing file, or a list that isn't the one the pin names, stops the run. A
+funding-required proposal whose address isn't in the list is left off the site (its page, its
+cards, the counts; logged as `warning: left off the site: ...`) and the rest is made, then the
+run exits 3, a failed run: one stale file can't stop every page, and can't show an address the
+list doesn't prove. It publishes the list, its signature and the key (`/subaddresses.txt`, `.asc`,
 `.key.asc`), fills the site's `/verify/` page with the steps and the fingerprint, and puts a link
 to it in every donation box. Without the fifth argument there is no check, and `/verify/` says
 there is no list yet. Nothing about the list is in the original: a new list is the four files,
