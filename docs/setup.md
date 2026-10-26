@@ -93,30 +93,21 @@ The headers above were checked with the built site: styles, fonts, icons and QR 
 
 ## 5. The signed subaddress list (optional, recommended)
 
-With it, no donation address can go on the site unless it is one of the wallet's: whatever
-changes ccs-bash's JSON can't put another address on a page (that proposal is left off), and on
-the web server none gets past the gate, or anyone checking the list. It checks the address
-text and its `monero:` link, and the QR code is made here from the checked address.
+With it, only the wallet's addresses reach the site: one ccs-bash's JSON gets wrong is left off,
+and the web server's gate and visitors check against the same list.
 
-A **Core Team member** makes the list on an offline machine with the script below, then signs it
-**with their own PGP key**, the one the Monero repository publishes for them
-([utils/gpg_keys/](https://github.com/monero-project/monero/tree/master/utils/gpg_keys)): for the
-mainnet CCS, binaryFate (`81AC 591F E9C4 B65C 5806  AFC3 F0AF 4D46 2A0B DF92`) or luigi1111
-(`8777 AB8F 778E E894 87A2  F8E7 F4AC A018 3641 E010`). Anyone can then check who signed it,
-against keys Monero already vouches for. The script asks for the wallet's main address and
-private view key, which are public. 15,000 subaddresses take about a minute, enough for decades
-of proposals:
+A **Core Team member** makes it on an offline machine and signs it **with their own key**, as the
+Monero repository publishes it ([utils/gpg_keys/](https://github.com/monero-project/monero/tree/master/utils/gpg_keys)):
+for the mainnet, binaryFate (`81AC 591F E9C4 B65C 5806  AFC3 F0AF 4D46 2A0B DF92`) or luigi1111
+(`8777 AB8F 778E E894 87A2  F8E7 F4AC A018 3641 E010`). The script asks for the wallet's main
+address and view key (both public); 15,000 subaddresses take about a minute:
 
 ```
 tools/make-subaddresses.sh /path/to/monero-wallet-rpc 15000 subaddresses.txt   # --testnet for testnet
 ```
 
-Contributors can confirm it independently: run the same script with the same address and view
-key, then compare `sha256sum subaddresses.txt` with the published list's.
-
-**Check it before signing**: it must be this wallet's. Its first line is the main address, and
-the subaddresses the wallet has already made are its first lines (here with the wallet's
-wallet-rpc; `address all` in monero-wallet-cli shows the same):
+**Check it before signing**: line 0 is the main address, and the subaddresses the wallet has
+already made are its first lines:
 
 ```
 head -n 1 subaddresses.txt                         # 0 <the main address, WALLET_ADDRESS>
@@ -126,29 +117,22 @@ curl -s --digest -u user:pass http://127.0.0.1:18082/json_rpc \
 head -n "$(wc -l < made.txt)" subaddresses.txt | cmp - made.txt && echo "the wallet's own"
 ```
 
-Then sign it, a standard detached signature (`subaddresses.txt.asc`, ASCII armour), with the
-signer's own key (its fingerprint; their keyring, where the secret key already is):
+Then sign it (a detached signature, from the signer's own keyring):
 
 ```
 SIGNING_KEY=<the signer's fingerprint> tools/sign-subaddresses.sh subaddresses.txt
 ```
 
-Beside the list it leaves the three files that go with it: `subaddresses.txt.asc` (the
-signature), `subaddresses.txt.key.asc` (the public key) and `subaddresses.txt.pin` (the list's
-sha256 and the key's fingerprint). (Without `SIGNING_KEY` it makes a key only for this and
-destroys it after signing: the signature then binds the file, not a person. The testnet's list
-is signed so.)
+It writes `subaddresses.txt.asc` (the signature), `.key.asc` (the public key) and `.pin` (the
+list's sha256 and the key's fingerprint). Without `SIGNING_KEY` it signs with a key made for this
+and destroyed after (the testnet's): that binds the file, not a person.
 
-**Publish what was signed** where the wallet's address and view key were published, by the same
-people: the signer posts the list's sha256 and their fingerprint (for the mainnet, a comment on
-monero-project/meta #935, beside luigi1111's). **Have it reproduced:** two contributors run
-`make-subaddresses.sh` with the same address and view key and post the same sha256. The list is
-the wallet's because anyone gets the same file from public data; the signature says who stands
-behind this copy.
+**Publish and reproduce it:** the signer posts its sha256 and fingerprint where the address and
+view key were published (mainnet: monero-project/meta #935); two contributors make it themselves
+from the same public data and post the same sha256.
 
-**Check it before installing it**, on the machine it goes on, with a file of your own of the keys
-that may sign it (root-owned, 644; their fingerprints as the Monero repository's
-`utils/gpg_keys/` show them: `gpg --show-keys binaryfate.asc`):
+**Check it before installing it**, with your own file of the keys that may sign it (root-owned,
+644; fingerprints as `gpg --show-keys binaryfate.asc` shows Monero's copies):
 
 ```
 cat > /etc/ccs-front/list-signers <<'SIGNERS'
@@ -158,13 +142,9 @@ SIGNERS
 tools/verify-subaddresses.sh subaddresses.txt /etc/ccs-front/list-signers <WALLET_ADDRESS>
 ```
 
-It says OK, and who signed, only if the list is the one its `.pin` names, the `.pin`'s key is one
-of `list-signers`, `.asc` is that key's good signature of the list, the lines run 0, 1, 2... and
-line 0 is `WALLET_ADDRESS`. Compare its sha256 with the published and reproduced ones.
-
-It only knows the public key that comes with the list (`.key.asc`), so it can't tell that key was
-revoked since. Check that against Monero's own copy, fetched fresh, before installing a list (and
-again before installing a new one):
+OK means: the list is its `.pin`'s, signed by a key in `list-signers`, its lines 0, 1, 2…, line 0
+`WALLET_ADDRESS`. Compare its sha256 with the published ones. It can't know the key was revoked
+since (it only has the list's copy): check Monero's, fetched fresh:
 
 ```
 curl -fsSO https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/luigi1111.asc   # or binaryfate.asc
@@ -173,20 +153,17 @@ gpg --show-keys --with-colons luigi1111.asc | awk -F: '$1 == "pub" { print ($2 =
 
 A revoked key: don't install the list, and ask the Core Team for one signed again.
 
-Copy the four files to `/etc/ccs-front/` (root-owned, 644) and give the list to ccs-front-bash as
-a fifth argument, in `ccs-front-run` (step 2): **A)** add `/etc/ccs-front/subaddresses.txt` after
-the four. **B)** mount the folder and name the list after the image (the five arguments replace
-the default four):
+Copy the four files to `/etc/ccs-front/` (root, 644) and pass the list as a fifth argument in
+`ccs-front-run`: **A)** `/etc/ccs-front/subaddresses.txt` after the four; **B)** mount the folder,
+and all five after the image:
 
 ```
     -v /etc/ccs-front:/subaddresses:ro \
     --pull never sha256:<image ID> /original /data /proposals /www/site /subaddresses/subaddresses.txt
 ```
 
-With them, `subaddresses.txt.viewkey` (root-owned, 644): the wallet's view key on its first line,
-and optionally a line `source <https link>` to where the address and view key were published,
-and `source-text <words>` for what that link says (default "where they were published"). For the
-mainnet CCS wallet that is luigi1111's comment in monero-project/meta #935:
+Beside them `subaddresses.txt.viewkey` (root, 644): the view key, and optionally `source <https
+link>` (where it was published) and `source-text <words>` (the link's words). For the mainnet:
 
 ```
 62ad19781466882d8df0ae85743abcc5c8ef81e52e051e7cc56fe3c610d18001
@@ -194,25 +171,16 @@ source https://github.com/monero-project/meta/issues/935#issuecomment-1867257410
 source-text shared by luigi1111 here
 ```
 
-The Verify page
-shows them, with the commands to ask a copy of the wallet whether an address is one of its own
-(`get_address_index`).
+The Verify page shows them, with the commands to ask a copy of the wallet about an address.
 
-Each run then checks the list against its `.pin` and every donation address against the list
-(about 0.2s); a missing file, or a list that isn't the one the pin names, stops the run. A
-funding-required proposal whose address isn't in the list is left off the site (its page, its
-cards, the counts; logged as `warning: left off the site: ...`) and the rest is made, then the
-run exits 3, a failed run: one stale file can't stop every page, and can't show an address the
-list doesn't prove. It publishes the list, its signature and the key (`/subaddresses.txt`, `.asc`,
-`.key.asc`), fills the site's `/verify/` page with the steps and the fingerprint, and puts a link
-to it in every donation box. Without the fifth argument there is no check, and `/verify/` says
-there is no list yet. Nothing about the list is in the original: a new list is the four files,
-copied here and (with two machines) to the web server for its gate (ccs-bash's
-docs/two-machines.md, "The gate"), which then holds back any page with an address not on it
-and tells IRC. When the wallet nears the end of the list (index 15,000), make a longer one the same
-way: its first lines are the old list, line for line (`head -n 15000 new | cmp - old`), which
-anyone can check. A shorter one, the same: cut it with `head`, then sign it again (the old signature
-covers the whole old file).
+Each run checks the list against its `.pin` (a missing file or another list stops the run) and
+every address on the site against the list: a funding-required proposal, or a `/projects` entry,
+whose address isn't on it is left off (`warning: left off the site: …`), the rest is made, and the
+run exits 3. The site carries the list, its signature and key, and `/verify/` with the
+fingerprint, linked from each donation box; without the fifth argument, no check, and `/verify/`
+says so. The same four files go to the web server's gate (ccs-bash's two-machines, "The gate").
+Near index 15,000, make a longer list the same way: its first lines are the old one
+(`head -n 15000 new | cmp - old`).
 
 ## Going back
 
