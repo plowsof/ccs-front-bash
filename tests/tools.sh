@@ -69,10 +69,22 @@ cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
 { sed -n 1p "$tmp/main.txt"; sed -n 3p "$tmp/main.txt"; sed -n 2p "$tmp/main.txt"; } > "$tmp/order.txt"
 (cd "$tmp" && GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" order.txt > /dev/null 2>&1)
 nope "not 'index address' lines" "$tmp/order.txt" "$tmp/signers"
+# Review 5: one address twice (line 2 = line 1, signed): never right, every check takes "in the
+# list" for "one of the wallet's"
+{ sed -n 1,2p "$tmp/main.txt"; printf '2 %s\n' "$(awk 'NR == 2 { print $2 }' "$tmp/main.txt")"; } > "$tmp/dup.txt"
+(cd "$tmp" && GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" dup.txt > /dev/null 2>&1)
+nope "an address twice" "$tmp/dup.txt" "$tmp/signers" "$wallet"
 # the signer's key revoked (its owner's revocation certificate, as gpg made it): refused
 sed 's/^:-----BEGIN/-----BEGIN/' "$core/openpgp-revocs.d/$cfpr.rev" | GNUPGHOME=$core gpg -q --batch --import 2> /dev/null
 cp "$tmp/main.txt.key.asc" "$tmp/keep.key.asc"
 GNUPGHOME=$core gpg --batch --armor --export "$cfpr" > "$tmp/main.txt.key.asc" 2> /dev/null
 nope "revoked key" "$tmp/main.txt" "$tmp/signers" "$wallet"
+# Review 5: the list shipped with its key's export from before the revocation (whoever brings a
+# list brings LIST.key.asc too): with SIGNER_KEYS, keys of your own, the revocation is known
+GNUPGHOME=$core gpg --batch --armor --export "$cfpr" > "$tmp/own-keys.asc" 2> /dev/null
 cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
+if ! SIGNER_KEYS=$tmp/own-keys.asc v "$tmp/main.txt" "$tmp/signers" "$wallet" && grep -q "NOT OK: .*revoked key" "$tmp/v.out"; then
+    ok "verify refuses: a revoked key, the list shipped with its old export, checked with SIGNER_KEYS (your own copy of the keys)"
+else cat "$tmp/v.out"; fail "verify with SIGNER_KEYS: a revoked key's old export accepted"; fi
+if ! SIGNER_KEYS=$tmp/none.asc v "$tmp/main.txt" "$tmp/signers" "$wallet" && grep -q "no SIGNER_KEYS file" "$tmp/v.out"; then ok "verify refuses: a SIGNER_KEYS file that is not there"; else fail "verify: a missing SIGNER_KEYS file"; fi
 exit "$status"
