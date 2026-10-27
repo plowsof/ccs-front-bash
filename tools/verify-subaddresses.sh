@@ -27,8 +27,14 @@ export GNUPGHOME
 chmod 700 "$GNUPGHOME"
 trap 'gpgconf --kill all 2> /dev/null || true; rm -rf "$GNUPGHOME"' EXIT
 gpg -q --batch --import "$list.key.asc" 2> /dev/null || bad "$list.key.asc is not a public key"
-# the signature's primary key (VALIDSIG's last field), whichever of its subkeys signed
-by=$(gpg --batch --status-fd 1 --verify "$list.asc" "$list" 2> /dev/null | awk '$2 == "VALIDSIG" { print $NF }') || true
+# the signature's primary key (VALIDSIG's last field), whichever of its subkeys signed; not one
+# its owner revoked, nor a signature past its own expiry (a key past its expiry still counts: the
+# list was signed while it was good, and a Core Team member's key is extended now and then)
+status=$(gpg --batch --status-fd 1 --verify "$list.asc" "$list" 2> /dev/null) || true
+if grep -qE '^\[GNUPG:\] (REVKEYSIG|KEYREVOKED|EXPSIG) ' <<<"$status"; then
+    bad "$list.asc is by a revoked key, or has expired ($(grep -oE '(REVKEYSIG|KEYREVOKED|EXPSIG)' <<<"$status" | head -n 1))"
+fi
+by=$(awk '$2 == "VALIDSIG" { print $NF }' <<<"$status")
 [[ $by == "$fpr" ]] || bad "$list.asc is not a good signature of $list by $fpr${by:+ (it is by $by)}"
 who=$(gpg --batch --with-colons --list-keys "$fpr" | awk -F: '$1 == "uid" { print $10; exit }')
 
