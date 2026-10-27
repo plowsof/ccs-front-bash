@@ -140,8 +140,12 @@ cat > /etc/ccs-front/list-signers <<'SIGNERS'
 81AC591FE9C4B65C5806AFC3F0AF4D462A0BDF92  # binaryFate (monero-project/monero utils/gpg_keys)
 8777AB8F778EE89487A2F8E7F4ACA0183641E010  # luigi1111 (monero-project/monero utils/gpg_keys)
 SIGNERS
-tools/verify-subaddresses.sh subaddresses.txt /etc/ccs-front/list-signers <WALLET_ADDRESS>
+curl -fsSLo signer.asc https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/<signer>.asc
+SIGNER_KEYS=signer.asc tools/verify-subaddresses.sh subaddresses.txt /etc/ccs-front/list-signers <WALLET_ADDRESS>
 ```
+
+(`SIGNER_KEYS`: the signer's key as you got it yourself, so a revocation is known; without it, the
+`.key.asc` that came with the list is used, which whoever brings the list chose.)
 
 OK means: the list is its `.pin`'s, signed by a key in `list-signers`, its lines 0, 1, 2…, line 0
 `WALLET_ADDRESS`. Compare its sha256 with the published ones. It can't know the key was revoked

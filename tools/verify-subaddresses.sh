@@ -6,8 +6,11 @@
 #   - LIST.pin's key is one of SIGNERS: a file of your own, root-owned, one fingerprint a line
 #     (# comments), for the mainnet those of the Core Team members who may sign it, as the
 #     Monero repository publishes their keys (utils/gpg_keys/);
-#   - LIST.asc is a good signature of LIST by that key (LIST.key.asc, in a keyring of its own);
-#   - LIST is "index address" lines, 0, 1, 2... in order, each a 95-character address;
+#   - LIST.asc is a good signature of LIST by that key (LIST.key.asc, in a keyring of its own; or
+#     SIGNER_KEYS=<file>, keys you got yourself, as the Monero repository's utils/gpg_keys/ has
+#     them: whoever brings a list brings LIST.key.asc too, maybe an export from before its key
+#     was revoked, so only keys of your own know of a revocation for sure);
+#   - LIST is "index address" lines, 0, 1, 2... in order, each a 95-character address, none twice;
 #   - with WALLET_ADDRESS, line 0 is it (the wallet's main address: ccs-bash's WALLET_ADDRESS).
 # ccs-front-bash and the web server's gate then check the list against its .pin every run and
 # push: the pin is what they trust, this is how you know the pin is the right one.
@@ -26,7 +29,9 @@ GNUPGHOME=$(mktemp -d)
 export GNUPGHOME
 chmod 700 "$GNUPGHOME"
 trap 'gpgconf --kill all 2> /dev/null || true; rm -rf "$GNUPGHOME"' EXIT
-gpg -q --batch --import "$list.key.asc" 2> /dev/null || bad "$list.key.asc is not a public key"
+keys=$list.key.asc
+if [[ -n ${SIGNER_KEYS:-} ]]; then [[ -f $SIGNER_KEYS ]] || bad "no SIGNER_KEYS file $SIGNER_KEYS"; keys=$SIGNER_KEYS; fi
+gpg -q --batch --import "$keys" 2> /dev/null || bad "$keys is not a public key"
 # the signature's primary key (VALIDSIG's last field), whichever of its subkeys signed; not one
 # its owner revoked, nor a signature past its own expiry (a key past its expiry still counts: the
 # list was signed while it was good, and a Core Team member's key is extended now and then)
@@ -41,10 +46,13 @@ who=$(gpg --batch --with-colons --list-keys "$fpr" | awk -F: '$1 == "uid" { prin
 n=$(wc -l < "$list")
 awk '$0 !~ /^[0-9]+ [1-9A-HJ-NP-Za-km-z]+$/ || $1 != NR - 1 || length($2) != 95 { print "line " NR ": " substr($0, 1, 40); bad = 1; exit } END { exit bad }' "$list" \
     || bad "$list: not 'index address' lines, from 0, in order"
+# (every check takes "in the list" as "one of the wallet's": an address twice is never right)
+twice=$(awk 'seen[$2]++ { print NR - 1; exit }' "$list")
+[[ -z $twice ]] || bad "$list: line $twice's address is on an earlier line too (an address twice)"
 if [[ -n $wallet ]]; then
     [[ $(awk 'NR == 1 { print $2 }' "$list") == "$wallet" ]] || bad "$list: line 0 is not the wallet's main address $wallet"
 fi
 main=''; [[ -z $wallet ]] || main=', line 0 the main address WALLET_ADDRESS'
 echo "OK: $list, $n subaddresses (0 to $((n - 1)))$main"
 echo "    sha256 $sum, as its .pin names"
-echo "    signed by $fpr ($who), one of $signers"
+echo "    signed by $fpr ($who), one of $signers${SIGNER_KEYS:+, its key from $SIGNER_KEYS}"
