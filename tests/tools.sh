@@ -69,4 +69,10 @@ cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
 { sed -n 1p "$tmp/main.txt"; sed -n 3p "$tmp/main.txt"; sed -n 2p "$tmp/main.txt"; } > "$tmp/order.txt"
 (cd "$tmp" && GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" order.txt > /dev/null 2>&1)
 nope "not 'index address' lines" "$tmp/order.txt" "$tmp/signers"
+# the signer's key revoked (its owner's revocation certificate, as gpg made it): refused
+sed 's/^:-----BEGIN/-----BEGIN/' "$core/openpgp-revocs.d/$cfpr.rev" | GNUPGHOME=$core gpg -q --batch --import 2> /dev/null
+cp "$tmp/main.txt.key.asc" "$tmp/keep.key.asc"
+GNUPGHOME=$core gpg --batch --armor --export "$cfpr" > "$tmp/main.txt.key.asc" 2> /dev/null
+nope "revoked key" "$tmp/main.txt" "$tmp/signers" "$wallet"
+cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
 exit "$status"

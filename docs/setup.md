@@ -26,7 +26,7 @@ the release you mean to ship, check its sha256 against the one in the release no
 it here (`apt install unzip` if needed):
 
 ```
-v=v0.1.18                                 # ccs-bash's handover, "The releases"
+v=v0.1.20                                 # ccs-bash's handover, "The releases"
 curl -fLO https://github.com/plowsof/ccs-front-hugo/releases/download/$v/ccs-front-hugo-$v.zip
 sha256sum ccs-front-hugo-$v.zip           # must be the release's sha256 (and your own build's)
 rm -rf /opt/ccs-front-hugo/public && install -d -m 755 /opt/ccs-front-hugo/public
@@ -40,7 +40,7 @@ the same way; the next run uses it.
 
 ```
 git clone https://github.com/plowsof/ccs-front-bash /opt/ccs-front-bash
-git -C /opt/ccs-front-bash checkout v0.1.18   # the release you run, not master
+git -C /opt/ccs-front-bash checkout v0.1.19   # the release you run, not master
 useradd --system --no-create-home --shell /usr/sbin/nologin ccs-front   # if not there already
 install -d -o ccs-front -g ccs-front -m 755 /var/lib/ccs/www
 ```
