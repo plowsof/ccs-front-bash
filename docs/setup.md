@@ -40,7 +40,7 @@ the same way; the next run uses it.
 
 ```
 git clone https://github.com/plowsof/ccs-front-bash /opt/ccs-front-bash
-git -C /opt/ccs-front-bash checkout v0.1.19   # the release you run, not master
+git -C /opt/ccs-front-bash checkout <commit>   # the one ccs-bash's contrib/release/verify prints for the release you run: not the tag, which can move; not master
 useradd --system --no-create-home --shell /usr/sbin/nologin ccs-front   # if not there already
 install -d -o ccs-front -g ccs-front -m 755 /var/lib/ccs/www
 ```
@@ -178,7 +178,7 @@ Each run checks the list against its `.pin` (a missing file or another list stop
 every address on the site against the list: a funding-required proposal, or a `/projects` entry,
 whose address isn't on it is left off (`warning: left off the site: …`), the rest is made, and the
 run exits 3. `/verify/`, linked from each donation box, shows the wallet's address and view key for visitors to check an address in a
-view-only copy of the wallet; without the fifth argument, no check, and `/verify/` says so. The same four files go to the web server's gate (ccs-bash's two-machines, "The gate").
+view-only copy of the wallet; without the fifth argument, no check, and `/verify/` says so. The same four files, and `.viewkey`, go to the web server's gate (ccs-bash's two-machines, "The gate"), checked there too.
 Near index 15,000, make a longer list the same way: its first lines are the old one
 (`head -n 15000 new | cmp - old`).
 
