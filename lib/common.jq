@@ -24,6 +24,9 @@ def values:
     address: (."donate-address" // ""),
     pending_note: (if (."amount-pending" // 0) > 0 then " · \(."amount-pending" | trim0) XMR pending" else "" end),
     funding_note: (if ."funding-required-date" then " · funding since \(."funding-required-date")" else "" end),
+    # a funding-required proposal's one date: when funding started, else (a state without it) the
+    # date its front matter gives
+    funding_date: (."funding-required-date" // .date // ""),
     # an idea's 👍/👎 (ccs-bash: null if they couldn't be read, missing before ccs-bash had them)
     upvotes: (.upvotes | if type == "number" then . else "–" end),
     downvotes: (.downvotes | if type == "number" then . else "–" end)
