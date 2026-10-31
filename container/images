@@ -8,7 +8,7 @@ jq                         stagex/user-jq@sha256:4148299a2beb46fa5f0494ea456f196
 zlib                       stagex/core-zlib@sha256:6b843e1875989a330d0b2051ddd1ab0178f01c9f476fb64727c8bd388eda9839
 libpng                     stagex/core-libpng@sha256:60ad8b2685cdc0766fa476b63855a22a0dc6f69998fb697f9d3a783e957e4785
 # the builder (builder.Dockerfile): BuildKit, runc and its library, certificates to fetch the pins
-ca-certificates            stagex/core-ca-certificates@sha256:fe24a3809eba30972b64ddd8b611a6494bebea7631f805d795cec4241f5a11c6
+ca-certificates            stagex/core-ca-certificates@sha256:2e5d0da04413dfbc739f3009fe6616e90e733c463f8495ce6997b02c0832735c
 buildkit                   stagex/user-buildkit@sha256:91bff9810facddaa795fe3173d190b25b1919bd4eb21dc8e81ce4d632161faa7
 runc                       stagex/user-runc@sha256:8bbf5810f80422827c085f653aecbdf3c4f0b673f0c27129e634379177443857
 libseccomp                 stagex/user-libseccomp@sha256:9982f7c17f9e2fc2ce8730428d5dad091efcffcfaeaecaeec406df68a7d8b881
