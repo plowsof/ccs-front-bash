@@ -336,4 +336,35 @@ else
 fi
 rm -rf "$im"
 
+# The footer's onion line: an original whose footer has the onion region (every page, the proposal
+# pages and the tag pages too) and the onion part: with CCS_ONION, the part filled with it on every
+# page; without, the region empty; an address that isn't one stops the run. An original from before
+# (no region, no part) runs with CCS_ONION all the same, with no line.
+on=$(mktemp -d)
+cp -r "$here/fixtures/original" "$on/original"
+find "$on/original" -name '*.html' -exec grep -l '</footer>' {} + | while IFS= read -r f; do
+    sed -i 's#</footer>#<!-- ccs:onion -->\n<!-- /ccs:onion -->\n</footer>#' "$f"
+done
+printf '%s\n' '<p class="footer-onion">Also on Tor: <a href="http://{{onion}}/">{{onion}}</a></p>' > "$on/original/parts/onion.html"
+o=abcdefghijklmnopqrstuvwxyz234567abcdefghijklmnopqrstuvwx.onion
+pages() { find "$1" -name '*.html' ! -path '*/parts/*' -exec grep -l '</footer>' {} + | wc -l; }
+if CCS_ONION=$o "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site" 2> "$on/log" \
+    && n=$(pages "$on/site") && ((n > 3)) \
+    && [[ $(grep -l "Also on Tor: <a href=\"http://$o/\">$o</a>" -r "$on/site" --include='*.html' | wc -l) == "$n" ]] \
+    && [[ -n $(find "$on/site/proposals" -name '*.html' -exec grep -l "$o" {} + | head -n 1) ]]; then
+    ok "CCS_ONION: the footer's onion line on every page ($n, proposal and tag pages too)"
+else cat "$on/log"; fail "the onion line"; fi
+if "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site2" 2> /dev/null && ! grep -rq 'Also on Tor' "$on/site2" \
+    && grep -q '<!-- ccs:onion -->' "$on/site2/index.html"; then
+    ok "no CCS_ONION: the onion region empty"
+else fail "no onion"; fi
+if ! CCS_ONION=evil.example "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site3" 2> "$on/log3" \
+    && grep -q 'CCS_ONION is not an onion address' "$on/log3" && [[ ! -e $on/site3 ]]; then
+    ok "CCS_ONION that isn't an onion address: the run stops, no site"
+else fail "a bad CCS_ONION"; fi
+if CCS_ONION=$o "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$on/site4" 2> /dev/null && ! grep -rq 'Also on Tor' "$on/site4"; then
+    ok "CCS_ONION with an original from before the onion line: runs, no line"
+else fail "an old original with CCS_ONION"; fi
+rm -rf "$on"
+
 exit "$status"
