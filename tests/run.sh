@@ -350,7 +350,7 @@ o=abcdefghijklmnopqrstuvwxyz234567abcdefghijklmnopqrstuvwx.onion
 pages() { find "$1" -name '*.html' ! -path '*/parts/*' -exec grep -l '</footer>' {} + | wc -l; }
 if CCS_ONION=$o "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site" 2> "$on/log" \
     && n=$(pages "$on/site") && ((n > 3)) \
-    && [[ $(grep -l "Also on Tor: <a href=\"http://$o/\">$o</a>" -r "$on/site" --include='*.html' | wc -l) == "$n" ]] \
+    && [[ $(find "$on/site" -name '*.html' -exec grep -l "Also on Tor: <a href=\"http://$o/\">$o</a>" {} + | wc -l) == "$n" ]] \
     && [[ -n $(find "$on/site/proposals" -name '*.html' -exec grep -l "$o" {} + | head -n 1) ]]; then
     ok "CCS_ONION: the footer's onion line on every page ($n, proposal and tag pages too)"
 else cat "$on/log"; fail "the onion line"; fi
