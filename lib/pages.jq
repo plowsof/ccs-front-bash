@@ -54,4 +54,5 @@ def region_if_there($name; $html):
 | region("count idea"; $cidea | part) | region("count fr"; $cfr | part)
 | region("count wip"; $cwip | part) | region("count cp"; $ccp | part)
 | region("filters"; $filters | part)
+| region_if_there("onion"; $onion | part)
 | "\u0001\($file)\n" + gsub("\u0001"; "")

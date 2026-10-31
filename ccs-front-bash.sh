@@ -4,7 +4,8 @@
 # SITE. With SUBADDRESSES, a signed list of the wallet's subaddresses (see check_addresses), every
 # donation address must be in it. The QR codes are made here, from those addresses (qr_codes). Every piece of HTML comes from the original's pages and parts;
 # this only fills them. The original is never changed; SITE is replaced only once the new one is
-# complete. Needs no network; needs qrencode.
+# complete. Needs no network; needs qrencode. CCS_ONION: the site's onion address (NAME.onion), for
+# the footer's onion line (onion_region); none, no line.
 set -euo pipefail
 export LC_ALL=C
 
@@ -51,9 +52,23 @@ proposal_pages() {
         --rawfile cidea "$work/regions/count_idea.html" --rawfile cfr "$work/regions/count_fr.html" \
         --rawfile cwip "$work/regions/count_wip.html" --rawfile ccp "$work/regions/count_cp.html" \
         --rawfile filters "$work/regions/filters.html" --arg verifylink "$verify_link" \
+        --rawfile onion "$work/regions/onion.html" \
         --slurpfile qrs "$work/qr.json" -f "$LIB/pages.jq" > "$work/pages"
     # split: a line "\001<name>" starts the next page (pages.jq removes \001 from page text)
     awk -v dir="$out/proposals" '/^\001/ { if (f) close(f); f = dir "/" substr($0, 2) ".html"; next } { print > f }' "$work/pages"
+}
+
+# onion_region ORIGINAL: the footer's line with the site's onion address (CCS_ONION, NAME.onion: the
+# address the web server's gate is told too, or it holds every page back), in $work/regions; empty
+# without one, or with an original that has no onion part (one from before it)
+onion_region() {
+    local f
+    : > "$work/regions/onion.html"
+    [[ ${CCS_ONION:-} ]] || return 0
+    [[ $CCS_ONION =~ ^[a-z2-7]{56}\.onion$ ]] || die "CCS_ONION is not an onion address (56 characters a-z and 2-7, then .onion)"
+    [[ -f $1/parts/onion.html ]] || return 0
+    f=$(cat "$1/parts/onion.html")
+    printf '%s\n' "${f//\{\{onion\}\}/"$CCS_ONION"}" > "$work/regions/onion.html"
 }
 
 # tag_regions ORIGINAL DATA: the tag filters (into $work/regions) and each tag page's regions
@@ -206,6 +221,7 @@ main() {
     trap 'rm -rf "$work" "$new"' EXIT
 
     mkdir "$work/regions"
+    onion_region "$original"
     # the addresses first: a proposal left off (check_addresses) is off every list and count too
     check_addresses "$original" "$data" "$subaddresses"
     [[ -z ${left_off:-} ]] || data=$work/data
@@ -239,7 +255,7 @@ main() {
     done < <(find "$new" -name '*.html' -print0)
     # a page per tag: the original's tag page, at the same depth (its relative links still work)
     for tag in "${tags[@]}"; do
-        cp "$work/regions"/count_*.html "$work/tags/$tag/"
+        cp "$work/regions"/count_*.html "$work/regions/onion.html" "$work/tags/$tag/"
         mkdir -p "$new/explore/tag/$tag"
         fill_page "$original/explore/tag/example/index.html" "$work/tags/$tag" > "$new/explore/tag/$tag/index.html"
     done
