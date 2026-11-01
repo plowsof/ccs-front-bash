@@ -212,11 +212,13 @@ function cells(l, tag,    k, c, out, x) {
     for (x = 1; x <= k; x++) out = out "<" tag ">" inline(trim(c[x])) "</" tag ">"
     return out "</tr>"
 }
+# a heading one level down (# is h2, ###### and below h6): the page's own h1 is the proposal's title
 function heading(l,    lv, t, id, idattr) {
     lv = match(l, /^#+/) ? RLENGTH : 1
     t = substr(l, lv + 1); sub(/ #+ *$/, "", t); t = trim(t)
     id = tolower(t); gsub(/[^a-z0-9]+/, "-", id); sub(/^-/, "", id); sub(/-$/, "", id)
     idattr = (id == "") ? "" : " id=\"" id "\""
+    lv = (lv < 6) ? lv + 1 : 6
     emit("<h" lv idattr ">" inline(t) "</h" lv ">")
 }
 function render(    i, l, ind, mark, t, typ, fence) {
