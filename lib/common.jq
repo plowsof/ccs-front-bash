@@ -22,7 +22,7 @@ def values:
     milestones: (.milestones // 0),
     done: (."milestones-completed" // 0),
     address: (."donate-address" // ""),
-    pending_note: (if (."amount-pending" // 0) > 0 then " · \(."amount-pending" | trim0) XMR pending" else "" end),
+    pending_note: (if (."amount-pending" // 0) > 0 then " · +\(."amount-pending" | trim0) XMR pending" else "" end),
     funding_note: (if ."funding-required-date" then " · funding since \(."funding-required-date")" else "" end),
     # a funding-required proposal's one date: when funding started, else (a state without it) the
     # date its front matter gives
