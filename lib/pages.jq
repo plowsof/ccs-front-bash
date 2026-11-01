@@ -3,7 +3,7 @@
 # original's parts. Prints each page after a line "\u0001<file name>" (see ccs-front-bash.sh).
 # Inputs: --slurpfile proposals, completed (ccs-bash's JSON), md (markdown.awk's lines), qrs (the QR
 # codes, by address);
-# --rawfile fr, wip, cp (parts/proposal-*.html), donate, funded, mdone,
+# --rawfile fr, wip, cp (parts/proposal-*.html), donate, funded, donatefunded (or empty), mdone,
 # mtodo, payout, nom, nop, segdone, segtodo, labellink (the other parts); cidea, cfr, cwip, ccp,
 # filters (the sidebar's counts and tags, as on every other page).
 include "common";
@@ -48,7 +48,10 @@ def region_if_there($name; $html):
           tag_links: ($p | tag_links($labellink))}) as $v
 | $tpl[$stage]
 | fill($v)
-| region(if $stage == "fr" then "donate" else "funded" end; (if $stage == "fr" then $donate else $funded end) | part | fill($v))
+# a Funding Required proposal at its goal: the design's donate-funded part ("Fully funded", no
+# address) in place of the donation box; a design without that part, the box
+| region(if $stage == "fr" then "donate" else "funded" end;
+    (if $stage != "fr" then $funded elif (($p.percentage // 0) | tonumber? // 0) >= 100 and $donatefunded != "" then $donatefunded else $donate end) | part | fill($v))
 | region("milestones"; if $milestones == "" then $nom | part else $milestones end)
 | region_if_there("payouts"; if $payouts == "" then $nop | part else $payouts end)
 | region("count idea"; $cidea | part) | region("count fr"; $cfr | part)

@@ -46,6 +46,7 @@ proposal_pages() {
         --slurpfile md "$work/md.jsonl" \
         --rawfile fr "$p/proposal-fr.html" --rawfile wip "$p/proposal-wip.html" --rawfile cp "$p/proposal-cp.html" \
         --rawfile donate "$p/donate.html" --rawfile funded "$p/funded.html" \
+        --rawfile donatefunded "$([[ -f $p/donate-funded.html ]] && echo "$p/donate-funded.html" || echo /dev/null)" \
         --rawfile mdone "$p/milestone-done.html" --rawfile mtodo "$p/milestone-todo.html" \
         --rawfile payout "$p/payout.html" --rawfile nom "$p/no-milestones.html" --rawfile nop "$p/no-payouts.html" \
         --rawfile segdone "$p/segment-done.html" --rawfile segtodo "$p/segment-todo.html" \

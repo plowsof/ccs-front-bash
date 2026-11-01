@@ -367,6 +367,26 @@ if CCS_ONION=$o "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" 
 else fail "an old original with CCS_ONION"; fi
 rm -rf "$on"
 
+# Fully funded: a Funding Required proposal at its goal gets the design's donate-funded part in its
+# donate region ("Fully funded", no address, no QR code); the others keep the donation box; a design
+# without the part, the box for every one
+ff=$(mktemp -d); cp -r "$here/fixtures/original" "$ff/original"; mkdir "$ff/data"; cp "$here/fixtures/data"/*.json "$ff/data/"
+printf '%s\n' '<p class="funded-badge">Fully funded: {{raised}} of {{amount}} XMR</p>' > "$ff/original/parts/donate-funded.html"
+jq 'map(.proposals |= map(if ."local-url" == "/proposals/near-funded.html" then .percentage = 100 else . end))' "$here/fixtures/data/proposals.json" > "$ff/data/proposals.json"
+a=$(jq -r '.[1].proposals[] | select(."local-url" == "/proposals/near-funded.html") | ."donate-address"' "$ff/data/proposals.json")
+b=$(jq -r '.[1].proposals[] | select(."local-url" == "/proposals/a-fund.html") | ."donate-address"' "$ff/data/proposals.json")
+if "$run" "$ff/original" "$ff/data" "$props" "$ff/site" 2> "$ff/log" \
+    && grep -q 'class="funded-badge">Fully funded: ' "$ff/site/proposals/near-funded.html" && ! grep -q "$a" "$ff/site/proposals/near-funded.html" \
+    && ! grep -q 'data:image/png' "$ff/site/proposals/near-funded.html" \
+    && grep -q "$b" "$ff/site/proposals/a-fund.html" && ! grep -q 'funded-badge' "$ff/site/proposals/a-fund.html"; then
+    ok "fully funded: \"Fully funded\" in place of the donation box (no address, no QR code); the others keep theirs"
+else cat "$ff/log"; fail "fully funded"; fi
+rm "$ff/original/parts/donate-funded.html"
+if "$run" "$ff/original" "$ff/data" "$props" "$ff/site2" 2> /dev/null && grep -q "$a" "$ff/site2/proposals/near-funded.html"; then
+    ok "fully funded, a design without donate-funded: the donation box as before"
+else fail "fully funded with an older design"; fi
+rm -rf "$ff"
+
 # The feed (feed.xml): with CCS_SITE_URL, the proposals put to Funding Required and fully funded,
 # newest first, as tests/expected/feed.xml (a title's markup as ‹ ›, a name's space as %20); none
 # without it; an address that isn't a site's stops the run
