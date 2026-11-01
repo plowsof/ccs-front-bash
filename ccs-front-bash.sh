@@ -5,7 +5,8 @@
 # donation address must be in it. The QR codes are made here, from those addresses (qr_codes). Every piece of HTML comes from the original's pages and parts;
 # this only fills them. The original is never changed; SITE is replaced only once the new one is
 # complete. Needs no network; needs qrencode. CCS_ONION: the site's onion address (NAME.onion), for
-# the footer's onion line (onion_region); none, no line.
+# the footer's onion line (onion_region); none, no line. CCS_SITE_URL: the site's address
+# (https://host), for the feed's links (feed); none, no feed.
 set -euo pipefail
 export LC_ALL=C
 
@@ -69,6 +70,16 @@ onion_region() {
     [[ -f $1/parts/onion.html ]] || return 0
     f=$(cat "$1/parts/onion.html")
     printf '%s\n' "${f//\{\{onion\}\}/"$CCS_ONION"}" > "$work/regions/onion.html"
+}
+
+# feed DATA OUT: OUT/feed.xml (lib/feed.jq), the proposals put to Funding Required and fully
+# funded, for feed readers; its links need the site's address, CCS_SITE_URL: without it, none
+feed() {
+    [[ ${CCS_SITE_URL:-} ]] || return 0
+    local site=${CCS_SITE_URL%/}
+    [[ $site =~ ^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?$ ]] || die "CCS_SITE_URL is not a site's address (https://host, no path)"
+    jq -nr -L "$LIB" --arg site "$site" --slurpfile proposals "$1/proposals.json" \
+        --slurpfile completed "$1/completed-proposals.json" -f "$LIB/feed.jq" > "$2/feed.xml"
 }
 
 # tag_regions ORIGINAL DATA: the tag filters (into $work/regions) and each tag page's regions
@@ -262,6 +273,7 @@ main() {
     proposal_pages "$original" "$data" "$proposals" "$new"
     # the /projects API goes with the site, so one push carries everything public
     if [[ -f $data/projects.json ]]; then cp "$data/projects.json" "$new/projects.json"; fi
+    feed "$data" "$new"
 
     relative_links "$new"
 
