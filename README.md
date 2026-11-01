@@ -56,6 +56,10 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
    Tags (the front matter's `tags:`) as labels on cards and links on proposal pages, the
    filters on Explore, and a page per tag at `/explore/tag/<tag>/` (copies of the original's
    tag page, so still no JavaScript).
+   With `CCS_SITE_URL` (the site's address, `https://host`), `feed.xml`: RSS of the proposals put
+   to Funding Required and fully funded (ccs-bash's `funding-required-at` and `funded-at`), the 50
+   newest, each item a link to its page; without it, no feed. With `CCS_ONION`, the footer's onion
+   link.
 4. **Swap and push:** a missing, unmatched or repeated marker stops the run and no new site is
    made (the last good one is pushed again); otherwise the new `site/` replaces the last one and
    goes to the web server. A funding-required proposal whose address isn't on the signed list is
