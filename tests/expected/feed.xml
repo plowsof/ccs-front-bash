@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+<title>Monero Community Crowdfunding System</title>
+<link>https://ccs.example.org/</link>
+<description>Proposals put to Funding Required, and fully funded</description>
+<atom:link href="https://ccs.example.org/feed.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>Funding required: Name starts with a space</title>
+<link>https://ccs.example.org/proposals/%20leading-space.html</link>
+<guid isPermaLink="false">https://ccs.example.org/proposals/%20leading-space.html#funding-required</guid>
+<pubDate>Sun, 04 Oct 2026 08:00:05 +0000</pubDate>
+</item>
+<item>
+<title>Fully funded: Fund ‹b›this‹/b› &amp; that</title>
+<link>https://ccs.example.org/proposals/a-fund.html</link>
+<guid isPermaLink="false">https://ccs.example.org/proposals/a-fund.html#funded</guid>
+<pubDate>Sat, 03 Oct 2026 12:30:00 +0000</pubDate>
+</item>
+<item>
+<title>Funding required: Fund ‹b›this‹/b› &amp; that</title>
+<link>https://ccs.example.org/proposals/a-fund.html</link>
+<guid isPermaLink="false">https://ccs.example.org/proposals/a-fund.html#funding-required</guid>
+<pubDate>Fri, 02 Oct 2026 00:00:00 +0000</pubDate>
+</item>
+<item>
+<title>Funding required: Nearly funded</title>
+<link>https://ccs.example.org/proposals/near-funded.html</link>
+<guid isPermaLink="false">https://ccs.example.org/proposals/near-funded.html#funding-required</guid>
+<pubDate>Thu, 01 Oct 2026 10:00:00 +0000</pubDate>
+</item>
+<item>
+<title>Fully funded: Work in progress</title>
+<link>https://ccs.example.org/proposals/b-wip.html</link>
+<guid isPermaLink="false">https://ccs.example.org/proposals/b-wip.html#funded</guid>
+<pubDate>Tue, 01 Sep 2026 00:00:00 +0000</pubDate>
+</item>
+<item>
+<title>Funding required: Ends with dots</title>
+<link>https://ccs.example.org/proposals/dots-end.html</link>
+<guid isPermaLink="false">https://ccs.example.org/proposals/dots-end.html#funding-required</guid>
+<pubDate>Thu, 01 Jan 2026 00:00:00 +0000</pubDate>
+</item>
+</channel>
+</rss>
