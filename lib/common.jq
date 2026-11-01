@@ -22,7 +22,10 @@ def values:
     milestones: (.milestones // 0),
     done: (."milestones-completed" // 0),
     address: (."donate-address" // ""),
-    pending_note: (if (."amount-pending" // 0) > 0 then " · \(."amount-pending" | trim0) XMR pending" else "" end),
+    pending_note: (if (."amount-pending" // 0) > 0 then " +\(."amount-pending" | trim0) XMR pending" else "" end),
+    # what would fund it, pending counted (ccs-bash's amount-needed, rounded up): beside the donate
+    # box's first step; nothing when nothing more is needed, or from a ccs-bash before it
+    needed_note: (if ((."amount-needed" // "0") | tonumber) > 0 then " \(."amount-needed" | trim0) XMR would fund it 100%!" else "" end),
     funding_note: (if ."funding-required-date" then " · funding since \(."funding-required-date")" else "" end),
     # a funding-required proposal's one date: when funding started, else (a state without it) the
     # date its front matter gives
