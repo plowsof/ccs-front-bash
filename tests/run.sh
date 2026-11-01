@@ -298,6 +298,16 @@ elif [[ $body == *'<a href="https://getmonero.org/">ok</a>'* && $body == *'<a hr
 else
     echo "$body"; fail "the Markdown renderer lost something"
 fi
+
+# A proposal's headings one level down, under the page's own h1 (its title): # is h2, ##### h6,
+# ###### stays h6; the same on every awk
+printf -- '---\nlayout: fr\ntitle: T\n---\n# Who\n## Plan\n##### Five\n###### Six\n' > "$tmp/h.md"
+for a in "${awks[@]}"; do
+    hb=$($a -f "$here/../lib/markdown.awk" "$tmp/h.md" | jq -r '.body')
+    if [[ $hb == *'<h2 id="who">Who</h2>'* && $hb == *'<h3 id="plan">Plan</h3>'* && $hb == *'<h6 id="five">Five</h6>'* && $hb == *'<h6 id="six">Six</h6>'* && $hb != *'<h1'* ]]; then :
+    else echo "$hb"; fail "headings on $a: not one level down"; fi
+done
+ok "a proposal's headings one level down (# is h2), under the page's title"
 if [[ $(jq -r '.milestones[0][0]' "$first") == '<img src=x onerror=alert(1)>' ]]; then
     ok "front matter milestones read as text (escaped later, by jq)"
 else
