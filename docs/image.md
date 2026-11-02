@@ -10,7 +10,8 @@ less in it (about 14 MB): ccs-front-bash needs no network.
 - **busybox and qrencode, built here** from upstream source pinned by sha256 in
   `container/sources.lock` (StageX's sums): busybox with only the applets in
   `container/busybox-applets` (what ccs-front-bash and its tests run, no shell, no network
-  tools); qrencode with PNG output, the same version and options as ccs-bash's, for the QR codes.
+  tools); qrencode with PNG output, for the QR codes of a site without a signed list (with one,
+  they are the list's own files, `tools/make-qr.sh`; the web server's gate has no qrencode).
 - **Built by StageX's BuildKit**, pinned and checked like the rest, with `--network none`; every
   file gets the commit's time. The same commit builds to the same image ID anywhere, and
   `container/check-pinned.sh` proves it on every push (two clean builds from separate clones and

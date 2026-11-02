@@ -15,7 +15,8 @@ It reads three things and writes one:
 
 Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils (`base64` too),
 `grep`, `sed`, `tar`, `find`, `xargs` and `qrencode` (and `unzip` for step 1): on Debian,
-`apt install jq qrencode` on top of what ccs-bash needs. The QR codes are files,
+`apt install jq qrencode` on top of what ccs-bash needs (qrencode: only for a site without the
+signed list, and for the list's tools in step 5, `make-qr.sh` and `verify-subaddresses.sh`). The QR codes are files,
 `qr/<address>.png`: with the signed list (step 5), the list's own; without one, made here
 (qrencode, PNG) from the addresses it has checked. ccs-bash makes none.
 

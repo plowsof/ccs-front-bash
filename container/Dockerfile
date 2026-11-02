@@ -4,8 +4,8 @@
 # Same commit, same hash: every file gets the commit's time (SOURCE_DATE_EPOCH) and the
 # result is one layer in an empty image. No user account: it runs as a numeric user.
 
-# qrencode, built from source with PNG output (StageX's own is built without libpng), as in
-# ccs-bash's image: the same version and options, so the same QR codes.
+# qrencode, built from source with PNG output (StageX's own is built without libpng): 4.1.1, as
+# tools/make-qr.sh makes the signed list's QR codes, so a site without a list gets the same ones.
 FROM toolchain AS qrencode
 COPY --from=libpng / /
 COPY --from=zlib / /
@@ -49,8 +49,8 @@ RUN --mount=type=bind,source=container,target=/pin \
         ! "/rootfs/usr/bin/$applet" --help 2>&1 | grep -q "applet not found" || { echo "$applet not built" >&2; exit 1; }; \
     done
 
-# Everything ccs-front-bash runs, and nothing else: bash, jq, busybox and qrencode (it makes the
-# QR codes, from the checked addresses).
+# Everything ccs-front-bash runs, and nothing else: bash, jq, busybox and qrencode (the QR codes of
+# a site without a signed list; with one, they are the list's files).
 FROM scratch AS tree
 COPY --from=filesystem / /
 COPY --from=musl / /
