@@ -26,7 +26,7 @@ the release you mean to ship, check its sha256 against the one in the release no
 it here (`apt install unzip` if needed):
 
 ```
-v=v0.1.20                                 # ccs-bash's handover, "The releases"
+v=v0.1.29                                 # ccs-bash's handover, "The releases"
 curl -fLO https://github.com/plowsof/ccs-front-hugo/releases/download/$v/ccs-front-hugo-$v.zip
 sha256sum ccs-front-hugo-$v.zip           # must be the release's sha256 (and your own build's)
 rm -rf /opt/ccs-front-hugo/public && install -d -m 755 /opt/ccs-front-hugo/public
@@ -50,21 +50,30 @@ install -d -o ccs-front -g ccs-front -m 755 /var/lib/ccs/www
 
 ```
 #!/bin/sh
-exec runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
+exec env CCS_SITE_URL=https://ccs.getmonero.org runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
     /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site
 ```
 
 **B)** from the pinned image (StageX parts only, no network, the same image ID from the same
-commit anywhere): the `docker run` line in [the pinned image](image.md), after `exec`.
+commit anywhere): the `docker run` line in [the pinned image](image.md), after `exec`, with
+`-e CCS_SITE_URL=https://ccs.getmonero.org`.
+
+`CCS_SITE_URL`, the site's address (`https://host`): the feed's links (`feed.xml`; without it, no
+feed), the same as the web server gate's `SITE_URL`. `CCS_ONION`, optional, the site's onion
+address (`<56 characters>.onion`): the footer's onion line, the same as the gate's
+`/etc/ccs-gate/onion` (ccs-bash's handover, "The onion address"). In ccs-bash's Docker setup the
+compose's `front` passes both from its `.env`.
 
 It writes `site.new` next to `site`, and only swaps it in once every page is made. Anything
 off (a marker, a value ccs-bash didn't escape, a proposal file missing) stops the run, logs why,
 and leaves the last good site as it was.
 
-## 3. In ccs-bash-update
+## 3. In the update
 
-`ccs-bash-update` runs `ccs-front-run` right after `ccs-bash-run`, then pushes the site. The
-script, the only full copy: [ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md#9-the-update).
+In ccs-bash's Docker setup (the production one) the compose's `front` stage runs it, after
+ccs-bash and the backup, before the push ([ccs-bash's docker.md](https://github.com/plowsof/ccs-bash/blob/master/docs/docker.md)).
+The host setup's `ccs-bash-update` runs `ccs-front-run` right after `ccs-bash-run`, then pushes
+the site; the script, the only full copy: [ccs-bash's setup](https://github.com/plowsof/ccs-bash/blob/master/docs/setup.md#the-update-script-the-host-setup).
 
 ## 4. Serving it
 
