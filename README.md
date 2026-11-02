@@ -10,11 +10,11 @@
 
 - **Blazingly fast:** no build step at runtime, only string replacement.
 - **Memory safe:** it has no memory. Every page starts again from the untouched original.
-- **Fearless concurrency:** a fresh directory every run, then `rsync --delay-updates`.
+- **Fearless concurrency:** a fresh directory every run, swapped in whole.
 - **Zero-cost abstractions:** there are no abstractions.
 - **A strong type system:** everything is a string, the HTML too. That's how it stays escaped.
 - **A friendly compiler:** `shellcheck`.
-- **Cargo:** `apt install jq`. Or a pinned image of StageX parts, the same ID from the same commit ([docs](docs/image.md)).
+- **Cargo:** none. A pinned image of StageX parts, the same ID from the same commit ([docs](docs/image.md)).
 
 Not a crustacean. A mollusc.
 
@@ -32,12 +32,14 @@ serves it (https://ccs.monerodevs.org).
 ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE SUBADDRESSES
 #   ORIGINAL   ccs-front-hugo's public/       DATA  ccs-bash's OUTPUT_DIR
 #   PROPOSALS  the proposals checkout          SITE  the site to write (replaced when complete)
-#   SUBADDRESSES  the signed list, with its QR codes (docs/setup.md, step 5)
+#   SUBADDRESSES  the signed list, with its QR codes (docs/setup.md, the signed list)
 tests/run.sh   # UPDATE=1 rewrites tests/expected
 ```
 
-To install it: [docs/setup.md](docs/setup.md); the whole CCS, all three repositories in order:
-[ccs-bash's handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md).
+**For the CCS maintainers** it is one stage of the backend compose: setting it up and running
+it, with the rest of the CCS, is in [ccs-bash's docs](https://github.com/plowsof/ccs-bash#documentation),
+starting at [the handover](https://github.com/plowsof/ccs-bash/blob/master/docs/handover.md).
+What the stage is given and does: [docs/setup.md](docs/setup.md).
 
 Every piece of HTML comes from the original's pages and parts; this only fills them. The one
 thing no template can do on a live machine is Markdown: `lib/markdown.awk` renders it (one awk

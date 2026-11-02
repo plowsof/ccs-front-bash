@@ -38,7 +38,7 @@ proposal_pages() {
         done > "$work/images.tsv"
     fi
     cut -f2 "$work/images.tsv" | while IFS= read -r f; do
-        # with its time (rsync then sends it only when it changed); not cp -p, which would also try
+        # with its time (the push then sends it only when it changed); not cp -p, which would also try
         # to keep the owner
         mkdir -p "$out/images/${f%/*}" && cp "$data/images/$f" "$out/images/$f" && touch -r "$data/images/$f" "$out/images/$f"
     done
@@ -119,7 +119,7 @@ tag_regions() {
 check_addresses() {
     local original=$1 data=$2 list=$3 sum fpr f main vk net src text
     verify_link=''   # global, for pages.jq: the donation boxes' link to /verify/
-    for f in "$list" "$list.asc" "$list.key.asc" "$list.pin"; do [[ -f $f ]] || die "no $f (see docs/setup.md, step 5)"; done
+    for f in "$list" "$list.asc" "$list.key.asc" "$list.pin"; do [[ -f $f ]] || die "no $f (see docs/setup.md, the signed list)"; done
     sum=$(sed -n 's/^sha256 *//p' "$list.pin") fpr=$(sed -n 's/^key *//p' "$list.pin")
     [[ $sum =~ ^[0-9a-f]{64}$ && $fpr =~ ^[0-9A-F]{40}$ ]] || die "$list.pin: want a 'sha256 <hex>' and a 'key <fingerprint>' line"
     [[ $(sha256sum < "$list" | cut -d' ' -f1) == "$sum" ]] || die "$list is not the list $list.pin pins"
@@ -162,7 +162,7 @@ check_addresses() {
     if [[ $f == *'{{address}}'* || $f == *'{{viewkey}}'* || $f == *'{{network}}'* || $f == *'{{wallet_source}}'* ]]; then
         main=$(awk '$1 == "0" { print $2; exit }' "$list")
         [[ $main =~ ^[0-9A-Za-z]{95}$ ]] || die "$list has no index 0 (the wallet's main address), which the Verify page shows"
-        [[ -f $list.viewkey ]] || die "no $list.viewkey: the wallet's view key, which the Verify page shows (see docs/setup.md, step 5)"
+        [[ -f $list.viewkey ]] || die "no $list.viewkey: the wallet's view key, which the Verify page shows (see docs/setup.md, the signed list)"
         vk=$(head -n 1 "$list.viewkey" | tr -d ' ')
         [[ $vk =~ ^[0-9a-f]{64}$ ]] || die "$list.viewkey: want the view key's 64 hex characters on its first line"
         src=$(sed -n 's/^source  *//p' "$list.viewkey")
@@ -194,7 +194,7 @@ check_addresses() {
 qr_codes() {
     local addr list=$2 sum
     mkdir -p "$work/qr"
-    [[ -f $list.qr.sha256 && -d $list.qr ]] || die "no $list.qr.sha256 or $list.qr/: the list's QR codes (tools/make-qr.sh; docs/setup.md, step 5)"
+    [[ -f $list.qr.sha256 && -d $list.qr ]] || die "no $list.qr.sha256 or $list.qr/: the list's QR codes (tools/make-qr.sh; docs/setup.md, the signed list)"
     sum=$(sed -n 's/^qr *//p' "$list.pin")
     [[ $sum =~ ^[0-9a-f]{64}$ ]] || die "$list.pin: no 'qr <sha256>' line (its QR codes' sums: tools/make-qr.sh, then sign-subaddresses.sh)"
     [[ $(sha256sum < "$list.qr.sha256" | cut -d' ' -f1) == "$sum" ]] || die "$list.qr.sha256 is not the one $list.pin pins"
@@ -228,7 +228,7 @@ main() {
     # directory may not be readable (find needs it)
     original=$(readlink -f "${1:?ORIGINAL}") data=$(readlink -f "${2:?DATA}")
     proposals=$(readlink -f "${3:?PROPOSALS}") site=$(readlink -f "${4:?SITE}")
-    [[ ${5:-} ]] || die "no signed subaddress list (the fifth argument: docs/setup.md, step 5)"
+    [[ ${5:-} ]] || die "no signed subaddress list (the fifth argument: docs/setup.md, the signed list)"
     subaddresses=$(readlink -f "$5")
     cd /
     [[ -f $original/index.html && -d $original/parts ]] || die "$original is not a built ccs-front-hugo site"
