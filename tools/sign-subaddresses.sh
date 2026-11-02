@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # sign-subaddresses.sh LIST: sign LIST (from make-subaddresses.sh): LIST.asc (a detached
-# signature), LIST.key.asc (the public key) and LIST.pin (LIST's sha256 and the key's
-# fingerprint), the four files ccs-front-bash and the web server's gate read.
+# signature), LIST.key.asc (the public key) and LIST.pin (LIST's sha256, the key's fingerprint,
+# and the sha256 of LIST.qr.sha256, its QR codes' sums: make-qr.sh), the files ccs-front-bash and
+# the web server's gate read. (The QR codes aren't signed: they are the list's, remade by anyone
+# with qrencode, as verify-subaddresses.sh does.)
 #   SIGNING_KEY=<fingerprint>   sign with that key of your own, from your keyring (GNUPGHOME): a
 #                               Core Team member's, whose key the Monero repository publishes
 #                               (utils/gpg_keys/), so anyone can check who signed. Nothing is
@@ -11,6 +13,7 @@
 #                               file, not a person (the testnet's).
 set -euo pipefail
 list=${1:?LIST}
+[[ -f $list.qr.sha256 ]] || { echo "no $list.qr.sha256: make the QR codes first (make-qr.sh $list)" >&2; exit 1; }
 if [[ -n ${SIGNING_KEY:-} ]]; then
     fpr=$(tr -d ' ' <<<"$SIGNING_KEY" | tr 'a-f' 'A-F')
     [[ $fpr =~ ^[0-9A-F]{40}$ ]] || { echo "SIGNING_KEY: a key's 40 hex digits fingerprint" >&2; exit 1; }
@@ -33,8 +36,9 @@ else
 fi
 gpg -q --batch --verify "$list.asc" "$list" 2> /dev/null || { echo "the signature does not verify" >&2; exit 1; }
 sum=$(sha256sum < "$list" | cut -d' ' -f1)
-printf 'sha256 %s\nkey %s\n' "$sum" "$fpr" > "$list.pin"
+printf 'sha256 %s\nkey %s\nqr %s\n' "$sum" "$fpr" "$(sha256sum < "$list.qr.sha256" | cut -d' ' -f1)" > "$list.pin"
 echo "key:    $fpr"
 echo "sha256: $sum"
+echo "qr:     $(sed -n 's/^qr //p' "$list.pin") (the sha256 of $list.qr.sha256)"
 if [[ $gone ]]; then echo "wrote $list.asc, $list.key.asc and $list.pin; the secret key is gone with $GNUPGHOME"
 else echo "wrote $list.asc, $list.key.asc and $list.pin, signed with your key $fpr"; fi

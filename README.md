@@ -29,9 +29,10 @@ QR code, milestones and payouts. About 1.5 seconds for 316 proposals. Runs the t
 serves it (https://ccs.monerodevs.org).
 
 ```
-ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE
+ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE SUBADDRESSES
 #   ORIGINAL   ccs-front-hugo's public/       DATA  ccs-bash's OUTPUT_DIR
 #   PROPOSALS  the proposals checkout          SITE  the site to write (replaced when complete)
+#   SUBADDRESSES  the signed list, with its QR codes (docs/setup.md, step 5)
 tests/run.sh   # UPDATE=1 rewrites tests/expected
 ```
 
@@ -52,8 +53,10 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
    `parts/proposal-<stage>.html`.
 3. **Every run:** the Ideas, Funding Required, Work in Progress and Completed lists, and each
    proposal's donation box, with the address, from ccs-bash's JSON, checked against the signed
-   list, and its QR code, made here from it (qrencode, a PNG): ccs-bash makes none, so what its
-   account writes can't put another address in one. Its bar notes the pending donations
+   list, and its QR code, the file `qr/<address>.png`: the signed list's own (made with it,
+   `tools/make-qr.sh`, pinned in its `.pin`): no QR code is made here. ccs-bash
+   makes none, so what its account writes can't put another address in one, and the web server's
+   gate takes a QR code only as the list's file, byte for byte: it never makes or reads one. Its bar notes the pending donations
    ("+N XMR pending") and what would fund it ("N XMR would fund it 100%!"); a Funding Required
    proposal at its goal gets the design's `donate-funded` part ("Fully funded", no address or QR
    code) in place of its box (a design without that part: the box as before).

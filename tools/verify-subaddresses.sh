@@ -11,16 +11,23 @@
 #     them: whoever brings a list brings LIST.key.asc too, maybe an export from before its key
 #     was revoked, so only keys of your own know of a revocation for sure);
 #   - LIST is "index address" lines, 0, 1, 2... in order, each a 95-character address, none twice;
-#   - with WALLET_ADDRESS, line 0 is it (the wallet's main address: ccs-bash's WALLET_ADDRESS).
+#   - with WALLET_ADDRESS, line 0 is it (the wallet's main address: ccs-bash's WALLET_ADDRESS);
+#   - LIST.qr.sha256 is the one LIST.pin's qr line names, a sum for each of LIST's addresses in its
+#     order, each LIST.qr/<address>.png its sum, and each exactly what qrencode makes of its address
+#     (all remade here, make-qr.sh: needs qrencode): the web server's gate takes these files as the
+#     addresses' QR codes without reading them.
 # ccs-front-bash and the web server's gate then check the list against its .pin every run and
 # push: the pin is what they trust, this is how you know the pin is the right one.
 set -euo pipefail
 export LC_ALL=C
 list=${1:?LIST} signers=${2:?SIGNERS} wallet=${3:-}
 bad() { echo "NOT OK: $*" >&2; exit 1; }
-for f in "$list" "$list.pin" "$list.asc" "$list.key.asc" "$signers"; do [[ -f $f ]] || bad "no $f"; done
-sum=$(sed -n 's/^sha256 *//p' "$list.pin") fpr=$(sed -n 's/^key *//p' "$list.pin")
+for f in "$list" "$list.pin" "$list.asc" "$list.key.asc" "$list.qr.sha256" "$signers"; do [[ -f $f ]] || bad "no $f"; done
+[[ -d $list.qr ]] || bad "no $list.qr/ (its QR codes: make-qr.sh $list)"
+command -v qrencode > /dev/null || bad "needs qrencode (to remake the QR codes)"
+sum=$(sed -n 's/^sha256 *//p' "$list.pin") fpr=$(sed -n 's/^key *//p' "$list.pin") qr=$(sed -n 's/^qr *//p' "$list.pin")
 [[ $sum =~ ^[0-9a-f]{64}$ && $fpr =~ ^[0-9A-F]{40}$ ]] || bad "$list.pin: want a 'sha256 <hex>' and a 'key <fingerprint>' line"
+[[ $qr =~ ^[0-9a-f]{64}$ ]] || bad "$list.pin: no 'qr <hex>' line (the sha256 of $list.qr.sha256: make-qr.sh, then sign-subaddresses.sh)"
 [[ $(sha256sum < "$list" | cut -d' ' -f1) == "$sum" ]] || bad "$list is not the list $list.pin names (its sha256)"
 sed 's/#.*//; s/[[:space:]]//g' "$signers" | tr 'a-f' 'A-F' | grep -qxF "$fpr" \
     || bad "$list.pin's key $fpr is not one of $signers"
@@ -28,7 +35,8 @@ sed 's/#.*//; s/[[:space:]]//g' "$signers" | tr 'a-f' 'A-F' | grep -qxF "$fpr" \
 GNUPGHOME=$(mktemp -d)
 export GNUPGHOME
 chmod 700 "$GNUPGHOME"
-trap 'gpgconf --kill all 2> /dev/null || true; rm -rf "$GNUPGHOME"' EXIT
+again=''
+trap 'gpgconf --kill all 2> /dev/null || true; rm -rf "$GNUPGHOME" ${again:+"$again"}' EXIT
 keys=$list.key.asc
 if [[ -n ${SIGNER_KEYS:-} ]]; then [[ -f $SIGNER_KEYS ]] || bad "no SIGNER_KEYS file $SIGNER_KEYS"; keys=$SIGNER_KEYS; fi
 gpg -q --batch --import "$keys" 2> /dev/null || bad "$keys is not a public key"
@@ -52,7 +60,21 @@ twice=$(awk 'seen[$2]++ { print NR - 1; exit }' "$list")
 if [[ -n $wallet ]]; then
     [[ $(awk 'NR == 1 { print $2 }' "$list") == "$wallet" ]] || bad "$list: line 0 is not the wallet's main address $wallet"
 fi
+# the QR codes: the pinned sums, one a line in the list's order, the files those, and remade here
+[[ $(sha256sum < "$list.qr.sha256" | cut -d' ' -f1) == "$qr" ]] || bad "$list.qr.sha256 is not the one $list.pin names (its qr line)"
+awk 'NR == FNR { a[NR] = $2 ".png"; n = NR; next }
+     $0 !~ /^[0-9a-f]+  [1-9A-HJ-NP-Za-km-z]+\.png$/ || length($1) != 64 || $2 != a[FNR] { bad = 1; exit }
+     END { exit bad || FNR != n }' "$list" "$list.qr.sha256" \
+    || bad "$list.qr.sha256: not '<sha256>  <address>.png' lines, one for each of $list's addresses in its order"
+(cd "$list.qr" && sha256sum --quiet -c -) < "$list.qr.sha256" > /dev/null 2>&1 || bad "$list.qr/: a file that is not its sum in $list.qr.sha256 (or missing)"
+again=$(mktemp -d)
+cp "$list" "$again/list"
+"$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/make-qr.sh" "$again/list" 2> /dev/null || bad "could not remake the QR codes (make-qr.sh)"
+cmp -s "$again/list.qr.sha256" "$list.qr.sha256" \
+    || bad "$list.qr/: not what qrencode ($(qrencode -V 2>&1 | head -n 1)) makes of the addresses: $(diff "$again/list.qr.sha256" "$list.qr.sha256" | grep -c '^>') differ"
+rm -rf "$again"
 main=''; [[ -z $wallet ]] || main=', line 0 the main address WALLET_ADDRESS'
 echo "OK: $list, $n subaddresses (0 to $((n - 1)))$main"
 echo "    sha256 $sum, as its .pin names"
+echo "    its $n QR codes $list.qr/, remade here; their sums $list.qr.sha256 as its .pin names"
 echo "    signed by $fpr ($who), one of $signers${SIGNER_KEYS:+, its key from $SIGNER_KEYS}"

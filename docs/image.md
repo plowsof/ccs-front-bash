@@ -4,13 +4,14 @@ The same as [ccs-bash's](https://github.com/plowsof/ccs-bash/blob/master/docs/im
 less in it (about 14 MB): ccs-front-bash needs no network.
 
 - **[StageX](https://stagex.tools) packages**, pinned by digest in `container/images`: bash, jq,
-  musl, ncurses (bash's), libpng and zlib (qrencode's). Two or more StageX maintainers reproduce
+  musl, ncurses (bash's). Two or more StageX maintainers reproduce
   and sign each release, and every build checks those signatures (`container/verify-images.sh`, `container/stagex-keys.asc`),
   from the copy in `container/sigs/`, so a build needs nothing from StageX's signature site.
-- **busybox and qrencode, built here** from upstream source pinned by sha256 in
+- **busybox, built here** from upstream source pinned by sha256 in
   `container/sources.lock` (StageX's sums): busybox with only the applets in
   `container/busybox-applets` (what ccs-front-bash and its tests run, no shell, no network
-  tools); qrencode with PNG output, the same version and options as ccs-bash's, for the QR codes.
+  tools). No qrencode, nor libpng or zlib: the QR codes are the signed list's own files
+  (`tools/make-qr.sh`, made with the list), and neither this nor the web server's gate makes one.
 - **Built by StageX's BuildKit**, pinned and checked like the rest, with `--network none`; every
   file gets the commit's time. The same commit builds to the same image ID anywhere, and
   `container/check-pinned.sh` proves it on every push (two clean builds from separate clones and
@@ -20,13 +21,13 @@ less in it (about 14 MB): ccs-front-bash needs no network.
 container/build.sh            # needs Docker with buildx, git, gpg, jq; prints the image ID
 ```
 
-It runs as a numeric user (default 10002), reads three folders and writes one:
+It runs as a numeric user (default 10002), reads four folders and writes one:
 
 ```
 docker run --rm --network none --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
     --user "$(id -u ccs-front):$(id -g ccs-front)" \
     -v /opt/ccs-front-hugo/public:/original:ro -v /var/lib/ccs/out:/data:ro \
-    -v /var/lib/ccs/proposals:/proposals:ro -v /var/lib/ccs/www:/www \
+    -v /var/lib/ccs/proposals:/proposals:ro -v /etc/ccs-front:/subaddresses:ro -v /var/lib/ccs/www:/www \
     --pull never sha256:<image ID>                   # writes /www/site
 ```
 
@@ -35,9 +36,9 @@ removed from under it (a nightly Docker cleanup, Coolify's say, does), and `dock
 then try a registry; an ID can't be moved. Keep one stopped container on it, so no cleanup
 removes the image itself: `docker create --name ccs-front-bash-keep --network none <image ID>`.
 
-With a [signed subaddress list](setup.md#5-the-signed-subaddress-list-optional-recommended), mount
-it too and name it: `-v /etc/ccs-front:/subaddresses:ro … /original /data /proposals /www/site
-/subaddresses/subaddresses.txt` (the arguments after the image replace the default four).
+The [signed subaddress list](setup.md#5-the-signed-subaddress-list-required), with its QR codes:
+mount it, `-v /etc/ccs-front:/subaddresses:ro`; the default arguments name it
+(`/original /data /proposals /www/site /subaddresses/subaddresses.txt`).
 
 ## Changing the pin, releases
 
