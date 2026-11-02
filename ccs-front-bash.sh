@@ -2,9 +2,10 @@
 # ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE [SUBADDRESSES]: fill the original (ccs-front-hugo's
 # built site) with ccs-bash's JSON in DATA and the proposals' Markdown in PROPOSALS, into a new
 # SITE. With SUBADDRESSES, a signed list of the wallet's subaddresses (see check_addresses), every
-# donation address must be in it. The QR codes are made here, from those addresses (qr_codes). Every piece of HTML comes from the original's pages and parts;
+# donation address must be in it. The QR codes are qr/<address>.png: the list's (LIST.qr/), or
+# made here, without one (qr_codes). Every piece of HTML comes from the original's pages and parts;
 # this only fills them. The original is never changed; SITE is replaced only once the new one is
-# complete. Needs no network; needs qrencode. CCS_ONION: the site's onion address (NAME.onion), for
+# complete. Needs no network; needs qrencode without a list. CCS_ONION: the site's onion address (NAME.onion), for
 # the footer's onion line (onion_region); none, no line. CCS_SITE_URL: the site's address
 # (https://host), for the feed's links (feed); none, no feed.
 set -euo pipefail
@@ -189,17 +190,33 @@ check_addresses() {
     verify_link=$(cat "$original/parts/verify-link.html")
 }
 
-# qr_codes DATA: {"<address>": "data:image/png;base64,…"}, a QR code (monero:<address>) for each
-# donation address, made here, after check_addresses: ccs-bash writes none (and one in its JSON
-# would not be used), so what its account writes can't put another address in one. The same
-# qrencode options the web server's gate remakes them with.
+# qr_codes DATA LIST: $work/qr/<address>.png, a QR code (monero:<address>) for each donation
+# address, and $work/qr.json, {"<address>": "/qr/<address>.png"}, the image each donation box
+# shows (ccs-bash writes none, and one in its JSON would not be used). With LIST, each is the
+# list's own (LIST.qr/<address>.png, tools/make-qr.sh), its sum the one in LIST.qr.sha256, which
+# must be the one LIST.pin's qr line names: the web server's gate takes a QR code only as that
+# file, byte for byte. Without LIST, made here with qrencode, as make-qr.sh does.
 qr_codes() {
-    local addr
+    local addr list=$2 sum
+    mkdir -p "$work/qr"
+    if [[ $list ]]; then
+        [[ -f $list.qr.sha256 && -d $list.qr ]] || die "no $list.qr.sha256 or $list.qr/: the list's QR codes (tools/make-qr.sh; docs/setup.md, step 5)"
+        sum=$(sed -n 's/^qr *//p' "$list.pin")
+        [[ $sum =~ ^[0-9a-f]{64}$ ]] || die "$list.pin: no 'qr <sha256>' line (its QR codes' sums: tools/make-qr.sh, then sign-subaddresses.sh)"
+        [[ $(sha256sum < "$list.qr.sha256" | cut -d' ' -f1) == "$sum" ]] || die "$list.qr.sha256 is not the one $list.pin pins"
+    fi
     jq -r '[.[1].proposals[] | ."donate-address" // empty] | unique[]' "$1/proposals.json" | while IFS= read -r addr; do
         [[ $addr =~ ^[0-9A-Za-z]{95}$ ]] || die "not a donation address: '${addr:0:30}'"
-        qrencode -s 10 -o "$work/qr.png" "monero:$addr" || die "qrencode failed for $addr"
-        printf '%s\t%s\n' "$addr" "$(base64 -w 0 "$work/qr.png")"
-    done | jq -R -s 'split("\n") | map(select(. != "") | split("\t") | {(.[0]): "data:image/png;base64,\(.[1])"}) | add // {}' > "$work/qr.json"
+        if [[ $list ]]; then
+            sum=$(awk -v f="$addr.png" '$2 == f { print $1; exit }' "$list.qr.sha256")
+            [[ $sum && -f $list.qr/$addr.png && $(sha256sum < "$list.qr/$addr.png" | cut -d' ' -f1) == "$sum" ]] \
+                || die "$list.qr/$addr.png is not its sum in $list.qr.sha256 (or missing)"
+            cp "$list.qr/$addr.png" "$work/qr/$addr.png"
+        else
+            qrencode -s 10 -o "$work/qr/$addr.png" "monero:$addr" || die "qrencode failed for $addr"
+        fi
+        printf '%s\n' "$addr"
+    done | jq -R -s 'split("\n") | map(select(. != "") | {(.): "/qr/\(.).png"}) | add // {}' > "$work/qr.json"
 }
 
 # relative_links SITE: links from the data (a proposal's local-url, /proposals/x.html; a tag's
@@ -254,12 +271,14 @@ main() {
         '"idea \(.[0].proposals | length)", "fr \(.[1].proposals | length)", "wip \(.[2].proposals | length)", "cp \($c[0][0].proposals | length)"' \
         "$data/proposals.json")
 
-    qr_codes "$data"
+    qr_codes "$data" "$subaddresses"
     mapfile -t tags < <(tag_regions "$original" "$data")
 
     rm -rf "$new"
     mkdir "$new"
-    (cd "$original" && tar -c --exclude=./parts --exclude=./proposals --exclude=./explore/tag .) | tar -x -C "$new"
+    (cd "$original" && tar -c --exclude=./parts --exclude=./proposals --exclude=./explore/tag --exclude=./qr .) | tar -x -C "$new"
+    # the donation boxes' QR codes, beside the pages that show them (qr_codes)
+    cp -R "$work/qr" "$new/qr"
     while IFS= read -r -d '' page; do
         grep -q '<!-- ccs:' "$page" || continue
         fill_page "$page" "$work/regions" > "$page.tmp"

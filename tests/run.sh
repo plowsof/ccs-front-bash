@@ -60,19 +60,15 @@ if ! grep -q 'tab-payouts' "$tmp/site/proposals/near-funded.html" && grep -q 'ta
 else
     fail "the Payouts tab"
 fi
-# the QR code is made here from the address (a PNG: its base64 starts iVBORw0KGgo), never ccs-bash's (the fixture's is the text "QR for
-# monero:…", not a PNG): zbarimg reads it back where it is installed (not in the image)
+# the QR code is a file, qr/<address>.png, made here from the address without a list, never
+# ccs-bash's (the fixture's donate-qr-code is the text "QR for monero:…"); no data: image on any page
 page=$tmp/site/proposals/near-funded.html
 addr=$(grep -m 1 -o 'href="monero:[0-9A-Za-z]*"' "$page" | sed 's/^href="monero://; s/"$//')
-qr=$(grep -m 1 -o 'src="data:image/png;base64,[A-Za-z0-9+/=]*"' "$page" | sed 's/^src="data:image\/png;base64,//; s/"$//')
-if [[ $qr == iVBORw0KGgo* ]] \
-    && ! grep -qF "$(jq -r 'first(.[1].proposals[] | ."donate-qr-code" // empty)' "$here/fixtures/data/proposals.json")" "$page"; then
-    if command -v zbarimg > /dev/null; then
-        base64 -d <<<"$qr" > "$tmp/qr.png"
-        if [[ $(zbarimg -q --raw "$tmp/qr.png") == "monero:$addr" ]]; then ok "a funding page's QR code is made here, of its address (zbarimg reads it back)"; else fail "the QR code isn't of its address"; fi
-    else
-        ok "a funding page's QR code is made here, a PNG, not ccs-bash's (no zbarimg to read it back)"
-    fi
+if grep -qF "<img src=\"../qr/$addr.png\"" "$page" && cmp -s "$tmp/site/qr/$addr.png" <(qrencode -s 10 -o - "monero:$addr") \
+    && [[ -z $(find "$tmp/site" -name '*.html' -exec grep -lF 'data:image' {} +) ]] \
+    && ! grep -qF "$(jq -r 'first(.[1].proposals[] | ."donate-qr-code" // empty)' "$here/fixtures/data/proposals.json")" "$page" \
+    && [[ $(find "$tmp/site/qr" -type f | wc -l) == $(jq '[.[1].proposals[]."donate-address" // empty] | unique | length' "$here/fixtures/data/proposals.json") ]]; then
+    ok "a funding page's QR code: qr/<address>.png, qrencode's of monero:<address>, one per donation address, no data: image"
 else
     fail "QR code on a funding page"
 fi
@@ -162,7 +158,7 @@ sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"
 must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
 
 # no absolute link on any page: under /dark/ or /light/ (the theme), every link keeps the prefix
-abs=$(grep -rlE '(href|src)="/[^/]' "$tmp/site" --include='*.html' | grep -v '/404.html$' || true)
+abs=$(find "$tmp/site" -name '*.html' ! -name 404.html -exec grep -lE '(href|src)="/[^/]' {} + || true)
 if [[ -z $abs ]] && grep -q 'href="../proposals/near-funded.html"' "$tmp/site/funding-required/index.html" \
     && grep -q 'href="../../../proposals/' "$tmp/site/explore/tag/repurposed/index.html"; then
     ok "every link relative to its page (a proposal's, a tag's), so /dark/ and /light/ stay while browsing"
@@ -182,13 +178,20 @@ viewkey=$(printf '%064d' 0 | tr 0 a)
 echo "$viewkey" > "$tmp/sub/list.txt.viewkey"
 echo signature > "$tmp/sub/list.txt.asc"
 echo key > "$tmp/sub/list.txt.key.asc"
-pin() { printf 'sha256 %s\nkey 0123456789ABCDEF0123456789ABCDEF01234567\n' "$(sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1)" > "$tmp/sub/list.txt.pin"; }
+# its QR codes, as tools/make-qr.sh makes them (which takes only base58 addresses: the fixtures'
+# have zeros), and the pin of the list and of their sums
+mkdir "$tmp/sub/list.txt.qr"
+while read -r _ a; do qrencode -s 10 -o "$tmp/sub/list.txt.qr/$a.png" "monero:$a"; done < "$tmp/sub/list.txt"
+(cd "$tmp/sub/list.txt.qr" && awk '{ print $2 ".png" }' "$tmp/sub/list.txt" | xargs sha256sum) > "$tmp/sub/list.txt.qr.sha256"
+pin() { printf 'sha256 %s\nkey 0123456789ABCDEF0123456789ABCDEF01234567\nqr %s\n' "$(sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1)" \
+    "$(sha256sum < "$tmp/sub/list.txt.qr.sha256" | cut -d' ' -f1)" > "$tmp/sub/list.txt.pin"; }
 pin
 if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
     && [[ ! -e $tmp/site4/subaddresses.txt && ! -e $tmp/site4/subaddresses.txt.asc ]] \
     && grep -q '0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567' "$tmp/site4/verify/index.html" \
-    && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html"; then
-    ok "a signed list: checked, not copied into the site, the fingerprint on Verify if the design asks for it, a link in each donation box"
+    && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html" \
+    && cmp -s "$tmp/site4/qr/$addr.png" "$tmp/sub/list.txt.qr/$addr.png"; then
+    ok "a signed list: checked, not copied into the site, the fingerprint on Verify if the design asks for it, a link in each donation box, the list's QR codes"
 else
     fail "a signed list"
 fi
@@ -219,7 +222,7 @@ if [[ ! -e $tmp/site/subaddresses.txt ]] && grep -q 'no signed list' "$tmp/site/
 else
     fail "without a list"
 fi
-cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"
+cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"; cp "$tmp/sub/list.txt" "$tmp/sub/list.good"
 sed -i '2d' "$tmp/sub/list.txt" && pin
 # a foreign address in /projects (ccs-bash's projects.json goes out with the site): taken out, exit 3
 rm -rf "$tmp/data-p" "$tmp/site6"; cp -r "$here/fixtures/data" "$tmp/data-p"
@@ -245,6 +248,22 @@ else
 fi
 cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 must_stop "a list that isn't the one its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+# the list's QR codes: pinned (the pin's qr line), each file its sum
+cp "$tmp/sub/list.good" "$tmp/sub/list.txt"
+said() { if grep -q "$1" "$tmp/log.stop"; then ok "  (it says: $1)"; else fail "  not for its reason: $(cat "$tmp/log.stop")"; fi; }
+cp "$tmp/sub/list.txt.qr/$addr.png" "$tmp/sub/qr.good"
+cp "$tmp/sub/list.txt.qr/$main.png" "$tmp/sub/list.txt.qr/$addr.png"
+must_stop "a QR code of the list's that is not its sum" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+said "is not its sum"
+cp "$tmp/sub/qr.good" "$tmp/sub/list.txt.qr/$addr.png"
+echo >> "$tmp/sub/list.txt.qr.sha256"
+must_stop "QR codes' sums that aren't the ones its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+said "is not the one .* pins"
+sed -i '$d' "$tmp/sub/list.txt.qr.sha256"
+sed -i '/^qr /d' "$tmp/sub/list.txt.pin"
+must_stop "a .pin without its qr line" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+said "no 'qr <sha256>' line"
+cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 rm "$tmp/sub/list.txt.key.asc"
 must_stop "a list without its key" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 

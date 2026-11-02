@@ -4,11 +4,13 @@
 # Asks for the wallet's main address and private view key and derives them in a
 # view-only copy made in a temporary folder by an offline monero-wallet-rpc (WALLET_RPC, the
 # binary): no spend key, no daemon, nothing written to the real wallet. The folder is removed
-# at the end. Run it on the offline machine, then sign OUT with sign-subaddresses.sh.
+# at the end. Then the QR code of each (make-qr.sh: OUT.qr/, OUT.qr.sha256; needs qrencode). Run
+# it on the offline machine, then sign OUT with sign-subaddresses.sh.
 set -euo pipefail
 rpcbin=${1:?WALLET_RPC} count=${2:?COUNT} out=${3:?OUT} net=${4:-}
 [[ $count =~ ^[1-9][0-9]*$ ]] || { echo "COUNT is not a number" >&2; exit 1; }
 [[ -z $net || $net == --testnet || $net == --stagenet ]] || { echo "the 4th argument is --testnet or --stagenet" >&2; exit 1; }
+command -v qrencode > /dev/null || { echo "needs qrencode (the QR codes, make-qr.sh)" >&2; exit 1; }
 read -rp "main address: " addr
 read -rsp "private view key: " vk; echo
 [[ $addr =~ ^[0-9A-Za-z]{95}$ && $vk =~ ^[0-9a-f]{64}$ ]] || { echo "not an address and a view key" >&2; exit 1; }
@@ -40,3 +42,5 @@ rpc get_address '{"account_index":0}' | jq -r '.result.addresses | sort_by(.addr
 [[ $(wc -l < "$out.tmp") == "$count" && $(head -1 "$out.tmp") == "0 $addr" ]] || { echo "the list came out wrong" >&2; exit 1; }
 mv "$out.tmp" "$out"
 echo "wrote $count subaddresses to $out" >&2
+# their QR codes, the files the site shows and the web server's gate takes (OUT.qr/, OUT.qr.sha256)
+"$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/make-qr.sh" "$out"
