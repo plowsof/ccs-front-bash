@@ -5,7 +5,11 @@
 # UPDATE=1 tests/run.sh rewrites tests/expected (check the diff!).
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
-run=$here/../ccs-front-bash.sh
+front=$here/../ccs-front-bash.sh
+# the signed list (tests/fixtures/list: every address the fixtures use, its QR codes as
+# tools/make-qr.sh makes them, a pin; the signature and key stand-ins): every run gets it
+list=$here/fixtures/list/list.txt
+run() { if (($# == 4)); then "$front" "$@" "$list"; else "$front" "$@"; fi; }
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 status=0
@@ -13,7 +17,7 @@ ok() { echo "ok   $*"; }
 fail() { echo "FAIL $*"; status=1; }
 
 props=$here/fixtures/proposals
-"$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site" 2> "$tmp/log" || { cat "$tmp/log"; fail "the run"; exit 1; }
+run "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site" 2> "$tmp/log" || { cat "$tmp/log"; fail "the run"; exit 1; }
 
 pages=(index.html ideas/index.html funding-required/index.html work-in-progress/index.html completed-proposals/index.html
     proposals/near-funded.html proposals/b-wip.html "proposals/c done, (old).html" "proposals/o'quote.html"
@@ -60,19 +64,14 @@ if ! grep -q 'tab-payouts' "$tmp/site/proposals/near-funded.html" && grep -q 'ta
 else
     fail "the Payouts tab"
 fi
-# the QR code is made here from the address (a PNG: its base64 starts iVBORw0KGgo), never ccs-bash's (the fixture's is the text "QR for
-# monero:…", not a PNG): zbarimg reads it back where it is installed (not in the image)
+# the QR code is a file, qr/<address>.png, the signed list's own, never ccs-bash's (the fixture's donate-qr-code is the text "QR for monero:…"); no data: image on any page
 page=$tmp/site/proposals/near-funded.html
 addr=$(grep -m 1 -o 'href="monero:[0-9A-Za-z]*"' "$page" | sed 's/^href="monero://; s/"$//')
-qr=$(grep -m 1 -o 'src="data:image/png;base64,[A-Za-z0-9+/=]*"' "$page" | sed 's/^src="data:image\/png;base64,//; s/"$//')
-if [[ $qr == iVBORw0KGgo* ]] \
-    && ! grep -qF "$(jq -r 'first(.[1].proposals[] | ."donate-qr-code" // empty)' "$here/fixtures/data/proposals.json")" "$page"; then
-    if command -v zbarimg > /dev/null; then
-        base64 -d <<<"$qr" > "$tmp/qr.png"
-        if [[ $(zbarimg -q --raw "$tmp/qr.png") == "monero:$addr" ]]; then ok "a funding page's QR code is made here, of its address (zbarimg reads it back)"; else fail "the QR code isn't of its address"; fi
-    else
-        ok "a funding page's QR code is made here, a PNG, not ccs-bash's (no zbarimg to read it back)"
-    fi
+if grep -qF "<img src=\"../qr/$addr.png\"" "$page" && cmp -s "$tmp/site/qr/$addr.png" "$here/fixtures/list/list.txt.qr/$addr.png" \
+    && [[ -z $(find "$tmp/site" -name '*.html' -exec grep -lF 'data:image' {} +) ]] \
+    && ! grep -qF "$(jq -r 'first(.[1].proposals[] | ."donate-qr-code" // empty)' "$here/fixtures/data/proposals.json")" "$page" \
+    && [[ $(find "$tmp/site/qr" -type f | wc -l) == $(jq '[.[1].proposals[]."donate-address" // empty] | unique | length' "$here/fixtures/data/proposals.json") ]]; then
+    ok "a funding page's QR code: qr/<address>.png, the list's file, one per donation address, no data: image"
 else
     fail "QR code on a funding page"
 fi
@@ -120,7 +119,7 @@ fi
 mkdir -p "$tmp/notags"
 jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/proposals.json" > "$tmp/notags/proposals.json"
 jq '(.. | objects | select(has("tags"))).tags = []' "$here/fixtures/data/completed-proposals.json" > "$tmp/notags/completed-proposals.json"
-"$run" "$here/fixtures/original" "$tmp/notags" "$props" "$tmp/site3" 2> /dev/null
+run "$here/fixtures/original" "$tmp/notags" "$props" "$tmp/site3" 2> /dev/null
 if [[ ! -e $tmp/site3/explore/tag ]] && ! grep -q 'class="filters"' "$tmp/site3/funding-required/index.html"; then
     ok "no tags: no filters, no tag pages"
 else
@@ -131,7 +130,7 @@ fi
 echo previous > "$tmp/site/marker-of-the-old-site"
 must_stop() {   # must_stop WHAT ORIGINAL DATA [SUBADDRESSES]
     local what=$1
-    if "$run" "$2" "$3" "$props" "$tmp/site" ${4:+"$4"} 2> "$tmp/log.stop"; then
+    if run "$2" "$3" "$props" "$tmp/site" ${4:+"$4"} 2> "$tmp/log.stop"; then
         fail "$what: the run went on"
     elif [[ ! -e $tmp/site/marker-of-the-old-site || -e $tmp/site.new ]]; then
         fail "$what: the old site was touched"
@@ -162,7 +161,7 @@ sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"
 must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
 
 # no absolute link on any page: under /dark/ or /light/ (the theme), every link keeps the prefix
-abs=$(grep -rlE '(href|src)="/[^/]' "$tmp/site" --include='*.html' | grep -v '/404.html$' || true)
+abs=$(find "$tmp/site" -name '*.html' ! -name 404.html -exec grep -lE '(href|src)="/[^/]' {} + || true)
 if [[ -z $abs ]] && grep -q 'href="../proposals/near-funded.html"' "$tmp/site/funding-required/index.html" \
     && grep -q 'href="../../../proposals/' "$tmp/site/explore/tag/repurposed/index.html"; then
     ok "every link relative to its page (a proposal's, a tag's), so /dark/ and /light/ stay while browsing"
@@ -173,22 +172,18 @@ fi
 # a signed subaddress list (the list, .asc, .key.asc, .pin beside it): every donation address
 # must be in it; the Verify page shows the steps and the fingerprint, each donation box links
 # there, and the list, signature and key go out with the site
-mkdir -p "$tmp/sub"
-main=9$(printf '%094d' 0 | tr 0 W)   # the wallet's main address, index 0 (testnet: it starts with 9)
-viewkey=$(printf '%064d' 0 | tr 0 a)
-# the wallet's subaddresses: every address the fixtures use (funding-required, and /projects')
-{ echo "0 $main"; { jq -r '.[1].proposals[] | ."donate-address" // empty' "$here/fixtures/data/proposals.json"
-    jq -r '.[] | .address // empty' "$here/fixtures/data/projects.json"; } | awk '!seen[$0]++ { print ++n, $0 }'; } > "$tmp/sub/list.txt"
-echo "$viewkey" > "$tmp/sub/list.txt.viewkey"
-echo signature > "$tmp/sub/list.txt.asc"
-echo key > "$tmp/sub/list.txt.key.asc"
-pin() { printf 'sha256 %s\nkey 0123456789ABCDEF0123456789ABCDEF01234567\n' "$(sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1)" > "$tmp/sub/list.txt.pin"; }
+cp -r "$here/fixtures/list" "$tmp/sub"
+main=$(awk 'NR == 1 { print $2 }' "$tmp/sub/list.txt")   # the wallet's main address, index 0 (testnet: it starts with 9)
+viewkey=$(head -n 1 "$tmp/sub/list.txt.viewkey")
+pin() { printf 'sha256 %s\nkey 0123456789ABCDEF0123456789ABCDEF01234567\nqr %s\n' "$(sha256sum < "$tmp/sub/list.txt" | cut -d' ' -f1)" \
+    "$(sha256sum < "$tmp/sub/list.txt.qr.sha256" | cut -d' ' -f1)" > "$tmp/sub/list.txt.pin"; }
 pin
-if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
+if run "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site4" "$tmp/sub/list.txt" 2> /dev/null \
     && [[ ! -e $tmp/site4/subaddresses.txt && ! -e $tmp/site4/subaddresses.txt.asc ]] \
     && grep -q '0123 4567 89AB CDEF 0123  4567 89AB CDEF 0123 4567' "$tmp/site4/verify/index.html" \
-    && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html"; then
-    ok "a signed list: checked, not copied into the site, the fingerprint on Verify if the design asks for it, a link in each donation box"
+    && grep -q 'class="verify"><a href="../verify/"' "$tmp/site4/proposals/near-funded.html" \
+    && cmp -s "$tmp/site4/qr/$addr.png" "$tmp/sub/list.txt.qr/$addr.png"; then
+    ok "a signed list: checked, not copied into the site, the fingerprint on Verify if the design asks for it, a link in each donation box, the list's QR codes"
 else
     fail "a signed list"
 fi
@@ -200,7 +195,7 @@ else
     fail "Verify: asking the wallet"
 fi
 printf '%s\nsource https://example.org/r/Monero/comments/x?context=3&y=1\nsource-text shared by luigi1111 here\n' "$viewkey" > "$tmp/sub/list.txt.viewkey"
-if "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> /dev/null \
+if run "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> /dev/null \
     && grep -q 'are public (<a href="https://example.org/r/Monero/comments/x?context=3&amp;y=1">shared by luigi1111 here</a>)' "$tmp/site5/verify/index.html"; then
     ok "Verify: the source and source-text lines in list.txt.viewkey become the link to where they were published"
 else
@@ -213,19 +208,19 @@ must_stop "a source-text with HTML in it" "$here/fixtures/original" "$here/fixtu
 rm "$tmp/sub/list.txt.viewkey"
 must_stop "no view key file, when Verify shows the view key" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 echo "$viewkey" > "$tmp/sub/list.txt.viewkey"
-if [[ ! -e $tmp/site/subaddresses.txt ]] && grep -q 'no signed list' "$tmp/site/verify/index.html" \
-    && ! grep -q 'class="verify"' "$tmp/site/proposals/near-funded.html"; then
-    ok "no list: none published, Verify says so, no link in the donation boxes"
+if ! "$front" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/nolist" 2> "$tmp/log.nolist" \
+    && grep -q 'no signed subaddress list' "$tmp/log.nolist" && [[ ! -e $tmp/nolist ]]; then
+    ok "no list: the run stops (the QR codes are the list's)"
 else
     fail "without a list"
 fi
-cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"
+cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"; cp "$tmp/sub/list.txt" "$tmp/sub/list.good"
 sed -i '2d' "$tmp/sub/list.txt" && pin
 # a foreign address in /projects (ccs-bash's projects.json goes out with the site): taken out, exit 3
 rm -rf "$tmp/data-p" "$tmp/site6"; cp -r "$here/fixtures/data" "$tmp/data-p"
 foreign=8$(printf '%094d' 0 | tr 0 Z)
 jq --arg a "$foreign" '.[-1].address = $a' "$here/fixtures/data/projects.json" > "$tmp/data-p/projects.json"
-set +e; "$run" "$here/fixtures/original" "$tmp/data-p" "$props" "$tmp/site6" "$tmp/sub/list.txt" 2> "$tmp/log.p"; rc=$?; set -e
+set +e; run "$here/fixtures/original" "$tmp/data-p" "$props" "$tmp/site6" "$tmp/sub/list.txt" 2> "$tmp/log.p"; rc=$?; set -e
 if [[ $rc == 3 && -f $tmp/site6/projects.json ]] && ! grep -q "$foreign" "$tmp/site6/projects.json" \
     && [[ $(jq length "$tmp/site6/projects.json") == $(jq length "$here/fixtures/data/projects.json") ]] \
     && grep -q '/projects: .*taken out' "$tmp/log.p"; then
@@ -235,7 +230,7 @@ else
 fi
 # an address not in the list: that proposal is left off (its page, its card), the rest made, exit 3
 rm -rf "$tmp/site5"; set +e
-"$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> "$tmp/log.off"; rc=$?; set -e
+run "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> "$tmp/log.off"; rc=$?; set -e
 if [[ $rc == 3 && ! -e $tmp/site5/proposals/near-funded.html && -f $tmp/site5/proposals/new-fund.html ]] \
     && ! grep -rq 'near-funded' "$tmp/site5/funding-required" "$tmp/site5/index.html" \
     && grep -q 'left off the site: /proposals/near-funded.html' "$tmp/log.off"; then
@@ -245,6 +240,22 @@ else
 fi
 cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 must_stop "a list that isn't the one its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+# the list's QR codes: pinned (the pin's qr line), each file its sum
+cp "$tmp/sub/list.good" "$tmp/sub/list.txt"
+said() { if grep -q "$1" "$tmp/log.stop"; then ok "  (it says: $1)"; else fail "  not for its reason: $(cat "$tmp/log.stop")"; fi; }
+cp "$tmp/sub/list.txt.qr/$addr.png" "$tmp/sub/qr.good"
+cp "$tmp/sub/list.txt.qr/$main.png" "$tmp/sub/list.txt.qr/$addr.png"
+must_stop "a QR code of the list's that is not its sum" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+said "is not its sum"
+cp "$tmp/sub/qr.good" "$tmp/sub/list.txt.qr/$addr.png"
+echo >> "$tmp/sub/list.txt.qr.sha256"
+must_stop "QR codes' sums that aren't the ones its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+said "is not the one .* pins"
+sed -i '$d' "$tmp/sub/list.txt.qr.sha256"
+sed -i '/^qr /d' "$tmp/sub/list.txt.pin"
+must_stop "a .pin without its qr line" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
+said "no 'qr <sha256>' line"
+cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 rm "$tmp/sub/list.txt.key.asc"
 must_stop "a list without its key" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 
@@ -252,7 +263,7 @@ must_stop "a list without its key" "$here/fixtures/original" "$here/fixtures/dat
 mkdir -p "$tmp/literal"
 cp "$here/fixtures/data/completed-proposals.json" "$tmp/literal/"
 jq '.[1].proposals[0].name = "{{author}} &lt;!-- ccs:list fr --&gt;"' "$here/fixtures/data/proposals.json" > "$tmp/literal/proposals.json"
-"$run" "$here/fixtures/original" "$tmp/literal" "$props" "$tmp/site2" 2> /dev/null
+run "$here/fixtures/original" "$tmp/literal" "$props" "$tmp/site2" 2> /dev/null
 if grep -q '<h3>{{author}} &lt;!-- ccs:list fr --&gt;</h3>' "$tmp/site2/funding-required/index.html"; then
     ok "a title with {{author}} or a marker in it stays text"
 else
@@ -330,7 +341,7 @@ printf 'secret' > "$im/data/secret.png"
 printf '\n![a chart](images/near-funded/chart.png "t") and ![other](https://elsewhere.example/x.png) and ![sneaky](images/../secret.png) ![odd](images/x/y.png)\n' >> "$im/props/near-funded.md"
 jq -n '{"images/near-funded/chart.png": "near-funded/chart.png", "images/../secret.png": "../secret.png",
     "images/x/y.png": "near-funded/chart.png", "images/a\"b/c.png": "a\"b/c.png"}' > "$im/data/images.json"
-if "$run" "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/log"; then
+if run "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/log"; then
     page=$im/site/proposals/near-funded.html
     if grep -qF '<img src="../images/near-funded/chart.png" alt="a chart" loading="lazy">' "$page" \
         && grep -qF '<a href="https://elsewhere.example/x.png">image: other</a>' "$page" \
@@ -358,21 +369,21 @@ done
 printf '%s\n' '<p class="footer-onion">Also on Tor: <a href="http://{{onion}}/">{{onion}}</a></p>' > "$on/original/parts/onion.html"
 o=abcdefghijklmnopqrstuvwxyz234567abcdefghijklmnopqrstuvwx.onion
 pages() { find "$1" -name '*.html' ! -path '*/parts/*' -exec grep -l '</footer>' {} + | wc -l; }
-if CCS_ONION=$o "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site" 2> "$on/log" \
+if CCS_ONION=$o run "$on/original" "$here/fixtures/data" "$props" "$on/site" 2> "$on/log" \
     && n=$(pages "$on/site") && ((n > 3)) \
     && [[ $(find "$on/site" -name '*.html' -exec grep -l "Also on Tor: <a href=\"http://$o/\">$o</a>" {} + | wc -l) == "$n" ]] \
     && [[ -n $(find "$on/site/proposals" -name '*.html' -exec grep -l "$o" {} + | head -n 1) ]]; then
     ok "CCS_ONION: the footer's onion line on every page ($n, proposal and tag pages too)"
 else cat "$on/log"; fail "the onion line"; fi
-if "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site2" 2> /dev/null && ! grep -rq 'Also on Tor' "$on/site2" \
+if run "$on/original" "$here/fixtures/data" "$props" "$on/site2" 2> /dev/null && ! grep -rq 'Also on Tor' "$on/site2" \
     && grep -q '<!-- ccs:onion -->' "$on/site2/index.html"; then
     ok "no CCS_ONION: the onion region empty"
 else fail "no onion"; fi
-if ! CCS_ONION=evil.example "$run" "$on/original" "$here/fixtures/data" "$props" "$on/site3" 2> "$on/log3" \
+if ! CCS_ONION=evil.example run "$on/original" "$here/fixtures/data" "$props" "$on/site3" 2> "$on/log3" \
     && grep -q 'CCS_ONION is not an onion address' "$on/log3" && [[ ! -e $on/site3 ]]; then
     ok "CCS_ONION that isn't an onion address: the run stops, no site"
 else fail "a bad CCS_ONION"; fi
-if CCS_ONION=$o "$run" "$here/fixtures/original" "$here/fixtures/data" "$props" "$on/site4" 2> /dev/null && ! grep -rq 'Also on Tor' "$on/site4"; then
+if CCS_ONION=$o run "$here/fixtures/original" "$here/fixtures/data" "$props" "$on/site4" 2> /dev/null && ! grep -rq 'Also on Tor' "$on/site4"; then
     ok "CCS_ONION with an original from before the onion line: runs, no line"
 else fail "an old original with CCS_ONION"; fi
 rm -rf "$on"
@@ -385,14 +396,14 @@ printf '%s\n' '<p class="funded-badge">Fully funded: {{raised}} of {{amount}} XM
 jq 'map(.proposals |= map(if ."local-url" == "/proposals/near-funded.html" then .percentage = 100 else . end))' "$here/fixtures/data/proposals.json" > "$ff/data/proposals.json"
 a=$(jq -r '.[1].proposals[] | select(."local-url" == "/proposals/near-funded.html") | ."donate-address"' "$ff/data/proposals.json")
 b=$(jq -r '.[1].proposals[] | select(."local-url" == "/proposals/a-fund.html") | ."donate-address"' "$ff/data/proposals.json")
-if "$run" "$ff/original" "$ff/data" "$props" "$ff/site" 2> "$ff/log" \
+if run "$ff/original" "$ff/data" "$props" "$ff/site" 2> "$ff/log" \
     && grep -q 'class="funded-badge">Fully funded: ' "$ff/site/proposals/near-funded.html" && ! grep -q "$a" "$ff/site/proposals/near-funded.html" \
     && ! grep -q 'data:image/png' "$ff/site/proposals/near-funded.html" \
     && grep -q "$b" "$ff/site/proposals/a-fund.html" && ! grep -q 'funded-badge' "$ff/site/proposals/a-fund.html"; then
     ok "fully funded: \"Fully funded\" in place of the donation box (no address, no QR code); the others keep theirs"
 else cat "$ff/log"; fail "fully funded"; fi
 rm "$ff/original/parts/donate-funded.html"
-if "$run" "$ff/original" "$ff/data" "$props" "$ff/site2" 2> /dev/null && grep -q "$a" "$ff/site2/proposals/near-funded.html"; then
+if run "$ff/original" "$ff/data" "$props" "$ff/site2" 2> /dev/null && grep -q "$a" "$ff/site2/proposals/near-funded.html"; then
     ok "fully funded, a design without donate-funded: the donation box as before"
 else fail "fully funded with an older design"; fi
 rm -rf "$ff"
@@ -408,14 +419,14 @@ dates='def at($u; $k; $v): if ."local-url" == $u then .[$k] = $v else . end;
     | at("/proposals/b-wip.html"; "funded-at"; "2026-09-01T00:00:00Z") | at("/proposals/ leading-space.html"; "funding-required-at"; "2026-10-04T08:00:05Z")
     | at("/proposals/dots-end.html"; "funding-required-at"; "2026-01-01T00:00:00Z")))'
 for f in proposals completed-proposals; do jq "$dates" "$here/fixtures/data/$f.json" > "$fd/data/$f.json"; done
-if CCS_SITE_URL=https://ccs.example.org/ "$run" "$here/fixtures/original" "$fd/data" "$props" "$fd/site" 2> "$fd/log" \
+if CCS_SITE_URL=https://ccs.example.org/ run "$here/fixtures/original" "$fd/data" "$props" "$fd/site" 2> "$fd/log" \
     && diff -u "$here/expected/feed.xml" "$fd/site/feed.xml"; then
     ok "CCS_SITE_URL: feed.xml, Funding Required and fully funded, newest first (expected/feed.xml)"
 else cat "$fd/log"; fail "the feed"; fi
-if "$run" "$here/fixtures/original" "$fd/data" "$props" "$fd/site2" 2> /dev/null && [[ ! -e $fd/site2/feed.xml ]]; then
+if run "$here/fixtures/original" "$fd/data" "$props" "$fd/site2" 2> /dev/null && [[ ! -e $fd/site2/feed.xml ]]; then
     ok "no CCS_SITE_URL: no feed"
 else fail "a feed without CCS_SITE_URL"; fi
-if ! CCS_SITE_URL=https://ccs.example.org/x "$run" "$here/fixtures/original" "$fd/data" "$props" "$fd/site3" 2> "$fd/log3" \
+if ! CCS_SITE_URL=https://ccs.example.org/x run "$here/fixtures/original" "$fd/data" "$props" "$fd/site3" 2> "$fd/log3" \
     && grep -q "CCS_SITE_URL is not a site's address" "$fd/log3" && [[ ! -e $fd/site3 ]]; then
     ok "CCS_SITE_URL with a path: the run stops, no site"
 else fail "a bad CCS_SITE_URL"; fi

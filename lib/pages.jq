@@ -2,7 +2,7 @@
 # filled, then its regions (donation box or funding, milestones, payouts) filled with the
 # original's parts. Prints each page after a line "\u0001<file name>" (see ccs-front-bash.sh).
 # Inputs: --slurpfile proposals, completed (ccs-bash's JSON), md (markdown.awk's lines), qrs (the QR
-# codes, by address);
+# codes' paths, by address);
 # --rawfile fr, wip, cp (parts/proposal-*.html), donate, funded, donatefunded (or empty), mdone,
 # mtodo, payout, nom, nop, segdone, segtodo, labellink (the other parts); cidea, cfr, cwip, ccp,
 # filters (the sidebar's counts and tags, as on every other page).
@@ -37,11 +37,12 @@ def region_if_there($name; $html):
    | map(. as $x | $payout | part | fill($x)) | join("\n")) as $payouts
 | ($p | values) as $v0
 # a funding page's address, from ccs-bash's JSON (checked against the signed list), and its QR
-# code, made from it here ($qrs, ccs-front-bash.sh's qr_codes; a donate-qr-code in the JSON, as
-# ccs-bash before v0.2.19 wrote, is never used). Anything else stops the run.
+# code, the image /qr/<address>.png ($qrs, ccs-front-bash.sh's qr_codes: the signed list's; a
+# donate-qr-code in the JSON, as ccs-bash before v0.2.19 wrote, is never used). Anything else
+# stops the run.
 | (if $stage != "fr" then ""
    elif ($v0.address | test("^[0-9A-Za-z]{95}$") | not) then error("\($file): no donation address")
-   elif ($qrs[0][$v0.address] // "" | test("^data:image/png;base64,[A-Za-z0-9+/]+=*$") | not) then error("\($file): no PNG QR code")
+   elif $qrs[0][$v0.address] != "/qr/\($v0.address).png" then error("\($file): no QR code")
    else $qrs[0][$v0.address] end) as $qr
 | ($v0 + {segments: ($v0 | segments($segdone; $segtodo)), body: $m.body, qr: $qr, milestones_list: "", payouts_list: "",
           verify_link: ($verifylink | rtrimstr("\n")),
