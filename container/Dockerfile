@@ -57,7 +57,7 @@ RUN cd /rootfs \
 FROM scratch AS image
 COPY --from=fix /rootfs/ /
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# only a default: ccs-front-run passes the host's ccs-front user (docs/setup.md)
+# only a default: the backend compose runs it as the host's ccs-front user
 USER 10002:10002
 ENTRYPOINT ["/opt/ccs-front-bash/ccs-front-bash.sh"]
 CMD ["/original", "/data", "/proposals", "/www/site", "/subaddresses/subaddresses.txt"]
