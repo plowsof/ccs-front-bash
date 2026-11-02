@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE [SUBADDRESSES]: fill the original (ccs-front-hugo's
+# ccs-front-bash.sh ORIGINAL DATA PROPOSALS SITE SUBADDRESSES: fill the original (ccs-front-hugo's
 # built site) with ccs-bash's JSON in DATA and the proposals' Markdown in PROPOSALS, into a new
-# SITE. With SUBADDRESSES, a signed list of the wallet's subaddresses (see check_addresses), every
-# donation address must be in it. The QR codes are qr/<address>.png: the list's (LIST.qr/), or
-# made here, without one (qr_codes). Every piece of HTML comes from the original's pages and parts;
-# this only fills them. The original is never changed; SITE is replaced only once the new one is
-# complete. Needs no network; needs qrencode without a list. CCS_ONION: the site's onion address (NAME.onion), for
+# SITE. SUBADDRESSES: the signed list of the wallet's subaddresses (see check_addresses); every
+# donation address must be in it, and its QR code is the list's own file, qr/<address>.png
+# (qr_codes). Every piece of HTML comes from the original's pages and parts; this only fills
+# them. The original is never changed; SITE is replaced only once the new one is complete. Needs
+# no network, and makes no QR code. CCS_ONION: the site's onion address (NAME.onion), for
 # the footer's onion line (onion_region); none, no line. CCS_SITE_URL: the site's address
 # (https://host), for the feed's links (feed); none, no feed.
 set -euo pipefail
@@ -115,15 +115,10 @@ tag_regions() {
 # go out with the site. If the Verify part asks for them, it also gets the wallet's main address
 # (the list's index 0), its view key (LIST.viewkey: public; a line "source <https link>" says
 # where it was published, and "source-text <words>" what that link says) and the network, so a visitor can ask a copy of the wallet about an
-# address. No LIST: no check, and the Verify
-# page says there is no list yet.
+# address.
 check_addresses() {
     local original=$1 data=$2 list=$3 sum fpr f main vk net src text
     verify_link=''   # global, for pages.jq: the donation boxes' link to /verify/
-    if [[ -z $list ]]; then
-        cp "$original/parts/no-list.html" "$work/regions/verify.html"
-        return 0
-    fi
     for f in "$list" "$list.asc" "$list.key.asc" "$list.pin"; do [[ -f $f ]] || die "no $f (see docs/setup.md, step 5)"; done
     sum=$(sed -n 's/^sha256 *//p' "$list.pin") fpr=$(sed -n 's/^key *//p' "$list.pin")
     [[ $sum =~ ^[0-9a-f]{64}$ && $fpr =~ ^[0-9A-F]{40}$ ]] || die "$list.pin: want a 'sha256 <hex>' and a 'key <fingerprint>' line"
@@ -192,29 +187,23 @@ check_addresses() {
 
 # qr_codes DATA LIST: $work/qr/<address>.png, a QR code (monero:<address>) for each donation
 # address, and $work/qr.json, {"<address>": "/qr/<address>.png"}, the image each donation box
-# shows (ccs-bash writes none, and one in its JSON would not be used). With LIST, each is the
-# list's own (LIST.qr/<address>.png, tools/make-qr.sh), its sum the one in LIST.qr.sha256, which
-# must be the one LIST.pin's qr line names: the web server's gate takes a QR code only as that
-# file, byte for byte. Without LIST, made here with qrencode, as make-qr.sh does.
+# shows (ccs-bash writes none, and one in its JSON would not be used): the list's own
+# (LIST.qr/<address>.png, tools/make-qr.sh), its sum the one in LIST.qr.sha256, which must be
+# the one LIST.pin's qr line names: the web server's gate takes a QR code only as that file, byte
+# for byte.
 qr_codes() {
     local addr list=$2 sum
     mkdir -p "$work/qr"
-    if [[ $list ]]; then
-        [[ -f $list.qr.sha256 && -d $list.qr ]] || die "no $list.qr.sha256 or $list.qr/: the list's QR codes (tools/make-qr.sh; docs/setup.md, step 5)"
-        sum=$(sed -n 's/^qr *//p' "$list.pin")
-        [[ $sum =~ ^[0-9a-f]{64}$ ]] || die "$list.pin: no 'qr <sha256>' line (its QR codes' sums: tools/make-qr.sh, then sign-subaddresses.sh)"
-        [[ $(sha256sum < "$list.qr.sha256" | cut -d' ' -f1) == "$sum" ]] || die "$list.qr.sha256 is not the one $list.pin pins"
-    fi
+    [[ -f $list.qr.sha256 && -d $list.qr ]] || die "no $list.qr.sha256 or $list.qr/: the list's QR codes (tools/make-qr.sh; docs/setup.md, step 5)"
+    sum=$(sed -n 's/^qr *//p' "$list.pin")
+    [[ $sum =~ ^[0-9a-f]{64}$ ]] || die "$list.pin: no 'qr <sha256>' line (its QR codes' sums: tools/make-qr.sh, then sign-subaddresses.sh)"
+    [[ $(sha256sum < "$list.qr.sha256" | cut -d' ' -f1) == "$sum" ]] || die "$list.qr.sha256 is not the one $list.pin pins"
     jq -r '[.[1].proposals[] | ."donate-address" // empty] | unique[]' "$1/proposals.json" | while IFS= read -r addr; do
         [[ $addr =~ ^[0-9A-Za-z]{95}$ ]] || die "not a donation address: '${addr:0:30}'"
-        if [[ $list ]]; then
-            sum=$(awk -v f="$addr.png" '$2 == f { print $1; exit }' "$list.qr.sha256")
-            [[ $sum && -f $list.qr/$addr.png && $(sha256sum < "$list.qr/$addr.png" | cut -d' ' -f1) == "$sum" ]] \
-                || die "$list.qr/$addr.png is not its sum in $list.qr.sha256 (or missing)"
-            cp "$list.qr/$addr.png" "$work/qr/$addr.png"
-        else
-            qrencode -s 10 -o "$work/qr/$addr.png" "monero:$addr" || die "qrencode failed for $addr"
-        fi
+        sum=$(awk -v f="$addr.png" '$2 == f { print $1; exit }' "$list.qr.sha256")
+        [[ $sum && -f $list.qr/$addr.png && $(sha256sum < "$list.qr/$addr.png" | cut -d' ' -f1) == "$sum" ]] \
+            || die "$list.qr/$addr.png is not its sum in $list.qr.sha256 (or missing)"
+        cp "$list.qr/$addr.png" "$work/qr/$addr.png"
         printf '%s\n' "$addr"
     done | jq -R -s 'split("\n") | map(select(. != "") | {(.): "/qr/\(.).png"}) | add // {}' > "$work/qr.json"
 }
@@ -239,7 +228,8 @@ main() {
     # directory may not be readable (find needs it)
     original=$(readlink -f "${1:?ORIGINAL}") data=$(readlink -f "${2:?DATA}")
     proposals=$(readlink -f "${3:?PROPOSALS}") site=$(readlink -f "${4:?SITE}")
-    subaddresses=${5:+$(readlink -f "$5")}
+    [[ ${5:-} ]] || die "no signed subaddress list (the fifth argument: docs/setup.md, step 5)"
+    subaddresses=$(readlink -f "$5")
     cd /
     [[ -f $original/index.html && -d $original/parts ]] || die "$original is not a built ccs-front-hugo site"
     [[ -f $original/explore/tag/example/index.html ]] || die "$original has no tag page (explore/tag/example/)"

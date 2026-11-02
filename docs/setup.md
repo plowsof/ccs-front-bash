@@ -14,11 +14,11 @@ It reads three things and writes one:
 | the site | `/var/lib/ccs/www/site` | written each run, swapped in when complete (with ccs-bash's `projects.json`, for `/projects`) |
 
 Needs `bash`, `jq` (1.6 or newer), `awk` (mawk, gawk or busybox), coreutils (`base64` too),
-`grep`, `sed`, `tar`, `find`, `xargs` and `qrencode` (and `unzip` for step 1): on Debian,
-`apt install jq qrencode` on top of what ccs-bash needs (qrencode: only for a site without the
-signed list, and for the list's tools in step 5, `make-qr.sh` and `verify-subaddresses.sh`). The QR codes are files,
-`qr/<address>.png`: with the signed list (step 5), the list's own; without one, made here
-(qrencode, PNG) from the addresses it has checked. ccs-bash makes none.
+`grep`, `sed`, `tar`, `find` and `xargs` (and `unzip` for step 1): on Debian, `apt install jq`
+on top of what ccs-bash needs. (qrencode only where the list is made and checked, step 5:
+`make-qr.sh` and `verify-subaddresses.sh`.) The QR codes are files,
+`qr/<address>.png`: the signed list's own (step 5), copied for the addresses it has checked.
+ccs-bash makes none, and neither does this.
 
 ## 1. The original
 
@@ -53,7 +53,8 @@ install -d -o ccs-front -g ccs-front -m 755 /var/lib/ccs/www
 ```
 #!/bin/sh
 exec env CCS_SITE_URL=https://ccs.getmonero.org runuser -u ccs-front -- /opt/ccs-front-bash/ccs-front-bash.sh \
-    /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site
+    /opt/ccs-front-hugo/public /var/lib/ccs/out /var/lib/ccs/proposals /var/lib/ccs/www/site \
+    /etc/ccs-front/subaddresses.txt
 ```
 
 **B)** from the pinned image (StageX parts only, no network, the same image ID from the same
@@ -103,10 +104,11 @@ renamed proposal's old page stays until removed by hand.
 
 The headers above were checked with the built site: styles, fonts, icons and QR codes all load.
 
-## 5. The signed subaddress list (optional, recommended)
+## 5. The signed subaddress list (required)
 
-With it, only the wallet's addresses reach the site: one ccs-bash's JSON gets wrong is left off,
-and the web server's gate and visitors check against the same list.
+Only the wallet's addresses reach the site: one ccs-bash's JSON gets wrong is left off, and the
+web server's gate and visitors check against the same list. Each address's QR code is the list's
+own file. Without the list a run stops.
 
 A **Core Team member** makes it on an offline machine and signs it **with their own key**, as the
 Monero repository publishes it ([utils/gpg_keys/](https://github.com/monero-project/monero/tree/master/utils/gpg_keys)):
@@ -178,9 +180,9 @@ gpg --show-keys --with-colons luigi1111.asc | awk -F: '$1 == "pub" { print ($2 =
 A revoked key: don't install the list, and ask the Core Team for one signed again.
 
 Copy the four files, `subaddresses.txt.qr.sha256` and the folder `subaddresses.txt.qr/` to
-`/etc/ccs-front/` (root, 644; the folder 755) and pass the list as a fifth argument in
-`ccs-front-run`: **A)** `/etc/ccs-front/subaddresses.txt` after the four; **B)** mount the folder,
-and all five after the image:
+`/etc/ccs-front/` (root, 644; the folder 755); `ccs-front-run` passes the list as its fifth
+argument: **A)** `/etc/ccs-front/subaddresses.txt` after the four (step 2); **B)** mount the
+folder, and all five after the image:
 
 ```
     -v /etc/ccs-front:/subaddresses:ro \
@@ -202,7 +204,7 @@ Each run checks the list against its `.pin` (a missing file or another list stop
 every address on the site against the list: a funding-required proposal, or a `/projects` entry,
 whose address isn't on it is left off (`warning: left off the site: …`), the rest is made, and the
 run exits 3. `/verify/`, linked from each donation box, shows the wallet's address and view key for visitors to check an address in a
-view-only copy of the wallet; without the fifth argument, no check, and `/verify/` says so. The same four files, `.viewkey` and `.qr.sha256` (not the images: the backend pushes the ones
+view-only copy of the wallet. The same four files, `.viewkey` and `.qr.sha256` (not the images: the backend pushes the ones
 the site shows, and the gate takes each only as its sum) go to the web server's gate (ccs-bash's
 two-machines, "The gate"), checked there too.
 Near index 15,000, make a longer list the same way: its first lines are the old one
