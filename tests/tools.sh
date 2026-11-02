@@ -2,7 +2,7 @@
 # The signing tool (tools/sign-subaddresses.sh): its signature verifies with the key it exports,
 # a changed list doesn't, it prints the list's sha256, and no secret key is left anywhere. The
 # QR codes (tools/make-qr.sh): one per address, pinned, remade by verify-subaddresses.sh.
-# (tools/make-subaddresses.sh needs monero-wallet-rpc: checked by hand, see docs/setup.md.)
+# (tools/make-subaddresses.sh needs monero-wallet-rpc: checked by hand: ccs-bash's docs/signed-list.md.)
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
 tmp=$(mktemp -d)

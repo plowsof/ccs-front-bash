@@ -21,7 +21,8 @@ less in it (about 14 MB): ccs-front-bash needs no network.
 container/build.sh            # needs Docker with buildx, git, gpg, jq; prints the image ID
 ```
 
-It runs as a numeric user (default 10002), reads four folders and writes one:
+It runs as a numeric user (default 10002), reads four folders and writes one; the backend
+compose's `front` runs it so (ccs-bash's docs/docker.md), the same as:
 
 ```
 docker run --rm --network none --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
@@ -32,11 +33,9 @@ docker run --rm --network none --read-only --tmpfs /tmp --cap-drop ALL --securit
 ```
 
 By its image ID (the release's, the one you built and checked), never pulled: a tag can be
-removed from under it (a nightly Docker cleanup, Coolify's say, does), and `docker run` would
-then try a registry; an ID can't be moved. Keep one stopped container on it, so no cleanup
-removes the image itself: `docker create --name ccs-front-bash-keep --network none <image ID>`.
+removed from under it, and an ID can't be moved.
 
-The [signed subaddress list](setup.md#5-the-signed-subaddress-list-required), with its QR codes:
+The [signed subaddress list](setup.md#the-signed-list), with its QR codes:
 mount it, `-v /etc/ccs-front:/subaddresses:ro`; the default arguments name it
 (`/original /data /proposals /www/site /subaddresses/subaddresses.txt`).
 
