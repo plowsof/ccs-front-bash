@@ -106,109 +106,29 @@ The headers above were checked with the built site: styles, fonts, icons and QR 
 
 ## 5. The signed subaddress list (required)
 
-Only the wallet's addresses reach the site: one ccs-bash's JSON gets wrong is left off, and the
-web server's gate and visitors check against the same list. Each address's QR code is the list's
-own file. Without the list a run stops.
+Only the wallet's addresses reach the site: one ccs-bash's JSON gets wrong is left off, and each
+address's QR code is the list's own file. Without the list a run stops. Making it (with
+`tools/make-subaddresses.sh` and `make-qr.sh`), signing it (`sign-subaddresses.sh`), checking it
+(`verify-subaddresses.sh`) and installing it on both machines:
+[the signed list](https://github.com/plowsof/ccs-bash/blob/master/docs/signed-list.md), in
+ccs-bash's docs.
 
-A **Core Team member** makes it on an offline machine and signs it **with their own key**, as the
-Monero repository publishes it ([utils/gpg_keys/](https://github.com/monero-project/monero/tree/master/utils/gpg_keys)):
-for the mainnet, binaryFate (`81AC 591F E9C4 B65C 5806  AFC3 F0AF 4D46 2A0B DF92`) or luigi1111
-(`8777 AB8F 778E E894 87A2  F8E7 F4AC A018 3641 E010`). The script asks for the wallet's main
-address and view key (both public); 15,000 subaddresses take about a minute, then their QR codes
-(`tools/make-qr.sh`, needs qrencode) about 30 s more: `subaddresses.txt.qr/<address>.png`
-(`qrencode -s 10 "monero:<address>"`, 11.5 MB) and `subaddresses.txt.qr.sha256`, their sums:
-
-```
-tools/make-subaddresses.sh /path/to/monero-wallet-rpc 15000 subaddresses.txt   # --testnet for testnet
-```
-
-**Check it before signing**: line 0 is the main address, and the subaddresses the wallet has
-already made are its first lines:
-
-```
-head -n 1 subaddresses.txt                         # 0 <the main address, WALLET_ADDRESS>
-curl -s --digest -u user:pass http://127.0.0.1:18082/json_rpc \
-    -d '{"jsonrpc":"2.0","id":0,"method":"get_address","params":{"account_index":0}}' \
-    | jq -r '.result.addresses | sort_by(.address_index)[] | "\(.address_index) \(.address)"' > made.txt
-head -n "$(wc -l < made.txt)" subaddresses.txt | cmp - made.txt && echo "the wallet's own"
-```
-
-Then sign it (a detached signature, from the signer's own keyring):
-
-```
-SIGNING_KEY=<the signer's fingerprint> tools/sign-subaddresses.sh subaddresses.txt
-```
-
-It writes `subaddresses.txt.asc` (the signature), `.key.asc` (the public key) and `.pin` (the
-list's sha256, the key's fingerprint, and `qr`: the sha256 of `subaddresses.txt.qr.sha256`). The
-QR codes aren't signed: they are the list's, and anyone remakes them from it (qrencode 4.1.1
-writes the same bytes on Debian and Ubuntu as in the pinned image). A list from before them:
-`tools/make-qr.sh subaddresses.txt`, then add its `qr` line to the `.pin` by hand
-(`echo "qr $(sha256sum < subaddresses.txt.qr.sha256 | cut -d' ' -f1)" >> subaddresses.txt.pin`),
-and check it as below. Without `SIGNING_KEY` it signs with a key made for this
-and destroyed after (the testnet's): that binds the file, not a person.
-
-**Publish and reproduce it:** the signer posts its sha256, the `qr` sha256 and the fingerprint
-where the address and view key were published (mainnet: monero-project/meta #935); two
-contributors make it themselves from the same public data and post the same two sha256.
-
-**Check it before installing it**, with your own file of the keys that may sign it (root-owned,
-644; fingerprints as `gpg --show-keys binaryfate.asc` shows Monero's copies):
-
-```
-cat > /etc/ccs-front/list-signers <<'SIGNERS'
-81AC591FE9C4B65C5806AFC3F0AF4D462A0BDF92  # binaryFate (monero-project/monero utils/gpg_keys)
-8777AB8F778EE89487A2F8E7F4ACA0183641E010  # luigi1111 (monero-project/monero utils/gpg_keys)
-SIGNERS
-curl -fsSLo signer.asc https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/<signer>.asc
-SIGNER_KEYS=signer.asc tools/verify-subaddresses.sh subaddresses.txt /etc/ccs-front/list-signers <WALLET_ADDRESS>
-```
-
-(`SIGNER_KEYS`: the signer's key as you got it yourself, so a revocation is known; without it, the
-`.key.asc` that came with the list is used, which whoever brings the list chose.)
-
-OK means: the list is its `.pin`'s, signed by a key in `list-signers`, its lines 0, 1, 2…, line 0
-`WALLET_ADDRESS`; its QR codes the `.pin`'s, one per address, each remade here with qrencode and
-the same, byte for byte (needs qrencode; about 30 s). Compare its sha256 with the published ones. It can't know the key was revoked
-since (it only has the list's copy): check Monero's, fetched fresh:
-
-```
-curl -fsSO https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/luigi1111.asc   # or binaryfate.asc
-gpg --show-keys --with-colons luigi1111.asc | awk -F: '$1 == "pub" { print ($2 == "r" ? "REVOKED" : "not revoked") }'
-```
-
-A revoked key: don't install the list, and ask the Core Team for one signed again.
-
-Copy the four files, `subaddresses.txt.qr.sha256` and the folder `subaddresses.txt.qr/` to
-`/etc/ccs-front/` (root, 644; the folder 755); `ccs-front-run` passes the list as its fifth
-argument: **A)** `/etc/ccs-front/subaddresses.txt` after the four (step 2); **B)** mount the
-folder, and all five after the image:
+Here, it is the fifth argument: in `/etc/ccs-front/` (the list, its `.asc`, `.key.asc`, `.pin`,
+`.viewkey`, `.qr.sha256` and the folder `.qr/`), `ccs-front-run` passes
+`/etc/ccs-front/subaddresses.txt` after the four (step 2); from the image, mount the folder and
+name it:
 
 ```
     -v /etc/ccs-front:/subaddresses:ro \
     --pull never sha256:<image ID> /original /data /proposals /www/site /subaddresses/subaddresses.txt
 ```
 
-Beside them `subaddresses.txt.viewkey` (root, 644): the view key, and optionally `source <https
-link>` (where it was published) and `source-text <words>` (the link's words). For the mainnet:
-
-```
-62ad19781466882d8df0ae85743abcc5c8ef81e52e051e7cc56fe3c610d18001
-source https://github.com/monero-project/meta/issues/935#issuecomment-1867257410
-source-text shared by luigi1111 here
-```
-
-The Verify page shows them, with the commands to ask a copy of the wallet about an address.
-
-Each run checks the list against its `.pin` (a missing file or another list stops the run) and
-every address on the site against the list: a funding-required proposal, or a `/projects` entry,
-whose address isn't on it is left off (`warning: left off the site: …`), the rest is made, and the
-run exits 3. `/verify/`, linked from each donation box, shows the wallet's address and view key for visitors to check an address in a
-view-only copy of the wallet. The same four files, `.viewkey` and `.qr.sha256` (not the images: the backend pushes the ones
-the site shows, and the gate takes each only as its sum) go to the web server's gate (ccs-bash's
-two-machines, "The gate"), checked there too.
-Near index 15,000, make a longer list the same way: its first lines are the old one
-(`head -n 15000 new | cmp - old`), and so are its QR codes' sums.
+Each run checks the list and its QR sums against the `.pin` (another list stops the run), and
+every address the site would show against the list: a funding-required proposal, or a `/projects`
+entry, whose address isn't on it is left off (`warning: left off the site: …`), the rest is made,
+and the run exits 3. `/verify/`, linked from each donation box, shows the wallet's address and
+view key (`subaddresses.txt.viewkey`) for visitors to check an address in a view-only copy of the
+wallet.
 
 ## Going back
 
