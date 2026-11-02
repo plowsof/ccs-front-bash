@@ -46,13 +46,17 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
 
 1. **Copy the original:** the site [ccs-front-hugo](https://github.com/plowsof/ccs-front-hugo)
    builds once, offline, with markers where content goes. It is never modified.
-2. **Proposal pages,** re-rendered only when a `.md` file changes: the proposal's Markdown
-   into HTML (a strict subset in awk, everything escaped first), filled into
+2. **Proposal pages,** every one, every run (one awk run for all the Markdown, one jq run for
+   the pages): the proposal's Markdown into HTML (a strict subset in awk, everything escaped
+   first; its headings one level down, the page's `<h1>` being its title), filled into
    `parts/proposal-<stage>.html`.
 3. **Every run:** the Ideas, Funding Required, Work in Progress and Completed lists, and each
    proposal's donation box, with the address, from ccs-bash's JSON, checked against the signed
    list, and its QR code, made here from it (qrencode, a PNG): ccs-bash makes none, so what its
-   account writes can't put another address in one.
+   account writes can't put another address in one. Its bar notes the pending donations
+   ("+N XMR pending") and what would fund it ("N XMR would fund it 100%!"); a Funding Required
+   proposal at its goal gets the design's `donate-funded` part ("Fully funded", no address or QR
+   code) in place of its box (a design without that part: the box as before).
    Tags (the front matter's `tags:`) as labels on cards and links on proposal pages, the
    filters on Explore, and a page per tag at `/explore/tag/<tag>/` (copies of the original's
    tag page, so still no JavaScript).
