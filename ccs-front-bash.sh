@@ -283,6 +283,9 @@ main() {
     proposal_pages "$original" "$data" "$proposals" "$new"
     # the /projects API goes with the site, so one push carries everything public
     if [[ -f $data/projects.json ]]; then cp "$data/projects.json" "$new/projects.json"; fi
+    # and site-data.json, ccs-bash's (what only the backend knows), as it is: the web server checks
+    # it, and is to build the site from it itself
+    if [[ -f $data/site-data.json ]]; then cp "$data/site-data.json" "$new/site-data.json"; fi
     feed "$data" "$new"
 
     relative_links "$new"
