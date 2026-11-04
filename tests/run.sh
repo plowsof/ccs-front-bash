@@ -54,6 +54,7 @@ fi
 if [[ ! -e $tmp/site/explore/index.html ]]; then ok "no Explore page"; else fail "an Explore page"; fi
 if [[ ! -e $tmp/site/parts && ! -e $tmp/site/proposals/example.html ]]; then ok "parts/ and the example pages left out"; else fail "parts/ or an example page published"; fi
 if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok "projects.json goes with the site"; else fail "projects.json"; fi
+if cmp -s "$here/fixtures/data/site-data.json" "$tmp/site/site-data.json"; then ok "site-data.json goes with the site, as it is"; else fail "site-data.json"; fi
 pages_want=$((fr + wip + cp))
 if [[ $(find "$tmp/site/proposals" -name '*.html' | wc -l) == "$pages_want" ]]; then ok "a page per proposal in fr, wip, cp ($pages_want)"; else fail "proposal page count"; fi
 # the Payouts tab where the original has it (work in progress, completed), not on a funding page,
