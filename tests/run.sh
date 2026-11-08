@@ -411,7 +411,9 @@ rm -rf "$ff"
 
 # The feed (feed.xml): with CCS_SITE_URL, the proposals put to Funding Required and fully funded,
 # newest first, as tests/expected/feed.xml (a title's markup as ‹ ›, a name's space as %20); none
-# without it; an address that isn't a site's stops the run
+# without it; an address that isn't a site's stops the run.
+# New ideas: only the 10 newest with a created-at, each linking to its MR. Skipped: the fixture's
+# own ideas (no created-at), the oldest of the 11 added, and one whose link isn't https.
 fd=$(mktemp -d); mkdir "$fd/data"; cp "$here/fixtures/data"/*.json "$fd/data/"
 # shellcheck disable=SC2016
 dates='def at($u; $k; $v): if ."local-url" == $u then .[$k] = $v else . end;
@@ -420,9 +422,16 @@ dates='def at($u; $k; $v): if ."local-url" == $u then .[$k] = $v else . end;
     | at("/proposals/b-wip.html"; "funded-at"; "2026-09-01T00:00:00Z") | at("/proposals/ leading-space.html"; "funding-required-at"; "2026-10-04T08:00:05Z")
     | at("/proposals/dots-end.html"; "funding-required-at"; "2026-01-01T00:00:00Z")))'
 for f in proposals completed-proposals; do jq "$dates" "$here/fixtures/data/$f.json" > "$fd/data/$f.json"; done
+# shellcheck disable=SC2016
+ideas='.[0].proposals += [range(11) as $i | {name: "Idea \($i) &amp; more", "gitlab-url": "https://example.org/mr/\(100 + $i)",
+    author: "erin", date: "October 5, 2026", tags: [], upvotes: 0, downvotes: 0,
+    "created-at": "2026-10-05T\(if $i < 10 then "0" else "" end)\($i):00:00Z"}]
+  + [{name: "Not https", "gitlab-url": "javascript:alert(1)", author: "x", date: "October 5, 2026", tags: [],
+    upvotes: 0, downvotes: 0, "created-at": "2026-10-05T23:00:00Z"}]'
+jq "$ideas" "$fd/data/proposals.json" > "$fd/ideas.json" && mv "$fd/ideas.json" "$fd/data/proposals.json"
 if CCS_SITE_URL=https://ccs.example.org/ run "$here/fixtures/original" "$fd/data" "$props" "$fd/site" 2> "$fd/log" \
     && diff -u "$here/expected/feed.xml" "$fd/site/feed.xml"; then
-    ok "CCS_SITE_URL: feed.xml, Funding Required and fully funded, newest first (expected/feed.xml)"
+    ok "CCS_SITE_URL: feed.xml, Funding Required, fully funded and the 10 newest ideas, newest first (expected/feed.xml)"
 else cat "$fd/log"; fail "the feed"; fi
 if run "$here/fixtures/original" "$fd/data" "$props" "$fd/site2" 2> /dev/null && [[ ! -e $fd/site2/feed.xml ]]; then
     ok "no CCS_SITE_URL: no feed"

@@ -3,8 +3,68 @@
 <channel>
 <title>Monero Community Crowdfunding System</title>
 <link>https://ccs.example.org/</link>
-<description>Proposals put to Funding Required, and fully funded</description>
+<description>Proposals put to Funding Required, fully funded, and new ideas</description>
 <atom:link href="https://ccs.example.org/feed.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>New idea: Idea 10 &amp; more</title>
+<link>https://example.org/mr/110</link>
+<guid isPermaLink="false">https://example.org/mr/110#idea</guid>
+<pubDate>Mon, 05 Oct 2026 10:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 9 &amp; more</title>
+<link>https://example.org/mr/109</link>
+<guid isPermaLink="false">https://example.org/mr/109#idea</guid>
+<pubDate>Mon, 05 Oct 2026 09:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 8 &amp; more</title>
+<link>https://example.org/mr/108</link>
+<guid isPermaLink="false">https://example.org/mr/108#idea</guid>
+<pubDate>Mon, 05 Oct 2026 08:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 7 &amp; more</title>
+<link>https://example.org/mr/107</link>
+<guid isPermaLink="false">https://example.org/mr/107#idea</guid>
+<pubDate>Mon, 05 Oct 2026 07:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 6 &amp; more</title>
+<link>https://example.org/mr/106</link>
+<guid isPermaLink="false">https://example.org/mr/106#idea</guid>
+<pubDate>Mon, 05 Oct 2026 06:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 5 &amp; more</title>
+<link>https://example.org/mr/105</link>
+<guid isPermaLink="false">https://example.org/mr/105#idea</guid>
+<pubDate>Mon, 05 Oct 2026 05:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 4 &amp; more</title>
+<link>https://example.org/mr/104</link>
+<guid isPermaLink="false">https://example.org/mr/104#idea</guid>
+<pubDate>Mon, 05 Oct 2026 04:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 3 &amp; more</title>
+<link>https://example.org/mr/103</link>
+<guid isPermaLink="false">https://example.org/mr/103#idea</guid>
+<pubDate>Mon, 05 Oct 2026 03:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 2 &amp; more</title>
+<link>https://example.org/mr/102</link>
+<guid isPermaLink="false">https://example.org/mr/102#idea</guid>
+<pubDate>Mon, 05 Oct 2026 02:00:00 +0000</pubDate>
+</item>
+<item>
+<title>New idea: Idea 1 &amp; more</title>
+<link>https://example.org/mr/101</link>
+<guid isPermaLink="false">https://example.org/mr/101#idea</guid>
+<pubDate>Mon, 05 Oct 2026 01:00:00 +0000</pubDate>
+</item>
 <item>
 <title>Funding required: Name starts with a space</title>
 <link>https://ccs.example.org/proposals/%20leading-space.html</link>
