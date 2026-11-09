@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# Tests: fill tests/fixtures/original (ccs-front-hugo's built pages) with tests/fixtures/data
-# (ccs-bash's test JSON) and tests/fixtures/proposals (its proposals), compare with
-# tests/expected, then the Markdown renderer, then everything that must stop a run.
-# UPDATE=1 tests/run.sh rewrites tests/expected (check the diff!).
+# Fills the fixture site with the fixture data and compares it with tests/expected.
+# Then tests the Markdown renderer, and everything that must stop a run.
+# UPDATE=1 tests/run.sh rewrites tests/expected. Check the diff.
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
 front=$here/../ccs-front-bash.sh
-# the signed list (tests/fixtures/list: every address the fixtures use, its QR codes as
-# tools/make-qr.sh makes them, a pin; the signature and key stand-ins): every run gets it
+# The signed list holds every address the fixtures use, with QR codes and a pin.
+# The signature and key are stand-ins. Every run gets it.
 list=$here/fixtures/list/list.txt
 run() { if (($# == 4)); then "$front" "$@" "$list"; else "$front" "$@"; fi; }
 tmp=$(mktemp -d)
@@ -29,8 +28,7 @@ for p in "${pages[@]}"; do
     if diff -u "$here/expected/$p" "$tmp/site/$p" > "$tmp/diff"; then ok "$p"; else cat "$tmp/diff"; fail "$p"; fi
 done
 
-# every proposal in the JSON gets a card on its stage's page; the home page has none, only the
-# stages' counts
+# Every proposal gets a card on its stage's page. The home page shows only the counts.
 count() { grep -c 'class="card ' "$tmp/site/$1" || true; }
 want() { jq "$2" "$here/fixtures/data/$1"; }
 fr=$(want proposals.json '.[1].proposals | length') wip=$(want proposals.json '.[2].proposals | length')
@@ -42,7 +40,7 @@ if [[ $(count funding-required/index.html) == "$fr" && $(count work-in-progress/
 else
     fail "card counts"
 fi
-# the stage menu's counts on every kind of page (a proposal page too), the home page's cards'
+# The stage menu's counts on every kind of page, and the home page's cards.
 counts() { grep -A1 "<!-- ccs:${2:-count} " "$tmp/site/$1" | grep -o '^[0-9]*$' | tr '\n' ' '; }
 n4="$idea $fr $wip $cp "
 if [[ $(counts index.html) == "$n4" && $(counts index.html number) == "$n4" && $(counts funding-required/index.html) == "$n4" \
@@ -57,15 +55,14 @@ if cmp -s "$here/fixtures/data/projects.json" "$tmp/site/projects.json"; then ok
 if cmp -s "$here/fixtures/data/site-data.json" "$tmp/site/site-data.json"; then ok "site-data.json goes with the site, as it is"; else fail "site-data.json"; fi
 pages_want=$((fr + wip + cp))
 if [[ $(find "$tmp/site/proposals" -name '*.html' | wc -l) == "$pages_want" ]]; then ok "a page per proposal in fr, wip, cp ($pages_want)"; else fail "proposal page count"; fi
-# the Payouts tab where the original has it (work in progress, completed), not on a funding page,
-# which has nothing paid out yet; either way the run fills what is there
+# The Payouts tab is on work in progress and completed pages, not on funding pages.
 if ! grep -q 'tab-payouts' "$tmp/site/proposals/near-funded.html" && grep -q 'tab-payouts' "$tmp/site/proposals/b-wip.html" \
     && grep -q 'tab-payouts' "$tmp/site/proposals/c done, (old).html"; then
     ok "Payouts only on work-in-progress and completed pages, as the original has them"
 else
     fail "the Payouts tab"
 fi
-# the QR code is a file, qr/<address>.png, the signed list's own, never ccs-bash's (the fixture's donate-qr-code is the text "QR for monero:…"); no data: image on any page
+# The QR code is the signed list's file, never ccs-bash's. No data: image on any page.
 page=$tmp/site/proposals/near-funded.html
 addr=$(grep -m 1 -o 'href="monero:[0-9A-Za-z]*"' "$page" | sed 's/^href="monero://; s/"$//')
 if grep -qF "<img src=\"../qr/$addr.png\"" "$page" && cmp -s "$tmp/site/qr/$addr.png" "$here/fixtures/list/list.txt.qr/$addr.png" \
@@ -77,11 +74,11 @@ else
     fail "QR code on a funding page"
 fi
 
-# an idea's 👍/👎, and "–" where ccs-bash couldn't read them
+# An idea's 👍/👎, and "–" where they couldn't be read.
 votes=$(grep -A2 'class="votes"' "$tmp/site/ideas/index.html" | grep -o '^[0-9–]*<' | tr -d '<' | tr '\n' ' ')
 if [[ $votes == "7 2 – – " ]]; then ok "votes on the idea cards ($votes)"; else fail "votes: '$votes'"; fi
 
-# ccs-bash's escaping is kept, once: no double escaping, nothing unescaped
+# ccs-bash's escaping is kept once: nothing escaped twice, nothing unescaped.
 if grep -q 'Fund &lt;b&gt;this&lt;/b&gt; &amp;amp; that\|Fund &amp;lt;' "$tmp/site/funding-required/index.html"; then
     fail "a name was escaped twice"
 elif grep -q 'Fund &lt;b&gt;this&lt;/b&gt; &amp; that' "$tmp/site/funding-required/index.html"; then
@@ -90,8 +87,8 @@ else
     fail "escaped name not found"
 fi
 
-# tags: a page per tag (spellings that differ only in case or punctuation are one tag, a tag
-# with no letters or digits gets none), with that tag's proposals; filters on Explore
+# A page per tag, with its proposals. Case and punctuation don't make a new tag.
+# A tag with no letters or digits gets no page.
 tagpages=$(cd "$tmp/site/explore/tag" && printf '%s ' *)
 if [[ $tagpages == "abandoned available-to-pick-up b-x-b-y repurposed " ]]; then ok "a page per tag ($tagpages)"; else fail "tag pages: $tagpages"; fi
 if [[ $(count explore/tag/available-to-pick-up/index.html) == 2 && $(count explore/tag/repurposed/index.html) == 1 ]]; then
@@ -108,8 +105,7 @@ if grep -q "<a class=\"filter $repurposed\" href=\"../explore/tag/repurposed/\">
 else
     fail "filters"
 fi
-# a tag page is three folders down: every link to the assets goes three up (the cards' icons
-# are the stylesheet's, by class)
+# A tag page is three folders down, so its asset links go three up.
 if grep -q 'href="../../../assets/style\.' "$tmp/site/explore/tag/repurposed/index.html" \
     && grep -q 'class="icon icon-user"' "$tmp/site/explore/tag/repurposed/index.html" \
     && ! grep -q '"\.\./assets/\|"\.\./\.\./assets/' "$tmp/site/explore/tag/repurposed/index.html"; then
@@ -161,7 +157,7 @@ cp -r "$here/fixtures/original" "$tmp/slot"
 sed -i 's#{{author}}#{{nonesuch}}#' "$tmp/slot/parts/card-fr.html"
 must_stop "a slot with no value" "$tmp/slot" "$here/fixtures/data"
 
-# no absolute link on any page: under /dark/ or /light/ (the theme), every link keeps the prefix
+# No absolute links, so a page under /dark/ or /light/ keeps the prefix.
 abs=$(find "$tmp/site" -name '*.html' ! -name 404.html -exec grep -lE '(href|src)="/[^/]' {} + || true)
 if [[ -z $abs ]] && grep -q 'href="../proposals/near-funded.html"' "$tmp/site/funding-required/index.html" \
     && grep -q 'href="../../../proposals/' "$tmp/site/explore/tag/repurposed/index.html"; then
@@ -170,9 +166,9 @@ else
     printf '%s\n' "$abs" | head -3; fail "absolute links"
 fi
 
-# a signed subaddress list (the list, .asc, .key.asc, .pin beside it): every donation address
-# must be in it; the Verify page shows the steps and the fingerprint, each donation box links
-# there, and the list, signature and key go out with the site
+# Every donation address must be on the signed list.
+# The Verify page shows the fingerprint, and each donation box links to it.
+# The list, signature and key go out with the site.
 cp -r "$here/fixtures/list" "$tmp/sub"
 main=$(awk 'NR == 1 { print $2 }' "$tmp/sub/list.txt")   # the wallet's main address, index 0 (testnet: it starts with 9)
 viewkey=$(head -n 1 "$tmp/sub/list.txt.viewkey")
@@ -217,7 +213,7 @@ else
 fi
 cp "$tmp/sub/list.txt.pin" "$tmp/sub/pin.good"; cp "$tmp/sub/list.txt" "$tmp/sub/list.good"
 sed -i '2d' "$tmp/sub/list.txt" && pin
-# a foreign address in /projects (ccs-bash's projects.json goes out with the site): taken out, exit 3
+# A foreign address in /projects is taken out, and the run exits 3.
 rm -rf "$tmp/data-p" "$tmp/site6"; cp -r "$here/fixtures/data" "$tmp/data-p"
 foreign=8$(printf '%094d' 0 | tr 0 Z)
 jq --arg a "$foreign" '.[-1].address = $a' "$here/fixtures/data/projects.json" > "$tmp/data-p/projects.json"
@@ -229,7 +225,7 @@ if [[ $rc == 3 && -f $tmp/site6/projects.json ]] && ! grep -q "$foreign" "$tmp/s
 else
     fail "a foreign address in /projects (exit $rc)"; cat "$tmp/log.p" >&2
 fi
-# an address not in the list: that proposal is left off (its page, its card), the rest made, exit 3
+# A proposal whose address is not on the list is left off. The rest is made, and the run exits 3.
 rm -rf "$tmp/site5"; set +e
 run "$here/fixtures/original" "$here/fixtures/data" "$props" "$tmp/site5" "$tmp/sub/list.txt" 2> "$tmp/log.off"; rc=$?; set -e
 if [[ $rc == 3 && ! -e $tmp/site5/proposals/near-funded.html && -f $tmp/site5/proposals/new-fund.html ]] \
@@ -241,7 +237,7 @@ else
 fi
 cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 must_stop "a list that isn't the one its .pin names" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
-# the list's QR codes: pinned (the pin's qr line), each file its sum
+# The list's QR codes must match the pin.
 cp "$tmp/sub/list.good" "$tmp/sub/list.txt"
 said() { if grep -q "$1" "$tmp/log.stop"; then ok "  (it says: $1)"; else fail "  not for its reason: $(cat "$tmp/log.stop")"; fi; }
 cp "$tmp/sub/list.txt.qr/$addr.png" "$tmp/sub/qr.good"
@@ -260,7 +256,7 @@ cp "$tmp/sub/pin.good" "$tmp/sub/list.txt.pin"
 rm "$tmp/sub/list.txt.key.asc"
 must_stop "a list without its key" "$here/fixtures/original" "$here/fixtures/data" "$tmp/sub/list.txt"
 
-# one pass: a value that looks like a slot or a marker is text, never filled again
+# One pass: a value that looks like a slot or marker stays text.
 mkdir -p "$tmp/literal"
 cp "$here/fixtures/data/completed-proposals.json" "$tmp/literal/"
 jq '.[1].proposals[0].name = "{{author}} &lt;!-- ccs:list fr --&gt;"' "$here/fixtures/data/proposals.json" > "$tmp/literal/proposals.json"
@@ -271,9 +267,9 @@ else
     fail "a title was filled again"
 fi
 
-# The Markdown renderer: hostile text stays text, links only https/#/site-relative (never one a
-# browser reads as another site's: //host, /\host, /&#47;host), and the
-# same HTML from every awk there is (mawk, gawk, busybox: CI has the first two).
+# The Markdown renderer. Hostile text stays text.
+# Links are only https, #anchor or site-relative, never //host, /\host or /&#47;host.
+# mawk, gawk and busybox awk must give the same HTML.
 cat > "$tmp/evil.md" <<'MD'
 ---
 layout: fr
@@ -300,7 +296,7 @@ for a in "${awks[@]}"; do
     cmp -s "$first" "$tmp/evil.${a// /_}" || fail "$a renders differently from ${awks[0]}"
 done
 body=$(jq -r '.body' "$first")
-# (a proposal's own \001 and \002 are dropped: "x999y" stays text, never held HTML number 999)
+# A proposal's own \001 and \002 are dropped, so "x999y" stays text.
 if [[ $body == *'<script'* || $body == *'<img'* || $body == *'onerror=alert(1)>'* || $body == *'href="javascript'* \
     || $body == *'href="data'* || $body == *'<!-- ccs'* || $body != *'x999y'* \
     || $body == *'href="//'* || $body == *"href=\"/\\"* || $body == *'href="/&'* ]]; then
@@ -311,8 +307,7 @@ else
     echo "$body"; fail "the Markdown renderer lost something"
 fi
 
-# A proposal's headings one level down, under the page's own h1 (its title): # is h2, ##### h6,
-# ###### stays h6; the same on every awk
+# Headings go one level down: # is h2, ##### is h6, and ###### stays h6.
 printf -- '---\nlayout: fr\ntitle: T\n---\n# Who\n## Plan\n##### Five\n###### Six\n' > "$tmp/h.md"
 for a in "${awks[@]}"; do
     hb=$($a -f "$here/../lib/markdown.awk" "$tmp/h.md" | jq -r '.body')
@@ -331,9 +326,8 @@ else
     fail "raw HTML from front matter on a page"
 fi
 
-# Images: a proposal's own images ccs-bash copied (images.json, images/<proposal>/) show from the
-# site's images/, relative to the page; any other stays a link; a list entry that isn't
-# images/<proposal>/<file> for a file that is there is ignored, and nothing outside images/ is copied.
+# A proposal's own images show from the site's images/. Any other image stays a link.
+# A bad entry in images.json is ignored, and nothing outside images/ is copied.
 im=$(mktemp -d)
 cp -r "$here/fixtures/data" "$im/data" && cp -r "$props" "$im/props" && mkdir -p "$im/data/images/near-funded"
 printf 'png bytes' > "$im/data/images/near-funded/chart.png"
@@ -358,10 +352,9 @@ else
 fi
 rm -rf "$im"
 
-# The footer's onion line: an original whose footer has the onion region (every page, the proposal
-# pages and the tag pages too) and the onion part: with CCS_ONION, the part filled with it on every
-# page; without, the region empty; an address that isn't one stops the run. An original from before
-# (no region, no part) runs with CCS_ONION all the same, with no line.
+# The footer's onion line. With CCS_ONION, every page shows it. Without, the region is empty.
+# A bad onion address stops the run.
+# An older original with no onion part still runs, with no line.
 on=$(mktemp -d)
 cp -r "$here/fixtures/original" "$on/original"
 find "$on/original" -name '*.html' -exec grep -l '</footer>' {} + | while IFS= read -r f; do
@@ -389,9 +382,8 @@ if CCS_ONION=$o run "$here/fixtures/original" "$here/fixtures/data" "$props" "$o
 else fail "an old original with CCS_ONION"; fi
 rm -rf "$on"
 
-# Fully funded: a Funding Required proposal at its goal gets the design's donate-funded part in its
-# donate region ("Fully funded", no address, no QR code); the others keep the donation box; a design
-# without the part, the box for every one
+# A Funding Required proposal at its goal shows "Fully funded", with no address or QR code.
+# The others keep the donation box. A design without that part shows the box for all.
 ff=$(mktemp -d); cp -r "$here/fixtures/original" "$ff/original"; mkdir "$ff/data"; cp "$here/fixtures/data"/*.json "$ff/data/"
 printf '%s\n' '<p class="funded-badge">Fully funded: {{raised}} of {{amount}} XMR</p>' > "$ff/original/parts/donate-funded.html"
 jq 'map(.proposals |= map(if ."local-url" == "/proposals/near-funded.html" then .percentage = 100 else . end))' "$here/fixtures/data/proposals.json" > "$ff/data/proposals.json"
@@ -409,11 +401,10 @@ if run "$ff/original" "$ff/data" "$props" "$ff/site2" 2> /dev/null && grep -q "$
 else fail "fully funded with an older design"; fi
 rm -rf "$ff"
 
-# The feed (feed.xml): with CCS_SITE_URL, the proposals put to Funding Required and fully funded,
-# newest first, as tests/expected/feed.xml (a title's markup as ‹ ›, a name's space as %20); none
-# without it; an address that isn't a site's stops the run.
-# New ideas: only the 10 newest with a created-at, each linking to its MR. Skipped: the fixture's
-# own ideas (no created-at), the oldest of the 11 added, and one whose link isn't https.
+# The feed. With CCS_SITE_URL it must match tests/expected/feed.xml. Without, there is none.
+# A bad site address stops the run.
+# Only the 10 newest ideas with a created-at are in it, each linking to its MR.
+# Left out: ideas with no created-at, the 11th newest, and one whose link isn't https.
 fd=$(mktemp -d); mkdir "$fd/data"; cp "$here/fixtures/data"/*.json "$fd/data/"
 # shellcheck disable=SC2016
 dates='def at($u; $k; $v): if ."local-url" == $u then .[$k] = $v else . end;

@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# make-qr.sh LIST: the QR code of every address of a subaddress list (make-subaddresses.sh's
-# "index address" lines): LIST.qr/<address>.png, as `qrencode -s 10 "monero:<address>"` writes it,
-# and LIST.qr.sha256, each file's sha256 in the list's order (sha256sum's format, run in LIST.qr/).
-# sign-subaddresses.sh pins LIST.qr.sha256 in LIST.pin, verify-subaddresses.sh remakes every code,
-# ccs-front-bash puts the ones it shows on the site, and the web server's gate takes a QR code
-# only as one of these files, byte for byte: it never makes or reads one. 15,000 take about 30 s
-# (11.5 MB). qrencode 4.1.1 writes the same bytes on Ubuntu as in the pinned image (StageX's).
+# make-qr.sh LIST
+# Makes a QR code for every address in a subaddress list, in LIST.qr/<address>.png.
+# Each is what `qrencode -s 10 "monero:<address>"` writes.
+# LIST.qr.sha256 holds each file's sha256, in the list's order.
+# sign-subaddresses.sh pins it, and verify-subaddresses.sh remakes every code.
+# The gate takes a QR code only as one of these exact files.
+# 15,000 codes take about 30 seconds (11.5 MB).
+# qrencode 4.1.1 writes the same bytes on Ubuntu as in the pinned image.
 set -euo pipefail
 export LC_ALL=C
 list=${1:?LIST}

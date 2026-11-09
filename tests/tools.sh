@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# The signing tool (tools/sign-subaddresses.sh): its signature verifies with the key it exports,
-# a changed list doesn't, it prints the list's sha256, and no secret key is left anywhere. The
-# QR codes (tools/make-qr.sh): one per address, pinned, remade by verify-subaddresses.sh.
-# (tools/make-subaddresses.sh needs monero-wallet-rpc: checked by hand: ccs-bash's docs/signed-list.md.)
+# Tests for tools/.
+# sign-subaddresses.sh: the signature verifies with its key, a changed list doesn't,
+# it prints the list's sha256, and no secret key is left anywhere.
+# make-qr.sh: one code per address, pinned, and remade by verify-subaddresses.sh.
+# make-subaddresses.sh needs monero-wallet-rpc, so it is checked by hand.
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
 tmp=$(mktemp -d)
@@ -50,9 +51,9 @@ else
     fail "a secret key or its folder was left"
 fi
 
-# Signed with a Core Team member's own key (SIGNING_KEY), as the mainnet list is, and checked with
-# verify-subaddresses.sh: only a key in SIGNERS counts, and the list must be the pin's, the
-# signature good, the lines in order, line 0 the wallet's main address.
+# Sign with a Core Team member's own key, as on mainnet, and check with verify-subaddresses.sh.
+# Only a key in SIGNERS counts. The list must match its pin, with a good signature,
+# lines in order, and line 0 the main address.
 core=$tmp/core && mkdir -m 700 "$core"
 GNUPGHOME=$core gpg -q --batch --passphrase '' --quick-gen-key 'Core Team member <core@test>' ed25519 sign 1d 2> /dev/null
 cfpr=$(GNUPGHOME=$core gpg --batch --with-colons --list-keys 2> /dev/null | awk -F: '$1 == "fpr" { print $10; exit }')
@@ -85,14 +86,13 @@ cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
 qr "$tmp/order.txt" || true
 (cd "$tmp" && GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" order.txt > /dev/null 2>&1)
 nope "not 'index address' lines" "$tmp/order.txt" "$tmp/signers"
-# Review 5: one address twice (line 2 = line 1, signed): never right, every check takes "in the
-# list" for "one of the wallet's"
+# One address listed twice is refused.
 { sed -n 1,2p "$tmp/main.txt"; printf '2 %s\n' "$(awk 'NR == 2 { print $2 }' "$tmp/main.txt")"; } > "$tmp/dup.txt"
 qr "$tmp/dup.txt"
 (cd "$tmp" && GNUPGHOME=$core SIGNING_KEY=$cfpr "$here/../tools/sign-subaddresses.sh" dup.txt > /dev/null 2>&1)
 nope "an address twice" "$tmp/dup.txt" "$tmp/signers" "$wallet"
-# the QR codes: the pin's sums, one for each address in order, each file its sum, each what
-# qrencode makes of its address (a code of another address, its sums and pin made to match)
+# The QR codes must match their pinned sums and be what qrencode makes of each address.
+# Here a code is swapped for another address's, with its sums and pin made to match.
 a1=$(awk 'NR == 2 { print $2 }' "$tmp/main.txt") a2=$(awk 'NR == 3 { print $2 }' "$tmp/main.txt")
 cp -r "$tmp/main.txt.qr" "$tmp/keep.qr"; cp "$tmp/main.txt.qr.sha256" "$tmp/keep.qr.sha256"; cp "$tmp/main.txt.pin" "$tmp/keep.pin"
 sed -i '/^qr /d' "$tmp/main.txt.pin"
@@ -115,13 +115,13 @@ if v "$tmp/main.txt" "$tmp/signers" "$wallet" && grep -q "QR codes .*remade here
 else
     cat "$tmp/v.out"; fail "verify after the QR codes put back"
 fi
-# the signer's key revoked (its owner's revocation certificate, as gpg made it): refused
+# The signer's key is revoked: refused.
 sed 's/^:-----BEGIN/-----BEGIN/' "$core/openpgp-revocs.d/$cfpr.rev" | GNUPGHOME=$core gpg -q --batch --import 2> /dev/null
 cp "$tmp/main.txt.key.asc" "$tmp/keep.key.asc"
 GNUPGHOME=$core gpg --batch --armor --export "$cfpr" > "$tmp/main.txt.key.asc" 2> /dev/null
 nope "revoked key" "$tmp/main.txt" "$tmp/signers" "$wallet"
-# Review 5: the list shipped with its key's export from before the revocation (whoever brings a
-# list brings LIST.key.asc too): with SIGNER_KEYS, keys of your own, the revocation is known
+# The list comes with a key export from before the revocation.
+# With SIGNER_KEYS, your own copy of the keys, the revocation is still seen.
 GNUPGHOME=$core gpg --batch --armor --export "$cfpr" > "$tmp/own-keys.asc" 2> /dev/null
 cp "$tmp/keep.key.asc" "$tmp/main.txt.key.asc"
 if ! SIGNER_KEYS=$tmp/own-keys.asc v "$tmp/main.txt" "$tmp/signers" "$wallet" && grep -q "NOT OK: .*revoked key" "$tmp/v.out"; then

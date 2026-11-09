@@ -1,15 +1,15 @@
-# The ccs-front-bash image. StageX images (container/images, signatures checked) come in from
-# build.sh as named contexts (FROM toolchain, COPY --from=bash). No network in the steps, and
-# none needed to run it: it only reads files and writes the site.
-# Same commit, same hash: every file gets the commit's time (SOURCE_DATE_EPOCH) and the
-# result is one layer in an empty image. No user account: it runs as a numeric user.
+# The ccs-front-bash image.
+# StageX images come in from build.sh as named contexts. The steps have no network.
+# It needs no network to run either: it only reads files and writes the site.
+# The same commit gives the same hash: every file gets the commit's time,
+# and the result is one layer. No user account: it runs as a numeric user.
 
-# busybox with only the applets in busybox-applets (and their options, like readlink -f).
+# busybox with only the applets in busybox-applets.
 # The toolchain's cc is clang.
 FROM toolchain AS busybox
 COPY --from=bash / /
 COPY --from=ncurses / /
-# no build time or date in the binary
+# No build time or date in the binary.
 ENV KCONFIG_NOTIMESTAMP=1
 RUN --mount=type=bind,source=container,target=/pin \
     bash /pin/verify.sh /pin/sources.lock /pin/sources \
@@ -31,8 +31,8 @@ RUN --mount=type=bind,source=container,target=/pin \
         ! "/rootfs/usr/bin/$applet" --help 2>&1 | grep -q "applet not found" || { echo "$applet not built" >&2; exit 1; }; \
     done
 
-# Everything ccs-front-bash runs, and nothing else: bash, jq and busybox (no qrencode: the QR codes
-# are the signed list's files, tools/make-qr.sh, made with the list on the offline machine).
+# Only what ccs-front-bash runs: bash, jq and busybox.
+# No qrencode: the QR codes are the signed list's files.
 FROM scratch AS tree
 COPY --from=filesystem / /
 COPY --from=musl / /
@@ -43,8 +43,8 @@ COPY --from=jq / /
 COPY ccs-front-bash.sh /opt/ccs-front-bash/
 COPY lib/ /opt/ccs-front-bash/lib/
 
-# Drop headers, static libraries and manuals, fix our files' modes (whatever the umask),
-# give every file the commit's time.
+# Drop headers, static libraries and manuals. Fix the file modes.
+# Give every file the commit's time.
 FROM toolchain AS fix
 ARG SOURCE_DATE_EPOCH
 COPY --from=tree / /rootfs/
@@ -57,7 +57,7 @@ RUN cd /rootfs \
 FROM scratch AS image
 COPY --from=fix /rootfs/ /
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# only a default: the backend compose runs it as the host's ccs-front user
+# Only a default. The compose runs it as the host's ccs-front user.
 USER 10002:10002
 ENTRYPOINT ["/opt/ccs-front-bash/ccs-front-bash.sh"]
 CMD ["/original", "/data", "/proposals", "/www/site", "/subaddresses/subaddresses.txt"]

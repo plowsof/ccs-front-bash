@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-# sign-subaddresses.sh LIST: sign LIST (from make-subaddresses.sh): LIST.asc (a detached
-# signature), LIST.key.asc (the public key) and LIST.pin (LIST's sha256, the key's fingerprint,
-# and the sha256 of LIST.qr.sha256, its QR codes' sums: make-qr.sh), the files ccs-front-bash and
-# the web server's gate read. (The QR codes aren't signed: they are the list's, remade by anyone
-# with qrencode, as verify-subaddresses.sh does.)
-#   SIGNING_KEY=<fingerprint>   sign with that key of your own, from your keyring (GNUPGHOME): a
-#                               Core Team member's, whose key the Monero repository publishes
-#                               (utils/gpg_keys/), so anyone can check who signed. Nothing is
-#                               made or destroyed. The mainnet list is signed so.
-#   (unset)                     a PGP key made only for this and thrown away: the secret key
-#                               never leaves a temporary folder removed at the end. It binds the
-#                               file, not a person (the testnet's).
+# sign-subaddresses.sh LIST
+# Writes LIST.asc (the signature), LIST.key.asc (the public key) and LIST.pin.
+# LIST.pin holds LIST's sha256, the key's fingerprint and the sum of LIST.qr.sha256.
+# ccs-front-bash and the gate read these files.
+# The QR codes aren't signed. Anyone can remake them with qrencode.
+#   SIGNING_KEY=<fingerprint>   Sign with your own key, from your keyring.
+#                               For mainnet: a Core Team member's key, as published
+#                               in the Monero repository (utils/gpg_keys/).
+#   (unset)                     Sign with a throwaway key. The secret key stays in a
+#                               temporary folder that is removed. Used on the testnet.
 set -euo pipefail
 list=${1:?LIST}
 [[ -f $list.qr.sha256 ]] || { echo "no $list.qr.sha256: make the QR codes first (make-qr.sh $list)" >&2; exit 1; }
@@ -26,7 +24,7 @@ else
     GNUPGHOME=$(mktemp -d); chmod 700 "$GNUPGHOME"
     trap 'gpgconf --kill all 2> /dev/null || true; rm -rf "$GNUPGHOME"' EXIT
     uid="CCS donation subaddresses ($(date -u +%F), throwaway key)"
-    # gpg chats about its trust database while making a key: shown only if making it fails
+    # gpg talks about its trust database while making a key. Show it only on failure.
     gpg -q --batch --passphrase '' --quick-gen-key "$uid" ed25519 sign never 2> "$GNUPGHOME/log" \
         || { cat "$GNUPGHOME/log" >&2; exit 1; }
     fpr=$(gpg --batch --with-colons --list-keys | awk -F: '$1 == "fpr" { print $10; exit }')
