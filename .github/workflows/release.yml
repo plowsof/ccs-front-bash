@@ -1,6 +1,6 @@
 name: release
-# On a pushed tag v*: build the pinned image, test it, check (check-pinned.sh) builds give the same
-# hash, push it to ghcr.io/<owner>/ccs-front-bash:<tag> and make a GitHub release with both hashes.
+# On a v* tag: build the pinned image, test it, and check builds give the same hash.
+# Then push it to ghcr.io and make a GitHub release with both hashes.
 on:
   push:
     tags: ['v*']
@@ -43,7 +43,7 @@ jobs:
           check that this image is the code in this tag instead of trusting this build.
           EOF
           )
-          # a release made by hand on GitHub (which also makes the tag) keeps its text
+          # A release made by hand on GitHub keeps its text.
           if gh release view "$TAG" > /dev/null 2>&1; then
               gh release edit "$TAG" --notes "$(gh release view "$TAG" --json body -q .body)"$'\n\n'"$notes"
           else

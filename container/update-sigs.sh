@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# update-sigs.sh: store in sigs/ the StageX signatures of every pinned image (images), for each
-# of its linux manifests (amd64, arm64...), so builds read them here instead of from
-# sigs.stagex.tools. Run by update-images.sh; then verify-images.sh checks them. Stored or
-# fetched, they are checked the same way: a signature only counts if a trusted key made it.
+# update-sigs.sh
+# Saves in sigs/ the StageX signatures of every pinned image, for each linux manifest.
+# Builds then read them here instead of from sigs.stagex.tools.
+# update-images.sh runs it, then verify-images.sh checks them.
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
 lookaside=https://sigs.stagex.tools
@@ -23,6 +23,5 @@ while read -r name ref; do
 done < <(grep -v '^#' "$here/images")
 rm -rf "$here/sigs" && mv "$new" "$here/sigs" && chmod -R u=rwX,go=rX "$here/sigs"
 trap - EXIT
-# each stored signature that counts now, by a key valid now, in sigs-verified: it still counts
-# once that key has expired (verify-images.sh)
+# Record each signature that counts now, so it still counts after its key expires.
 "$here/verify-images.sh" --record

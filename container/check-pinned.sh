@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# check-pinned.sh: fail unless two clean builds of this commit from separate clones (other
-# paths, umasks, times) and one on a cache left by another commit all give the same hash.
-# One of those builds alone, printing "id: <image id>": check-pinned.sh clean UMASK | warm (CI
-# runs warm, under umask 077, on a second machine and compares it with its clean build).
+# check-pinned.sh
+# Fails unless three builds give the same hash: two clean builds from separate clones,
+# and one on a cache left by another commit.
+# check-pinned.sh clean UMASK | warm: run one build alone and print "id: <image id>".
+# CI runs warm under umask 077 on a second machine.
 set -euo pipefail
 here=$(dirname "$(readlink -f "$0")")
 repo=$(git -C "$here" rev-parse --show-toplevel)
@@ -10,16 +11,16 @@ name=$(basename "$repo")
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"; docker image rm -f "$name:other" "$name:warm" "$name:repro1" "$name:repro2" > /dev/null 2>&1 || true' EXIT
 
-"$here/fetch.sh" "$tmp/sources"                # once; every build gets the same checked files
+"$here/fetch.sh" "$tmp/sources"                # once, so every build gets the same files
 
-# clean N UMASK: a build with no cache, from a fresh clone made under UMASK; prints its image ID
+# clean N UMASK: build with no cache, from a fresh clone made under UMASK. Prints the image ID.
 clean() {
     (umask "$2" && git clone -q "$repo" "$tmp/clone$1")
     cp -r "$tmp/sources" "$tmp/clone$1/container/sources"
     NO_CACHE=1 "$tmp/clone$1/container/build.sh" "$name:repro$1" > /dev/null 2>&1
     docker image inspect "$name:repro$1" --format '{{.Id}}'
 }
-# warm: a build of another commit (a day older), then this one on the cache it left; prints its ID
+# warm: build an older commit, then this one on its cache. Prints the image ID.
 warm() {
     local c
     for c in other warm; do

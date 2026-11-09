@@ -1,5 +1,5 @@
 name: check
-# Once per change: pull requests, and pushes to master (a PR branch's push would run it twice).
+# Runs on pull requests and on pushes to master.
 on:
   push:
     branches: [master]
@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   check:
-    # 22.04 has jq 1.6, 24.04 has jq 1.7: both must give the same pages.
+    # 22.04 has jq 1.6 and 24.04 has jq 1.7. Both must give the same pages.
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
@@ -28,8 +28,7 @@ jobs:
       - name: the signing tool (signed subaddress list)
         run: tests/tools.sh
   image:
-    # The pinned image: StageX images by digest + busybox built from a sha256-checked source,
-    # built with --network none, then the tests run inside it (busybox awk), also without network.
+    # Build the pinned image with no network, then run the tests inside it.
     runs-on: ubuntu-24.04
     outputs:
       id: ${{ steps.id.outputs.id }}
@@ -41,9 +40,8 @@ jobs:
         run: docker run --rm --network none --read-only --tmpfs /tmp -v "$PWD:/src:ro" --entrypoint bash ccs-front-bash /src/tests/run.sh
       - id: id
         run: echo "id=$(docker image inspect ccs-front-bash --format '{{.Id}}')" >> "$GITHUB_OUTPUT"
-  # The same commit must build to the same image ID anywhere: a second machine, a fresh clone made
-  # under umask 077, building another commit first and then this one on its cache (as node3 does).
-  # The same ID as the clean build above covers machines, umasks and caches at once.
+  # The same commit must give the same image ID anywhere.
+  # This builds on a second machine, under umask 077, on another commit's cache.
   pinned-warm:
     runs-on: ubuntu-24.04
     outputs:
