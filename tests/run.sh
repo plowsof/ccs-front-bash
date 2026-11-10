@@ -431,6 +431,20 @@ if ! CCS_SITE_URL=https://ccs.example.org/x run "$here/fixtures/original" "$fd/d
     && grep -q "CCS_SITE_URL is not a site's address" "$fd/log3" && [[ ! -e $fd/site3 ]]; then
     ok "CCS_SITE_URL with a path: the run stops, no site"
 else fail "a bad CCS_SITE_URL"; fi
+
+# The link card. With CCS_SITE_URL, og:image gets the site's address on every page.
+# Without it, the design's path stays. A proposal page's card text comes from its slots.
+cp -R "$here/fixtures/original" "$fd/card"
+card='<meta property="og:image" content="/assets/card.abc.png">'
+sed -i "s#^<title>.*#&\\n$card#" "$fd/card/index.html"
+sed -i "s#^<title>.*#&\\n<meta property=\"og:description\" content=\"{{raised}} of {{amount}} XMR\">\\n$card#" "$fd/card/parts/proposal-fr.html"
+want='<meta property="og:image" content="https://ccs.example.org/assets/card.abc.png">'
+if CCS_SITE_URL=https://ccs.example.org/ run "$fd/card" "$fd/data" "$props" "$fd/site4" 2> "$fd/log4" \
+    && grep -qxF "$want" "$fd/site4/index.html" && grep -qxF "$want" "$fd/site4/proposals/near-funded.html" \
+    && grep -q '<meta property="og:description" content="[0-9.]* of [0-9.]* XMR">' "$fd/site4/proposals/near-funded.html" \
+    && run "$fd/card" "$fd/data" "$props" "$fd/site5" 2> /dev/null && grep -qxF "$card" "$fd/site5/index.html"; then
+    ok "the link card: og:image with CCS_SITE_URL's address, the design's path without it, a proposal's text from its slots"
+else cat "$fd/log4"; fail "the link card"; fi
 rm -rf "$fd"
 
 exit "$status"

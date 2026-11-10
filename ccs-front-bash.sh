@@ -8,7 +8,8 @@
 # The original is never changed. SITE is replaced only when the new one is complete.
 # It needs no network and makes no QR codes.
 # CCS_ONION: the site's onion address, for the footer. Without it, no onion line.
-# CCS_SITE_URL: the site's address (https://host), for the feed. Without it, no feed.
+# CCS_SITE_URL: the site's address (https://host), for the feed and the link card's image.
+# Without it, no feed, and the card's image keeps the design's path.
 set -euo pipefail
 export LC_ALL=C
 
@@ -82,10 +83,27 @@ onion_region() {
 # Its links need CCS_SITE_URL. Without it, there is no feed.
 feed() {
     [[ ${CCS_SITE_URL:-} ]] || return 0
-    local site=${CCS_SITE_URL%/}
-    [[ $site =~ ^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?$ ]] || die "CCS_SITE_URL is not a site's address (https://host, no path)"
+    local site
+    site=$(site_url)
     jq -nr -L "$LIB" --arg site "$site" --slurpfile proposals "$1/proposals.json" \
         --slurpfile completed "$1/completed-proposals.json" -f "$LIB/feed.jq" > "$2/feed.xml"
+}
+
+# site_url: CCS_SITE_URL without its last /, checked to be https://host with no path.
+site_url() {
+    local site=${CCS_SITE_URL%/}
+    [[ $site =~ ^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?$ ]] || die "CCS_SITE_URL is not a site's address (https://host, no path)"
+    printf '%s\n' "$site"
+}
+
+# card_image SITE: the link-preview card's image (og:image) must be a full address.
+# Put CCS_SITE_URL before the design's /assets/... path on every page.
+# Without CCS_SITE_URL, the pages keep the path as it is.
+card_image() {
+    [[ ${CCS_SITE_URL:-} ]] || return 0
+    local site
+    site=$(site_url)
+    find "$1" -name '*.html' -exec sed -i -E "s#(<meta property=\"og:image\" content=\")/([^/])#\\1$site/\\2#" {} +
 }
 
 # tag_regions ORIGINAL DATA
@@ -290,6 +308,7 @@ main() {
     feed "$data" "$new"
 
     relative_links "$new"
+    card_image "$new"
 
     rm -rf "$site.old"
     if [[ -e $site ]]; then mv "$site" "$site.old"; fi
