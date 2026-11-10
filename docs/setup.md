@@ -20,7 +20,7 @@ what the stage is given and what it does with it.
 | SUBADDRESSES | `/etc/ccs-front/subaddresses.txt` | the signed list, with its QR codes ([below](#the-signed-list)) |
 
 `CCS_SITE_URL`, the site's address (`https://host`): the feed's links (`feed.xml`; without it, no
-feed), the same as the web server gate's `SITE_URL`. `CCS_ONION`, optional, the site's onion
+feed) and the link card's image (`og:image`), the same as the web server gate's `SITE_URL`. `CCS_ONION`, optional, the site's onion
 address (`<56 characters>.onion`): the footer's onion line, the same as the gate's
 `/etc/ccs-gate/onion` (ccs-bash's handover, "The onion address"). The compose's `front` passes
 both from its `.env`.

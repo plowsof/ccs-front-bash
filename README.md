@@ -67,7 +67,8 @@ run for all proposals), `lib/pages.jq` fills every page (one jq run).
    tag page, so still no JavaScript).
    With `CCS_SITE_URL` (the site's address, `https://host`), `feed.xml`: RSS of the proposals put
    to Funding Required and fully funded (ccs-bash's `funding-required-at` and `funded-at`), the 50
-   newest, each item a link to its page; without it, no feed. With `CCS_ONION`, the footer's onion
+   newest, each item a link to its page; without it, no feed. It also puts the site's address
+   before each page's `og:image`, the link card's image, which must be a full address. With `CCS_ONION`, the footer's onion
    link.
 4. **Swap and push:** a missing, unmatched or repeated marker stops the run and no new site is
    made (the last good one is pushed again); otherwise the new `site/` replaces the last one and
