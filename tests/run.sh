@@ -326,6 +326,19 @@ else
     fail "raw HTML from front matter on a page"
 fi
 
+# Only the named entities the gate's scan reads are kept; any other shows as written (&Alpha; is a
+# Greek A). A line over 4000 characters is cut, and a body over 100,000: rendering them slows
+# down sharply.
+{ printf -- '---\nlayout: fr\n---\n&Alpha;&amp;&nbsp;&rsquo;&#913;\n\n'; head -c 9000 /dev/zero | tr '\0' '<'; printf '\n\n'
+  for _ in $(seq 30); do head -c 3990 /dev/zero | tr '\0' a; printf '\n\n'; done; } > "$tmp/big.md"
+for a in "${awks[@]}"; do
+    start=$SECONDS
+    bb=$($a -f "$here/../lib/markdown.awk" "$tmp/big.md" | jq -r '.body')
+    if [[ $bb == *'&amp;Alpha;&amp;&nbsp;&rsquo;&#913;'* && $bb == *'(line cut: over 4000 characters)'* && $bb == *'(The rest of this proposal is not shown: over 100000 characters.)'* ]] && ((SECONDS - start < 60)); then :
+    else echo "${bb:0:300}"; fail "entities and limits on $a"; fi
+done
+ok "only the named entities the gate reads kept; long lines cut, long bodies stopped, quickly"
+
 # A proposal's own images show from the site's images/. Any other image stays a link.
 # A bad entry in images.json is ignored, and nothing outside images/ is copied.
 im=$(mktemp -d)
@@ -334,6 +347,8 @@ printf 'png bytes' > "$im/data/images/near-funded/chart.png"
 touch -d @1700000000 "$im/data/images/near-funded/chart.png"   # the copy keeps this time
 printf 'secret' > "$im/data/secret.png"
 printf '\n![a chart](images/near-funded/chart.png "t") and ![other](https://elsewhere.example/x.png) and ![sneaky](images/../secret.png) ![odd](images/x/y.png)\n' >> "$im/props/near-funded.md"
+# Alt text is plain text: a link or code span in it never ends the attribute
+printf '\n![https://x/onerror=alert(1)//](images/near-funded/chart.png) ![[a](images/near-funded/chart.png) `b`](https://x/hidden/srcset=/qr/x.png#)\n' >> "$im/props/near-funded.md"
 jq -n '{"images/near-funded/chart.png": "near-funded/chart.png", "images/../secret.png": "../secret.png",
     "images/x/y.png": "near-funded/chart.png", "images/a\"b/c.png": "a\"b/c.png"}' > "$im/data/images.json"
 if run "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/log"; then
@@ -342,6 +357,8 @@ if run "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/log";
         && grep -qF '<a href="https://elsewhere.example/x.png">image: other</a>' "$page" \
         && ! grep -q 'src="[^"]*secret' "$page" && ! grep -q 'src="[^"]*images/x/' "$page" \
         && [[ $(cd "$im/site/images" && echo */*) == near-funded/chart.png ]] && [[ ! -e $im/site/secret.png ]] \
+        && grep -qF '<img src="../images/near-funded/chart.png" alt="https://x/onerror=alert(1)//" loading="lazy">' "$page" \
+        && ! grep -qE 'alt="[^"]*<' "$page" && ! grep -qE '<img[^>]*srcset=/qr' "$page" \
         && [[ $(date -r "$im/site/images/near-funded/chart.png" +%s) == 1700000000 ]]; then
         ok "images: a proposal's own copied image shows from the site (relative, with its time), others stay links, bad entries ignored"
     else
