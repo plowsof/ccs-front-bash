@@ -330,7 +330,7 @@ fi
 # Greek A). A line over 4000 characters is cut, and a body over 100,000: rendering them slows
 # down sharply.
 { printf -- '---\nlayout: fr\n---\n&Alpha;&amp;&nbsp;&rsquo;&#913;\n\n'; printf '%9000s\n\n' '' | tr ' ' '<'   # (busybox's head has no -c)
-  for _ in $(seq 30); do printf '%3990s\n\n' '' | tr ' ' a; done; } > "$tmp/big.md"
+  for ((i = 0; i < 30; i++)); do printf '%3990s\n\n' '' | tr ' ' a; done; } > "$tmp/big.md"
 for a in "${awks[@]}"; do
     start=$SECONDS
     bb=$($a -f "$here/../lib/markdown.awk" "$tmp/big.md" | jq -r '.body')
