@@ -329,8 +329,8 @@ fi
 # Only the named entities the gate's scan reads are kept; any other shows as written (&Alpha; is a
 # Greek A). A line over 4000 characters is cut, and a body over 100,000: rendering them slows
 # down sharply.
-{ printf -- '---\nlayout: fr\n---\n&Alpha;&amp;&nbsp;&rsquo;&#913;\n\n'; head -c 9000 /dev/zero | tr '\0' '<'; printf '\n\n'
-  for _ in $(seq 30); do head -c 3990 /dev/zero | tr '\0' a; printf '\n\n'; done; } > "$tmp/big.md"
+{ printf -- '---\nlayout: fr\n---\n&Alpha;&amp;&nbsp;&rsquo;&#913;\n\n'; printf '%9000s\n\n' '' | tr ' ' '<'   # (busybox's head has no -c)
+  for _ in $(seq 30); do printf '%3990s\n\n' '' | tr ' ' a; done; } > "$tmp/big.md"
 for a in "${awks[@]}"; do
     start=$SECONDS
     bb=$($a -f "$here/../lib/markdown.awk" "$tmp/big.md" | jq -r '.body')
@@ -348,7 +348,8 @@ touch -d @1700000000 "$im/data/images/near-funded/chart.png"   # the copy keeps 
 printf 'secret' > "$im/data/secret.png"
 printf '\n![a chart](images/near-funded/chart.png "t") and ![other](https://elsewhere.example/x.png) and ![sneaky](images/../secret.png) ![odd](images/x/y.png)\n' >> "$im/props/near-funded.md"
 # Alt text is plain text: a link or code span in it never ends the attribute
-printf '\n![https://x/onerror=alert(1)//](images/near-funded/chart.png) ![[a](images/near-funded/chart.png) `b`](https://x/hidden/srcset=/qr/x.png#)\n' >> "$im/props/near-funded.md"
+tick='`'
+printf '\n![https://x/onerror=alert(1)//](images/near-funded/chart.png) ![[a](images/near-funded/chart.png) %sb%s](https://x/hidden/srcset=/qr/x.png#)\n' "$tick" "$tick" >> "$im/props/near-funded.md"
 jq -n '{"images/near-funded/chart.png": "near-funded/chart.png", "images/../secret.png": "../secret.png",
     "images/x/y.png": "near-funded/chart.png", "images/a\"b/c.png": "a\"b/c.png"}' > "$im/data/images.json"
 if run "$here/fixtures/original" "$im/data" "$im/props" "$im/site" 2> "$im/log"; then
